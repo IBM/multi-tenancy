@@ -4,7 +4,7 @@
 
 Multi-tenancy samples for IBM partners who want to build SaaS software.
 
-This project is fully documented h[here](https://ibm.github.io/multi-tenancy/).
+This project is fully documented **[here](https://ibm.github.io/multi-tenancy/)**.
 
 ## Target architecture `serverless`overview:
 
