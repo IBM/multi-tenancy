@@ -65,7 +65,7 @@ async function asyncAppIDrefresh(appID) {
       /******************************/
       /* Authentication
       /******************************/
-      console.log("--> log: goint to update token ");
+      console.log("--> log: update token ");
       
       let tokens = await appID.silentSignin();
       console.log("--> log: silentSignin tokens ", tokens);   

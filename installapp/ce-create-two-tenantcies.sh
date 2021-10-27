@@ -30,7 +30,7 @@ export CATEGORY_B=Fantasy
 
 # Quay and Docker
 export SERVICE_CATALOG_IMAGE="quay.io/tsuedbroecker/multi-tenancy-service-catalog:v1"
-export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v3"
+export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v4"
 #export SERVICE_CATALOG_IMAGE="docker.io/karimdeif/service-catalog-quarkus-reactive:1.0.0-SNAPSHOT"
 #export FRONTEND_IMAGE="quay.io/kdeif/frontend:v0.0"
 
