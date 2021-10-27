@@ -1,0 +1,338 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-service-catalog-task
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the revision
+      default: main
+    - name: apikey
+      description: the ibmcloud api key
+    - name: api
+      description: the ibmcloud api endpoint
+      default: "https://cloud.ibm.com"
+    - name: registryNamespace
+      description: the ibmcloud registry namespace
+    - name: imageName
+      description: the base image name
+      default: "service-catalog"
+    - name: registryRegion
+      description: the ibmcloud registry region
+  workspaces:
+  - name: task-pvc
+    mountPath: /artifacts   
+  steps:
+    - name: clone-repo
+      image: alpine/git
+      env:
+        - name: REPOSITORY
+          value: $(params.repository)
+        - name: REVISION
+          value: $(params.revision)
+      command: ["/bin/sh", "-c"]
+      args:
+        - set -e -o pipefail;
+          echo "Cloning $REPOSITORY";
+          cd /workspace && git clone -q -b $REVISION $REPOSITORY .;
+    - name: build-docker-image
+      image: ibmcom/pipeline-base-image
+      env:
+        - name: IBMCLOUD_API_KEY
+          value: $(params.apikey)
+        - name: API
+          value: $(params.api)
+        - name: REGION
+          value: $(params.registryRegion)
+        - name: HOME
+          value: "/root"
+        - name: REGISTRY_NAMESPACE
+          value: $(params.registryNamespace)
+        - name: IMAGE_NAME
+          value: $(params.imageName)
+        - name: ARCHIVE_DIR
+          value: "/artifacts"
+        - name: BUILD_NUMBER
+          value: "0"
+        - name: GIT_BRANCH
+          value: $(params.revision)
+      command: ["/bin/bash", "-c"]
+      args:
+        - set -e -o pipefail;
+          ibmcloud login -a $API -r $REGION;
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
+          cd /workspace;
+          export GIT_COMMIT=$(git rev-parse HEAD);
+          cd ..;
+          export REGISTRY_URL=$(ibmcloud cr info | grep -m1 -i '^Container Registry' | awk '{print $3;}');
+          cd /workspace/cicd && source build-service-catalog-docker-image.sh;
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: validate-service-catalog-task
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the revision
+      default: main
+    - name: apikey
+      description: the ibmcloud api key
+    - name: api
+      description: the ibmcloud api endpoint
+      default: "https://cloud.ibm.com"
+    - name: registryRegion
+      description: the ibmcloud registry region   
+  workspaces:
+  - name: task-pvc
+    mountPath: /artifacts         
+  steps:
+    - name: clone-repo
+      image: alpine/git
+      env:
+        - name: REPOSITORY
+          value: $(params.repository)
+        - name: REVISION
+          value: $(params.revision)
+      command: ["/bin/sh", "-c"]
+      args:
+        - set -e -o pipefail;
+          echo "Cloning $REPOSITORY";
+          cd /workspace && git clone -q -b $REVISION $REPOSITORY .;
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-service-catalog-task
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the revision
+      default: main
+    - name: apikey
+      description: the ibmcloud api key
+    - name: api
+      description: the ibmcloud api endpoint
+      default: "https://cloud.ibm.com"
+    - name: deployment-file
+      default: deployment.yml
+    - name: clusterNamespace
+      default: prod
+    - name: cluster
+      description: The IBM Cloud Kubernetes cluster name
+    - name: clusterRegion
+      description: The IBM Cloud Kubernetes cluster region
+  workspaces:
+  - name: task-pvc
+    mountPath: /artifacts  
+  steps:
+    - name: clone-repo
+      image: alpine/git
+      env:
+        - name: REPOSITORY
+          value: $(params.repository)
+        - name: REVISION
+          value: $(params.revision)
+      command: ["/bin/sh", "-c"]
+      args:
+        - set -e -o pipefail;
+          echo "Cloning $REPOSITORY";
+          cd /workspace && git clone -q -b $REVISION $REPOSITORY .;
+    - name: deploy-to-ce
+      image: ibmcom/pipeline-base-image
+      env:
+        - name: IBMCLOUD_API_KEY
+          value: $(params.apikey)
+        - name: API
+          value: $(params.api)
+        - name: REGION
+          value: $(params.clusterRegion)
+        - name: HOME
+          value: "/root"
+        - name: DEPLOYMENT_FILE
+          value: $(params.deployment-file)
+        - name: CLUSTER_NAMESPACE
+          value: $(params.clusterNamespace)
+        - name: PIPELINE_KUBERNETES_CLUSTER_NAME
+          value: $(params.cluster)
+      command: ["/bin/bash", "-c"]
+      args:
+        - set -e -o pipefail;
+          ibmcloud login -a $API -r $REGION;
+          cd /workspace/cicd && source deploy-service-catalog-to-ce.sh;
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-frontend-task
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the revision
+      default: main
+    - name: apikey
+      description: the ibmcloud api key
+    - name: api
+      description: the ibmcloud api endpoint
+      default: "https://cloud.ibm.com"
+    - name: registryNamespace
+      description: the ibmcloud registry namespace
+    - name: imageName
+      description: the base image name
+      default: "service-catalog"
+    - name: registryRegion
+      description: the ibmcloud registry region
+  workspaces:
+  - name: task-pvc
+    mountPath: /artifacts   
+  steps:
+    - name: clone-repo
+      image: alpine/git
+      env:
+        - name: REPOSITORY
+          value: $(params.repository)
+        - name: REVISION
+          value: $(params.revision)
+      command: ["/bin/sh", "-c"]
+      args:
+        - set -e -o pipefail;
+          echo "Cloning $REPOSITORY";
+          cd /workspace && git clone -q -b $REVISION $REPOSITORY .;
+    - name: build-docker-image
+      image: ibmcom/pipeline-base-image
+      env:
+        - name: IBMCLOUD_API_KEY
+          value: $(params.apikey)
+        - name: API
+          value: $(params.api)
+        - name: REGION
+          value: $(params.registryRegion)
+        - name: HOME
+          value: "/root"
+        - name: REGISTRY_NAMESPACE
+          value: $(params.registryNamespace)
+        - name: IMAGE_NAME
+          value: $(params.imageName)
+        - name: ARCHIVE_DIR
+          value: "/artifacts"
+        - name: BUILD_NUMBER
+          value: "0"
+        - name: GIT_BRANCH
+          value: $(params.revision)
+      command: ["/bin/bash", "-c"]
+      args:
+        - set -e -o pipefail;
+          ibmcloud login -a $API -r $REGION;
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh";
+          cd /workspace;
+          export GIT_COMMIT=$(git rev-parse HEAD);
+          cd ..;
+          export REGISTRY_URL=$(ibmcloud cr info | grep -m1 -i '^Container Registry' | awk '{print $3;}');
+          cd /workspace/cicd && source build-frontend-docker-image.sh;
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: validate-frontend-task
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the revision
+      default: main
+    - name: apikey
+      description: the ibmcloud api key
+    - name: api
+      description: the ibmcloud api endpoint
+      default: "https://cloud.ibm.com"
+    - name: registryRegion
+      description: the ibmcloud registry region   
+  workspaces:
+  - name: task-pvc
+    mountPath: /artifacts         
+  steps:
+    - name: clone-repo
+      image: alpine/git
+      env:
+        - name: REPOSITORY
+          value: $(params.repository)
+        - name: REVISION
+          value: $(params.revision)
+      command: ["/bin/sh", "-c"]
+      args:
+        - set -e -o pipefail;
+          echo "Cloning $REPOSITORY";
+          cd /workspace && git clone -q -b $REVISION $REPOSITORY .;
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-frontend-task
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the revision
+      default: main
+    - name: apikey
+      description: the ibmcloud api key
+    - name: api
+      description: the ibmcloud api endpoint
+      default: "https://cloud.ibm.com"
+    - name: deployment-file
+      default: deployment.yml
+    - name: clusterNamespace
+      default: prod
+    - name: cluster
+      description: The IBM Cloud Kubernetes cluster name
+    - name: clusterRegion
+      description: The IBM Cloud Kubernetes cluster region
+  workspaces:
+  - name: task-pvc
+    mountPath: /artifacts  
+  steps:
+    - name: clone-repo
+      image: alpine/git
+      env:
+        - name: REPOSITORY
+          value: $(params.repository)
+        - name: REVISION
+          value: $(params.revision)
+      command: ["/bin/sh", "-c"]
+      args:
+        - set -e -o pipefail;
+          echo "Cloning $REPOSITORY";
+          cd /workspace && git clone -q -b $REVISION $REPOSITORY .;
+    - name: deploy-to-ce
+      image: ibmcom/pipeline-base-image
+      env:
+        - name: IBMCLOUD_API_KEY
+          value: $(params.apikey)
+        - name: API
+          value: $(params.api)
+        - name: REGION
+          value: $(params.clusterRegion)
+        - name: HOME
+          value: "/root"
+        - name: DEPLOYMENT_FILE
+          value: $(params.deployment-file)
+        - name: CLUSTER_NAMESPACE
+          value: $(params.clusterNamespace)
+        - name: PIPELINE_KUBERNETES_CLUSTER_NAME
+          value: $(params.cluster)
+      command: ["/bin/bash", "-c"]
+      args:
+        - set -e -o pipefail;
+          ibmcloud login -a $API -r $REGION;
+          cd /workspace/cicd && source deploy-frontend-to-ce.sh;

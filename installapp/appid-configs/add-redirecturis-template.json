@@ -1,0 +1,7 @@
+{
+    "redirectUris": [
+      "http://localhost:8080/*",
+      "APPLICATION_REDIRECT_URL/*"   
+    ],
+    "additionalProp1": {}
+}

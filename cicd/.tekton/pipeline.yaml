@@ -1,0 +1,103 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the branch for the git repo
+    - name: apikey
+      description: the ibmcloud api key
+    - name: registryNamespace
+      description: the ibmcloud registry namespace
+    - name: cluster
+      description: The IBM Cloud Kubernetes cluster name
+    - name: registryRegion
+      description: the ibmcloud registry region
+      default: us-south
+    - name: clusterRegion
+      description: The IBM Cloud Kubernetes cluster region
+      default: us-south
+    - name: clusterNamespace
+      description: The Kubernetes cluster namespace
+      default: prod
+  workspaces:
+  - name: pipeline-pvc
+  tasks:
+    - name: pipeline-build-service-catalog-task
+      taskRef:
+        name: build-service-catalog-task
+      params:
+        - name: repository
+          value: $(params.repository)
+        - name: revision
+          value: $(params.revision)
+        - name: apikey
+          value: $(params.apikey)
+        - name: registryNamespace
+          value: $(params.registryNamespace)
+        - name: registryRegion
+          value: $(params.registryRegion)
+      workspaces:
+      - name: task-pvc
+        workspace: pipeline-pvc          
+    - name: pipeline-deploy-service-catalog-task
+      runAfter: [pipeline-build-service-catalog-task]
+      taskRef:
+        name: deploy-service-catalog-task
+      params:
+        - name: repository
+          value: $(params.repository)
+        - name: revision
+          value: $(params.revision)
+        - name: apikey
+          value: $(params.apikey)
+        - name: cluster
+          value: $(params.cluster)
+        - name: clusterRegion
+          value: $(params.clusterRegion)
+        - name: clusterNamespace
+          value: $(params.clusterNamespace)
+      workspaces:
+      - name: task-pvc
+        workspace: pipeline-pvc  
+    - name: pipeline-build-frontend-task
+      runAfter: [pipeline-deploy-service-catalog-task]
+      taskRef:
+        name: build-frontend-task
+      params:
+        - name: repository
+          value: $(params.repository)
+        - name: revision
+          value: $(params.revision)
+        - name: apikey
+          value: $(params.apikey)
+        - name: registryNamespace
+          value: $(params.registryNamespace)
+        - name: registryRegion
+          value: $(params.registryRegion)
+      workspaces:
+      - name: task-pvc
+        workspace: pipeline-pvc          
+    - name: pipeline-deploy-frontend-task
+      runAfter: [pipeline-build-frontend-task]
+      taskRef:
+        name: deploy-frontend-task
+      params:
+        - name: repository
+          value: $(params.repository)
+        - name: revision
+          value: $(params.revision)
+        - name: apikey
+          value: $(params.apikey)
+        - name: cluster
+          value: $(params.cluster)
+        - name: clusterRegion
+          value: $(params.clusterRegion)
+        - name: clusterNamespace
+          value: $(params.clusterNamespace)
+      workspaces:
+      - name: task-pvc
+        workspace: pipeline-pvc  

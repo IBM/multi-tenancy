@@ -1,0 +1,19 @@
+{
+  "isActive": true,
+  "config": {
+    "selfServiceEnabled": true,
+    "signupEnabled": true,
+    "interactions": {
+      "identityConfirmation": {
+        "accessMode": "FULL",
+        "methods": [
+          "email"
+        ]
+      },
+      "welcomeEnabled": false,
+      "resetPasswordEnabled": false,
+      "resetPasswordNotificationEnable": true
+    },
+    "identityField": "email"
+  }
+}
