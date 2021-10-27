@@ -17,7 +17,7 @@ export SERVICE_CATALOG_IMAGE=$1
 export FRONTEND_IMAGE=$2
 
 #Verify new ui
-#export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v3"
+#export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v4"
 
 
 # **********************************************************************************
@@ -37,7 +37,7 @@ docker image rm -f "$FRONTEND_IMAGE"
 echo "************************************"
 echo " Service catalog $SERVICE_CATALOG_IMAGE"
 echo "************************************"
-#cd $ROOT_PATH/code/service-catalog
+cd $ROOT_PATH/code/service-catalog
 pwd
 docker login quay.io
 docker build -t "$SERVICE_CATALOG_IMAGE" -f Dockerfile .
