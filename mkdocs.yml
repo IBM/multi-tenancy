@@ -1,11 +1,11 @@
 # Project information
 site_name: Multi tenancy CodeEngine/Serverless
-site_url: https://karimdeif.github.io/multi-tenancy
+site_url: https://ibm.github.io/multi-tenancy
 site_author: TBD
 
 # Repository
 repo_name: Multi tenancy CodeEngine/Serverless
-repo_url: https://github.com/karimdeif/multi-tenancy
+repo_url: https://github.com/ibm/multi-tenancy
 edit_uri: edit/master/documentation
 docs_dir: documentation
 
