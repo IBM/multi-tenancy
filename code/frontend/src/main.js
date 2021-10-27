@@ -156,6 +156,6 @@ setInterval(() => {
       store.commit("login", user_info);
       console.log("--> log: user logged on username : " + store.state.user);  
   }
-}, 300000);
+}, 1000000);
 
 export { default as Messaging } from "./messaging.js";
