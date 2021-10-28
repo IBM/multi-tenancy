@@ -68,7 +68,7 @@ export default {
     let observable = Messaging.getObservable(Messaging.MICRO_FRONTEND_CATALOG);
     observable.subscribe({
       next: (message) => {
-        console.log("catalog - Home.vue - message: ");
+        console.log("--> log: catalog - Home.vue - message: ");
         switch (message.topic) {
           case Messaging.TOPIC_COMMAND_RESPONSE_ADD_ITEM:
             this.$store.commit("commandResponseReceived", message.payload);
@@ -83,7 +83,7 @@ export default {
       },
     });
 
-    this.readProducts(2, window.VUE_APP_CATEGORY_NAME);
+    this.readProducts( 2, window.VUE_APP_CATEGORY_NAME);
   },
   methods: {
     addButtonClicked() {
@@ -115,6 +115,9 @@ export default {
       Messaging.send(message);
     },
     readProducts(categoryId, categoryName) {
+      var logURL= this.apiUrlProducts + "/" + categoryId + "/products";
+      console.log("--> log readProducts.categoryId:  ", categoryId);
+      console.log("--> log readProducts: URL ", logURL);
       this.categoryName = categoryName;
       if (this.loadingProducts == false) {
         this.loadingProducts = true;
@@ -124,7 +127,8 @@ export default {
             this.loadingProducts = false;
             this.$store.commit("addProducts", json);
           })
-          .catch((error) => {
+          .catch(() => {
+            var error="Can't load products";
             this.loadingProducts = false;
             console.error(error);
             this.errorLoadingProducts = error;
