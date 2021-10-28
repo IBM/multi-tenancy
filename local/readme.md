@@ -1,5 +1,16 @@
-# Run the example local
+# Run the example application locally
 
+## Verify that the local configuration
+
+* `multi-tenancy/code/service-catalog/application.properties`
+    * Points to an existing postgres database on IBM Cloud
+    * TBD -> Points to an existing app id instance on IBM Cloud
+
+* `multi-tenancy/code/frontend/public/env-config.js`
+    * Points to an existing app id instance on IBM Cloud
+    * Points to the local running `service-catalog` microservice.
+
+## Configure and run the example application locally
 
 * Configure the `path` in following bash scipts:
 
