@@ -2,6 +2,8 @@ javacore*
 jitdump*
 .mvn
 
+code/service-catalog/run-locally.sh
+
 target/
 pom.xml.tag
 pom.xml.releaseBackup
