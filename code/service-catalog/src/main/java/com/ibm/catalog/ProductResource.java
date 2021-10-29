@@ -85,10 +85,34 @@ public class ProductResource {
         }
 
         return products;
+    }
 
-        //ProductCategory productCategory = new ProductCategory();
-        //ProductCategory.getNamedQuery("findByCategoryId");
-        //return findById(id);
+    @GET
+    @Path("category/{id}/products")
+    public ArrayList<Product> getProductsFromCategoryNoTenant(@PathParam("id") Integer id) {
+
+        List<ProductCategory> queryProductCategory =
+                entityManager.createNamedQuery("ProductCategory.findByCategoryId")
+                        .setParameter("categoryid", id)
+                        .getResultList();
+
+        LOGGER.info("queryProductCategory Size: " + queryProductCategory.size());
+        LOGGER.info("categoryid: " + id);
+
+        ArrayList<Product> products = new ArrayList<Product>();
+
+        for (ProductCategory productCategoryTemp : queryProductCategory) {
+
+            List<Product> queryProduct =
+                    entityManager.createNamedQuery("Product.findById")
+                            .setParameter("id", productCategoryTemp.getProductid())
+                            .getResultList();
+
+            LOGGER.info("queryProduct Size: " + queryProduct.size());
+            products.add(queryProduct.get(0));
+        }
+
+        return products;
     }
 
     private Product findById(Integer id) {

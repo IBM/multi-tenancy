@@ -4,7 +4,21 @@
 
 Multi-tenancy samples for IBM partners who want to build SaaS software.
 
-This project is fully documented **[here](https://ibm.github.io/multi-tenancy/)**.
+## Run Sample locally
+
+```
+$ git clone https://github.com/IBM/multi-tenancy.git
+$ cd multi-tenancy
+$ ROOT_FOLDER=$(pwd)
+$ cp template.local.env local.env
+$ vi local.env
+$ sh scripts/run-locally.sh
+```
+
+Invoke http://localhost:8081/category and http://localhost:8081/category/2/products
+
+
+This project is documented **[here](https://ibm.github.io/multi-tenancy/)**.
 
 ## Target architecture `serverless`overview:
 

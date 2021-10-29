@@ -3,6 +3,7 @@ jitdump*
 .mvn
 
 code/service-catalog/run-locally.sh
+local.env
 
 target/
 pom.xml.tag
