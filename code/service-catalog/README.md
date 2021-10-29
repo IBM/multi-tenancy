@@ -1,7 +1,10 @@
 mvn quarkus:dev
 
 
-http://localhost:8081/category
+http://localhost:8081/base/category
+
+http://localhost:8081/base/category/2/products
 
 
-http://localhost:8081/productcategory/2
+thomas@example.com / thomas4appid
+alice@example.com / alice4appid
