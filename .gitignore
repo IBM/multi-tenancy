@@ -1,6 +1,7 @@
 javacore*
 jitdump*
 .mvn
+node_modules
 
 target/
 pom.xml.tag
