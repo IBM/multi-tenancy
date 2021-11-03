@@ -115,20 +115,6 @@ export default {
         this.amountLineItems = message.payload.amountLineItems;
       },
     });
-
-    fetch(this.apiUrlOrders)
-      .then((response) => response.json())
-      .then((json) => {
-        this.amountLineItems = 0;
-        if (json[0]) {
-          json[0].lineitems.forEach((lineItem) => {
-            this.amountLineItems = this.amountLineItems + lineItem.quantity;
-          });
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
   },
   methods: {
     onLoginClicked(){

@@ -1,7 +1,7 @@
 ##############################
 #           BUILD
 ##############################
-FROM node:12-alpine as BUILD
+FROM docker.io/node:12-alpine as BUILD
 
 COPY src /usr/src/app/src
 COPY public /usr/src/app/public
@@ -15,7 +15,7 @@ RUN npm run build
 #           PRODUCTION
 ##############################
 # https://blog.openshift.com/deploy-vuejs-applications-on-openshift/
-FROM nginx:1.20.0-alpine
+FROM docker.io/nginx:1.20.0-alpine
 
 # install openssl
 # RUN apk add --update openssl && \
@@ -48,5 +48,5 @@ RUN chmod 777 /etc/nginx
 
 USER nginxuser
 
-EXPOSE 8080:8081
+EXPOSE 8080
 CMD ["/bin/sh","docker_entrypoint.sh"]
