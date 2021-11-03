@@ -26,18 +26,10 @@ function triggerScript() {
 
   set -o allexport
   source $CFG_FILE
-  rm $CFG_FILE
-  touch $CFG_FILE
 
   POSTGRES_URL=$(echo $POSTGRES_URL| cut -d'?' -f 1)
   CERTIFICATE_PATH=/cloud-postgres-cert
   POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
-
-  printf "POSTGRES_USERNAME=\"$POSTGRES_USERNAME\"" >> $CFG_FILE
-  printf "\nPOSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"" >> $CFG_FILE
-  printf "\nPOSTGRES_URL=\"$POSTGRES_URL\"" >> $CFG_FILE
-  printf "\nPOSTGRES_CERTIFICATE_FILE_NAME=\"$POSTGRES_CERTIFICATE_FILE_NAME\"" >> $CFG_FILE
-  cat $CFG_FILE
 
   POSTGRES_CERTIFICATE_DATA=$(<${root_folder}/code/service-catalog/src/main/resources/certificates/${POSTGRES_CERTIFICATE_FILE_NAME})
 
