@@ -83,7 +83,8 @@ export default {
       },
     });
 
-    this.readProducts( 2, window.VUE_APP_CATEGORY_NAME);
+    // this.readProducts( 2, window.VUE_APP_CATEGORY_NAME);
+    this.readProducts( 2, "products");
   },
   methods: {
     addButtonClicked() {
