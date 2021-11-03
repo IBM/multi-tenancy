@@ -6,13 +6,22 @@ Multi-tenancy samples for IBM partners who want to build SaaS software.
 
 ## Run Sample locally
 
+To run the catalog service locally, a managed Postgres instance needs to be created first. After this you need to define four variables in local.env. See local.env.template for more:
+- POSTGRES_USERNAME
+- POSTGRES_PASSWORD
+- POSTGRES_URL
+- POSTGRES_CERTIFICATE_FILE_NAME
+
+Additionally you need to copy the certificate file in code/service-catalog/src/main/resources/certificates.
+
 ```
 $ git clone https://github.com/IBM/multi-tenancy.git
 $ cd multi-tenancy
 $ ROOT_FOLDER=$(pwd)
 $ cp template.local.env local.env
+$ cp certificate ${root_folder}/code/service-catalog/src/main/resources/
 $ vi local.env
-$ sh scripts/run-locally.sh
+$ sh scripts/run-locally-service-catalog.sh
 ```
 
 Invoke http://localhost:8081/category and http://localhost:8081/category/2/products
