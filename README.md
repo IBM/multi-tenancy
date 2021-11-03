@@ -12,7 +12,7 @@ To run the catalog service locally, a managed Postgres instance needs to be crea
 - POSTGRES_URL
 - POSTGRES_CERTIFICATE_FILE_NAME
 
-Additionally you need to copy the certificate file in code/service-catalog/src/main/resources/certificates.
+Additionally you need to copy the certificate file in code/service-catalog/src/main/resources/certificates. As file name use the Postgres username.
 
 ```
 $ git clone https://github.com/IBM/multi-tenancy.git
@@ -21,7 +21,18 @@ $ ROOT_FOLDER=$(pwd)
 $ cp template.local.env local.env
 $ cp certificate ${root_folder}/code/service-catalog/src/main/resources/
 $ vi local.env
+```
+
+Run the catalog service locally via Maven:
+
+```
 $ sh scripts/run-locally-service-catalog.sh
+```
+
+Or run the catalog service locally via container (podman):
+
+```
+$ sh scripts/run-locally-container-service-catalog.sh
 ```
 
 Invoke http://localhost:8081/category and http://localhost:8081/category/2/products

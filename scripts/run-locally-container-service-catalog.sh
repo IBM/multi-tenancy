@@ -24,35 +24,35 @@ function triggerScript() {
     exit 1
   fi
 
-  cp ${root_folder}/local.env ${root_folder}/local.env.tmp
-  rm ${root_folder}/local.env
-  CERTIFICATE_PATH=${root_folder}/code/service-catalog/src/main/resources/certificates/cloud-postgres-cert
-  sed "s#ABSOLUTE_PATH_TO_CERT_IS_INSERTED_AUTOMATICALLY#${CERTIFICATE_PATH}#g" ${root_folder}/local.env.tmp > ${root_folder}/local.env
-  rm ${root_folder}/local.env.tmp
-
   set -o allexport
   source $CFG_FILE
+  rm $CFG_FILE
+  touch $CFG_FILE
+
+  POSTGRES_URL=$(echo $POSTGRES_URL| cut -d'?' -f 1)
+  CERTIFICATE_PATH=/cloud-postgres-cert
+  POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
+
+  printf "POSTGRES_USERNAME=\"$POSTGRES_USERNAME\"" >> $CFG_FILE
+  printf "\nPOSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"" >> $CFG_FILE
+  printf "\nPOSTGRES_URL=\"$POSTGRES_URL\"" >> $CFG_FILE
+  printf "\nPOSTGRES_CERTIFICATE_FILE_NAME=\"$POSTGRES_CERTIFICATE_FILE_NAME\"" >> $CFG_FILE
   cat $CFG_FILE
 
-  cp ${root_folder}/code/service-catalog/src/main/resources/certificates/${POSTGRES_CERTIFICATE_FILE_NAME} ${CERTIFICATE_PATH} 
-  POSTGRES_CERTIFICATE_DATA=$(<$CERTIFICATE_PATH)
+  POSTGRES_CERTIFICATE_DATA=$(<${root_folder}/code/service-catalog/src/main/resources/certificates/${POSTGRES_CERTIFICATE_FILE_NAME})
 
   cd ${root_folder}/code/service-catalog
   podman container stop service-catalog --ignore
   podman container rm -f service-catalog --ignore
-
-  unset POSTGRES_CERTIFICATE_FILE_NAME
-  POSTGRES_CERTIFICATE_FILE_NAME="/cloud-postgres-cert"
   podman build --file Dockerfile --tag service-catalog
 
   podman run --name=service-catalog \
     -it \
     -e POSTGRES_CERTIFICATE_DATA="${POSTGRES_CERTIFICATE_DATA}" \
     -e POSTGRES_USERNAME="${POSTGRES_USERNAME}" \
-    -e POSTGRES_CERTIFICATE_FILE_NAME="${POSTGRES_CERTIFICATE_FILE_NAME}" \
     -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     -e POSTGRES_URL="${POSTGRES_URL}" \
-    -p 8080:8080/tcp \
+    -p 8081:8081/tcp \
     localhost/service-catalog:latest
 }
 
