@@ -31,6 +31,7 @@ function triggerScript() {
 
   POSTGRES_URL=$(echo $POSTGRES_URL| cut -d'?' -f 1)
   CERTIFICATE_PATH=${root_folder}/code/service-catalog/src/main/resources/certificates/cloud-postgres-cert
+  cp ${root_folder}/code/service-catalog/src/main/resources/certificates/$POSTGRES_CERTIFICATE_FILE_NAME $CERTIFICATE_PATH
   POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
 
   printf "POSTGRES_USERNAME=\"$POSTGRES_USERNAME\"" >> $CFG_FILE
