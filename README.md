@@ -14,6 +14,10 @@ To run the catalog service locally, a [managed Postgres](https://cloud.ibm.com/d
 
 Additionally you need to copy the certificate file in code/service-catalog/src/main/resources/certificates. As file name use the Postgres username.
 
+For the authentication a [App ID](https://www.ibm.com/cloud/app-id) instance is required. Copy the two settings in local.env:
+- APPID_CLIENT_ID
+- APPID_DISCOVERYENDPOINT
+
 For IBMers only: You can re-use existing services by using these [configuration](https://github.ibm.com/niklas-heidloff/multi-tenancy-credentials) files.
 
 ```
@@ -25,20 +29,23 @@ $ cp template.local.env local.env
 $ vi local.env
 ```
 
-Run the catalog service locally via Maven:
+Run the catalog service and frontend locally via Maven and Webpack:
 
 ```
 $ sh scripts/run-locally-service-catalog.sh
+$ sh scripts/run-locally-frontend.sh
 ```
 
 Or run the catalog service locally via container (podman):
 
 ```
 $ sh scripts/run-locally-container-service-catalog.sh
+$ sh scripts/run-locally-container-frontend.sh
 ```
 
-Invoke http://localhost:8081/category and http://localhost:8081/category/2/products
+Open http://localhost:8080 or invoke http://localhost:8081/category and http://localhost:8081/category/2/products.
 
+User: thomas@example.com. Password: thomas4appid
 
 This project is documented **[here](https://ibm.github.io/multi-tenancy/)**.
 
