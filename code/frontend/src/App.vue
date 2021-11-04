@@ -32,7 +32,7 @@
           </md-list-item>
 
           <div
-            v-for="category in this.categories"
+            v-for="category in this.categoriesWithSubCategories"
             :key="category.name"
             class=""
           >
@@ -93,6 +93,7 @@ export default {
   data() {
     return {
       categories: {},
+      categoriesWithSubCategories: {},
       loadingCategories: false,
       amountLineItems: 0,
       apiUrlCategories: window.VUE_APP_API_URL_CATEGORIES,
@@ -118,7 +119,7 @@ export default {
   },
   methods: {
     onLoginClicked(){
-      this.$router.push('/').catch();
+      this.$router.push("/").catch(()=>{});
       window.location.reload(); 
     },
     onLogoutClicked(){
@@ -139,7 +140,7 @@ export default {
         },
       };
       Messaging.send(message);
-      this.$router.push('/catalog').catch()
+      this.$router.push('/catalog').catch(()=>{});
     },
     readCategories() {
       if (this.loadingCategories == false) {
@@ -149,6 +150,7 @@ export default {
           .then((json) => {
             this.loadingCategories = false;
             this.categories = json;
+            this.convertFromParentsToSubCategories(this.categories);
           })
           .catch((error) => {
             this.loadingCategories = false;
@@ -156,6 +158,34 @@ export default {
           });
       }
     },
+    convertFromParentsToSubCategories(inputJson) {
+      // From: 
+      // [{"id":13,"name":"Cellphones","parent":10},{"id":10,"name":"Electronics","parent":null},
+      // {"id":1,"name":"Entertainment","parent":null},{"id":4,"name":"Games","parent":1},{"id":2,"name":"Movies","parent":1}]
+      // To:
+      // [{"id":10,"name":"Electronics", "subCategories": [{"id":13,"name":"Cellphones"}]}, 
+      // {"id":1,"name":"Entertainment", "subCategories": [{"id":4,"name":"Games"}, {"id":2,"name":"Movies"}]}
+      let output = []
+      inputJson.forEach(category => {        
+        if (category.parent == null) {
+          output.push({
+            "id": category.id,
+            "name": category.name,
+            "subCategories": []
+          })
+        }
+      });
+      
+      output.forEach(mainCategory => {
+        inputJson.forEach(category => {
+          if (category.parent == mainCategory.id) {
+            mainCategory.subCategories.push(category)
+          }
+        });    
+      });
+    
+      this.categoriesWithSubCategories = output
+    }
   },
 };
 </script>

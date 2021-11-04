@@ -37,7 +37,7 @@ function triggerScript() {
   echo "Clean-up container and image"
   podman container stop frontend-container --ignore
   podman container rm -f frontend-container --ignore
-  podman image rm -f 'frontend:v1'
+  #podman image rm -f 'frontend:v1'
   
   echo "********************"
   echo "Build container"
