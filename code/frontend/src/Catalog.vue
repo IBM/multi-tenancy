@@ -122,7 +122,7 @@ export default {
       this.categoryName = categoryName;
       if (this.loadingProducts == false) {
         this.loadingProducts = true;
-        fetch(this.apiUrlProducts + categoryId + "/products")
+        fetch(this.apiUrlProducts + "/" + categoryId + "/products")
           .then((r) => r.json())
           .then((json) => {
             this.loadingProducts = false;
