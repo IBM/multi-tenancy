@@ -497,6 +497,10 @@ function deployServiceCatalog(){
     OUTPUTFILE=./ce-get-application-outpout.json
     ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
                                    --image "$SERVICE_CATALOG_IMAGE" \
+                                   --env POSTGRES_CERTIFICATE_DATA="$POSTGRES_CERTIFICATE_DATA" \
+                                   --env POSTGRES_USERNAME="$POSTGRES_USERNAME" \
+                                   --env POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+                                   --env POSTGRES_URL="$POSTGRES_URL" \
                                    --cpu "1" \
                                    --memory "4G" \
                                    --port 8081 \
