@@ -40,6 +40,7 @@ echo "Application Frontend category    : $8"
 echo "---------------------------------"
 echo "Postgres instance name           : $9"
 echo "Postgres service key name        : $10"
+echo "Postgres sample data sql         : $11"
 echo "---------------------------------"
 echo ""
 
@@ -57,6 +58,7 @@ export FRONTEND_CATEGORY=$8
 # Postgres database configuration
 export POSTGRES_SERVICE_INSTANCE=$9
 export POSTGRES_SERVICE_KEY_NAME=$10
+export POSTGRES_SQL_FILE=$11"create-populate-tenant-a.sql"
 
 # **************** Global variables set as default values
 
@@ -104,7 +106,6 @@ export APPLICATION_OAUTHSERVERURL=""
 export POSTGRES_SERVICE_NAME=databases-for-postgresql
 export POSTGRES_PLAN=standard
 export POSTGRES_CONFIG_FOLDER="postgres-config"
-export POSTGRES_SQL_FILE="create-populate-tenant-a.sql"
 
 # Postgres database defaults
 export POSTGRES_CERTIFICATE_DATA=""
@@ -477,7 +478,7 @@ function configureAppIDInformation(){
     echo ""
     OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
     echo "POST url: $MANAGEMENTURL/config/ui/media?mediaType=logo"
-    result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/mediamedia?mediaType=logo")
+    result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/media?mediaType=logo")
     echo "-------------------------"
     echo "Result import: $result"
     echo "-------------------------"
@@ -534,8 +535,8 @@ function deployFrontend(){
                                    --memory "8G" \
                                    --env VUE_APPID_CLIENT_ID="$APPLICATION_CLIENTID" \
                                    --env VUE_APPID_DISCOVERYENDPOINT="$APPLICATION_DISCOVERYENDPOINT" \
-                                   --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category/" \
-                                   --env VUE_APP_API_URL_ORDERS="$SERVICE_CATALOG_URL/base/Customer/Orders" \
+                                   --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
+                                   --env VUE_APP_API_URL_ORDERS="$SERVICE_CATALOG_URL/base/customer/Orders" \
                                    --env VUE_APP_API_URL_CATEGORIES="$SERVICE_CATALOG_URL/base/category" \
                                    --env VUE_APP_CATEGORY_NAME="$FRONTEND_CATEGORY" \
                                    --env VUE_APP_HEADLINE="$FRONTEND_NAME" \
@@ -654,14 +655,14 @@ echo "************************************"
 echo " service catalog"
 echo "************************************"
 
-#deployServiceCatalog
+deployServiceCatalog
 ibmcloud ce application events --application $SERVICE_CATALOG_NAME
 
 echo "************************************"
 echo " frontend"
 echo "************************************"
 
-#deployFrontend
+deployFrontend
 ibmcloud ce application events --application $FRONTEND_NAME
 
 echo "************************************"
