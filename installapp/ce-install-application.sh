@@ -520,9 +520,8 @@ function deployServiceCatalog(){
                                    --port 8081 \
                                    --registry-secret "$SECRET_NAME" \
                                    --max-scale 1 \
-                                   --min-scale 1 \
+                                   --min-scale 1 
                                        
-    #ibmcloud ce application get --name "$SERVICE_CATALOG_NAME"  --output json > $OUTPUTFILE
     SERVICE_CATALOG_URL=$(ibmcloud ce application get --name "$SERVICE_CATALOG_NAME" -o url)
     echo "Set SERVICE CATALOG URL: $SERVICE_CATALOG_URL"
 }
@@ -547,7 +546,6 @@ function deployFrontend(){
                                    --port 8081 
 
     ibmcloud ce application get --name $FRONTEND_NAME
-    #FRONTEND_URL=$(ibmcloud ce application get --name "$FRONTEND_NAME" | grep "https://$FRONTEND_NAME." |  awk '/$FRONTEND_NAME/ {print $2}')
     FRONTEND_URL=$(ibmcloud ce application get --name "$FRONTEND_NAME" -o url)
     echo "Set FRONTEND URL: $FRONTEND_URL"
 }
