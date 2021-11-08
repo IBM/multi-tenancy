@@ -169,9 +169,6 @@ function setupCRenvCE() {
 # **** Postgres ****
 
 function setupPostgres () {
-
-    # POSTGRES_USER=tenant_01
-    # POSTGRES_PASSWORD=testPostgres998
     
     echo ""
     echo "-------------------------"
@@ -258,7 +255,7 @@ function createTablesPostgress () {
     echo "-------------------------"
     echo ""  
     cd postgres
-    # **** We will delete this 'postgres_cert' folder later
+    # **** Create a tmp folder for the 'postgres_cert'
     mkdir postgres_cert
     cd postgres_cert
     ibmcloud cdb deployment-cacert $POSTGRES_SERVICE_INSTANCE \
@@ -288,7 +285,6 @@ function extractPostgresConfiguration () {
     # ***** Get service key of the service
     ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json
 
-
     # ***** Extract needed configuration of the service key
     POSTGRES_CERTIFICATE_DATA=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' | sed '$ s/.$//' )
     POSTGRES_USERNAME=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' | sed '$ s/.$//' )
@@ -298,11 +294,13 @@ function extractPostgresConfiguration () {
     # ***** Delete temp file    
     rm -f ./postgres-config/postgres-key-temp.json
     
-    # ***** Display variables
-    #echo "Cert Content:  $POSTGRES_CERTIFICATE_DATA"
-    #echo "Username:      $POSTGRES_USERNAME"
-    #echo "Password:      $POSTGRES_PASSWORD"
-    #echo "JDBC    :      $POSTGRES_URL"
+    # ***** verfy variables
+    echo "-------------------------"
+    echo "POSTGRES_CERTIFICATE_DATA:  $POSTGRES_CERTIFICATE_DATA"
+    echo "POSTGRES_USERNAME:          $POSTGRES_USERNAME"
+    echo "POSTGRES_PASSWORD:          $POSTGRES_PASSWORD"
+    echo "POSTGRES_URL     :          $POSTGRES_URL"
+    echo "-------------------------"
 
 }
 
