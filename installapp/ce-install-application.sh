@@ -104,6 +104,7 @@ export APPLICATION_OAUTHSERVERURL=""
 export POSTGRES_SERVICE_NAME=databases-for-postgresql
 export POSTGRES_PLAN=standard
 export POSTGRES_CONFIG_FOLDER="postgres-config"
+export POSTGRES_SQL_FILE="create-populate-tenant-a.sql"
 
 # Postgres database defaults
 export POSTGRES_CERTIFICATE_DATA=""
@@ -240,12 +241,12 @@ function createTablesPostgress () {
     # ***** Get service key of the service
     ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json
     POSTGRES_CONNECTION_TEMP=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.cli.composed[]' | sed 's/"//g' | sed '$ s/.$//' )
-    rm -f ./postgres-config/postgres-key-temp.json
+    rm -f ./"$POSTGRES_CONFIG_FOLDER"/postgres-key-temp.json
     echo ""
     echo "-------------------------"
     echo "Build command step 1 : $POSTGRES_CONNECTION_TEMP"
     echo "-------------------------"
-    export POSTGRES_CONNECTION="$POSTGRES_CONNECTION_TEMP' -a -f create-populate-tenant-a.sql"
+    export POSTGRES_CONNECTION="$POSTGRES_CONNECTION_TEMP' -a -f $POSTGRES_SQL_FILE"
     echo ""
     echo "-------------------------"
     echo "Result: [$POSTGRES_CONNECTION]" 
@@ -258,9 +259,15 @@ function createTablesPostgress () {
     echo "-------------------------"
     echo ""  
     cd $POSTGRES_CONFIG_FOLDER
+    echo "-------------------------"
+    echo "Path"
+    pwd
     # **** Create a tmp folder for the 'postgres_cert'
-    mkdir postgres_tmp_cert
-    cd postgres_temp_cert
+    TMP_FOLDER=postgres_temp_cert
+    mkdir $TMP_FOLDER
+    cd $TMP_FOLDER
+    echo "-------------------------"
+    echo "Path"
     pwd
     ibmcloud cdb deployment-cacert $POSTGRES_SERVICE_INSTANCE \
                                     --save \
@@ -271,23 +278,29 @@ function createTablesPostgress () {
     echo "Get connection to db with cert"
     echo "-------------------------"
     echo ""
-    ibmcloud cdb deployment-connections $POSTGRES_SERVICE_INSTANCE \
+    ibmcloud cdb deployment-connections "$POSTGRES_SERVICE_INSTANCE" \
                                         --certroot . 
     # **** Copy need sql script
-    cp "../create-populate-tenant-a.sql" "create-populate-tenant-a.sql"
+    cp ../"$POSTGRES_SQL_FILE" ./"$POSTGRES_SQL_FILE"
     # **** Create bash script
     sed "s+COMMAND_INSERT+$POSTGRES_CONNECTION+g" "../insert-template.sh" > ./insert.sh
     # **** Execute the bash script with the extracted format
     bash insert.sh
     cd ..
+    echo "-------------------------"
+    echo "Path"
     pwd
     # **** Clean-up the temp folder and content
-    rm -f -r ./postgres_temp_cert
+    rm -f -r ./$TMP_FOLDER
     cd ..
+    echo "-------------------------"
+    echo "Path"
     pwd
 }
 
 function extractPostgresConfiguration () {
+    
+    pwd
 
     # ***** Get service key of the service
     ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json
@@ -299,7 +312,7 @@ function extractPostgresConfiguration () {
     POSTGRES_URL=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.composed[]' | sed 's/"//g' )
     
     # ***** Delete temp file    
-    rm -f ./postgres-config/postgres-key-temp.json
+    rm -f ./"$POSTGRES_CONFIG_FOLDER"/postgres-key-temp.json
     
     # ***** verfy variables
     echo "-------------------------"
