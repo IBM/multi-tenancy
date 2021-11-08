@@ -16,8 +16,10 @@ echo ""
 export SERVICE_CATALOG_IMAGE=$1
 export FRONTEND_IMAGE=$2
 
-#Verify new ui
-#export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v4"
+# Verification
+# In case the script doesn't use the parameters
+export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v10"
+export SERVICE_CATALOG_IMAGE="quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10"
 
 # **********************************************************************************
 # Execution

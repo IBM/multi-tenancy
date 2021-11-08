@@ -1,15 +1,17 @@
 #!/bin/bash
 
-# CLI Documentation
+# CLI tools Documentation
 # ================
-# command documentation: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
+# Code Engine: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
+# libpq: https://www.compose.com/articles/postgresql-tips-installing-the-postgresql-client/?_ga=2.31285695.124869551.1633324536-496882334.1633002728
+# Cloud databases
 
-# Needed plugins
+# Needed IBM CLoud CLI plugins
 # =============
 # - code engine 
 # - cloud databases (ibmcloud plugin install cloud-databases)
 
-# Needed tools (https://www.compose.com/articles/postgresql-tips-installing-the-postgresql-client/?_ga=2.31285695.124869551.1633324536-496882334.1633002728)
+# Needed tools 
 # ============
 # brew install libpq
 # brew link --force libpq   
