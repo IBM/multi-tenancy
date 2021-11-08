@@ -511,7 +511,7 @@ function addRedirectURIAppIDInformation(){
 
 function deployServiceCatalog(){
     OUTPUTFILE=./ce-get-application-outpout.json
-    URL="POSTGRES_USE_CERT_02$POSTGRES_URL$POSTGRES_USE_CERT_01"
+    URL="$POSTGRES_USE_CERT_02$POSTGRES_URL$POSTGRES_USE_CERT_01"
     echo "URL: $URL"
     ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
                                    --image "$SERVICE_CATALOG_IMAGE" \
