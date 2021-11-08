@@ -19,7 +19,6 @@ export FRONTEND_IMAGE=$2
 #Verify new ui
 #export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v4"
 
-
 # **********************************************************************************
 # Execution
 # **********************************************************************************
@@ -31,11 +30,12 @@ echo "Path: $ROOT_PATH"
 echo "************************************"
 echo " Clean up container if needed"
 echo "************************************"
+
 docker image rm -f "$SERVICE_CATALOG_IMAGE"
 docker image rm -f "$FRONTEND_IMAGE"
 
 echo "************************************"
-echo " Service catalog $SERVICE_CATALOG_IMAGE"
+echo " Service catalog $SERVICE_CATALOG_IMAGE
 echo "************************************"
 cd $ROOT_PATH/code/service-catalog
 pwd

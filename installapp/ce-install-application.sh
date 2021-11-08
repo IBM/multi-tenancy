@@ -395,7 +395,7 @@ function addRedirectURIAppIDInformation(){
 # **** application and microservices ****
 
 function deployServiceCatalog(){
-    OUTPUTFILE=./ce-get-application-outpout.json
+
     ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
                                    --image "$SERVICE_CATALOG_IMAGE" \
                                    --cpu "1" \
@@ -405,7 +405,6 @@ function deployServiceCatalog(){
                                    --max-scale 1 \
                                    --min-scale 0
                                        
-    #ibmcloud ce application get --name "$SERVICE_CATALOG_NAME"  --output json > $OUTPUTFILE
     SERVICE_CATALOG_URL=$(ibmcloud ce application get --name "$SERVICE_CATALOG_NAME" -o url)
     echo "Set SERVICE CATALOG URL: $SERVICE_CATALOG_URL"
 }
