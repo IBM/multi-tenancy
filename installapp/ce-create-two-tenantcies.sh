@@ -12,7 +12,7 @@
 
 # Code Engine
 #export PROJECT_NAME_A=multi-tenancy-serverless-a
-export PROJECT_NAME_A=multi-tenancy-serverless
+export PROJECT_NAME_A=multi-tenancy-serverless-tmp-a
 export PROJECT_NAME_B=multi-tenancy-serverless-tmp-b
 
 # Applications
@@ -30,8 +30,8 @@ export CATEGORY_B=Fantasy
 #export FRONTEND_IMAGE="us.icr.io/multi-tenancy-cr/frontend:latest"
 
 # Quay and Docker
-export SERVICE_CATALOG_IMAGE="quay.io/tsuedbroecker/multi-tenancy-service-catalog:v1"
-export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v3"
+export SERVICE_CATALOG_IMAGE="quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10"
+export FRONTEND_IMAGE="quay.io/tsuedbroecker/multi-tenancy-frontend:v10"
 #export SERVICE_CATALOG_IMAGE="docker.io/karimdeif/service-catalog-quarkus-reactive:1.0.0-SNAPSHOT"
 #export FRONTEND_IMAGE="quay.io/kdeif/frontend:v0.0"
 
@@ -84,9 +84,9 @@ bash ./ce-install-application.sh $PROJECT_NAME_A \
                                  $POSTGRES_SERVICE_INSTANCE_A \
                                  $POSTGRES_SERVICE_KEY_NAME_A
 
-echo "************************************"
-echo " Tenant B"
-echo "************************************"
+# echo "************************************"
+# echo " Tenant B"
+# echo "************************************"
 
 # bash ./ce-install-application.sh $PROJECT_NAME_B \
 #                                  $APPID_SERVICE_INSTANCE_NAME_B \

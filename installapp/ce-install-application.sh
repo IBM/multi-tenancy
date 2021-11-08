@@ -103,6 +103,7 @@ export APPLICATION_OAUTHSERVERURL=""
 # Postgres Service
 export POSTGRES_SERVICE_NAME=databases-for-postgresql
 export POSTGRES_PLAN=standard
+export POSTGRES_CONFIG_FOLDER="./postgres-config"
 
 # Postgres database defaults
 export POSTGRES_CERTIFICATE_DATA=""
@@ -256,10 +257,10 @@ function createTablesPostgress () {
     echo "Get cert"
     echo "-------------------------"
     echo ""  
-    cd postgres
+    cd $POSTGRES_CONFIG_FOLDER
     # **** Create a tmp folder for the 'postgres_cert'
-    mkdir postgres_cert
-    cd postgres_cert
+    mkdir postgres_tmp_cert
+    cd postgres_temp_cert
     ibmcloud cdb deployment-cacert $POSTGRES_SERVICE_INSTANCE \
                                     --save \
                                     --certroot .
@@ -272,14 +273,14 @@ function createTablesPostgress () {
     ibmcloud cdb deployment-connections $POSTGRES_SERVICE_INSTANCE \
                                         --certroot . 
     # **** Copy need sql script
-    cp "../../postgres-config/create-populate-tenant-a.sql" "create-populate-tenant-a.sql"
+    cp "../../$POSTGRES_CONFIG_FOLDER/create-populate-tenant-a.sql" "create-populate-tenant-a.sql"
     # **** Create bash script
-    sed "s+COMMAND_INSERT+$POSTGRES_CONNECTION+g" "../../postgres-config/insert-template.sh" > ./insert.sh
+    sed "s+COMMAND_INSERT+$POSTGRES_CONNECTION+g" "../../$POSTGRES_CONFIG_FOLDER/insert-template.sh" > ./insert.sh
     # **** Execute the bash script with the extracted format
     bash insert.sh
     cd ..
     # **** Clean-up the temp folder and content
-    rm -f -r ./postgres_cert
+    rm -f -r ./postgres_temp_cert
 }
 
 function extractPostgresConfiguration () {
@@ -610,59 +611,59 @@ echo "************************************"
 echo " Configure container registry access"
 echo "************************************"
 
-#setupCRenvCE
+setupCRenvCE
 
 echo "************************************"
 echo " Create Postgres instance and database"
 echo "************************************"
 
-#setupPostgres
-#createTablesPostgress
+setupPostgres
+createTablesPostgress
 extractPostgresConfiguration
 
 echo "************************************"
 echo " AppID creation"
 echo "************************************"
 
-#createAppIDService
+createAppIDService
 
 echo "************************************"
 echo " AppID configuration"
 echo "************************************"
 
-#configureAppIDInformation
+configureAppIDInformation
 
 echo "************************************"
 echo " service catalog"
 echo "************************************"
 
 #deployServiceCatalog
-#ibmcloud ce application events --application $SERVICE_CATALOG_NAME
+ibmcloud ce application events --application $SERVICE_CATALOG_NAME
 
 echo "************************************"
 echo " frontend"
 echo "************************************"
 
 #deployFrontend
-#ibmcloud ce application events --application $FRONTEND_NAME
+ibmcloud ce application events --application $FRONTEND_NAME
 
-#echo "************************************"
-#echo " AppID add redirect URI"
-#echo "************************************"
+echo "************************************"
+echo " AppID add redirect URI"
+echo "************************************"
 
-#addRedirectURIAppIDInformation
+addRedirectURIAppIDInformation
 
 echo "************************************"
 echo " Verify deployments"
 echo "************************************"
 
-#kubeDeploymentVerification
+kubeDeploymentVerification
 
 echo "************************************"
 echo " Container logs"
 echo "************************************"
 
-#getKubeContainerLogs
+getKubeContainerLogs
 
 echo "************************************"
 echo " URLs"
