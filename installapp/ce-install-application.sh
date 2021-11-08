@@ -108,6 +108,12 @@ export DEFAULT_DATASOURCE_USERNAME=""
 export DEFAULT_DATASOURCE_PASSWORD=""
 export DEFAULT_DATASOURCE_JDBC_URL=""
 
+export POSTGRES_CERTIFICATE_DATA=""
+export POSTGRES_USERNAME=""
+export POSTGRES_PASSWORD=""
+export POSTGRES_URL=""
+
+
 # **********************************************************************************
 # Functions definition
 # **********************************************************************************
@@ -289,19 +295,19 @@ function extractPostgresConfiguration () {
 
 
     # ***** Extract needed configuration of the service key
-    DEFAULT_DATASOURCE_CERT_CONTENT=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' | sed '$ s/.$//' )
-    DEFAULT_DATASOURCE_USERNAME=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' | sed '$ s/.$//' )
-    DEFAULT_DATASOURCE_PASSWORD=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.password' | sed 's/"//g' | sed '$ s/.$//' )
-    DEFAULT_DATASOURCE_JDBC_URL=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.composed[]' | sed 's/"//g' )
+    POSTGRES_CERTIFICATE_DATA=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' | sed '$ s/.$//' )
+    POSTGRES_USERNAME=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' | sed '$ s/.$//' )
+    POSTGRES_PASSWORD=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.password' | sed 's/"//g' | sed '$ s/.$//' )
+    POSTGRES_URL=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.composed[]' | sed 's/"//g' )
     
     # ***** Delete temp file    
     rm -f ./postgres-config/postgres-key-temp.json
     
     # ***** Display variables
-    #echo "Cert Content:  $DEFAULT_DATASOURCE_CERT_CONTENT"
-    #echo "Username:      $DEFAULT_DATASOURCE_USERNAME"
-    #echo "Password:      $DEFAULT_DATASOURCE_PASSWORD"
-    #echo "JDBC    :      $DEFAULT_DATASOURCE_JDBC_URL"
+    #echo "Cert Content:  $POSTGRES_CERTIFICATE_DATA"
+    #echo "Username:      $POSTGRES_USERNAME"
+    #echo "Password:      $POSTGRES_PASSWORD"
+    #echo "JDBC    :      $POSTGRES_URL"
 
 }
 
