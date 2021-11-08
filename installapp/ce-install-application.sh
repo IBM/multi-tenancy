@@ -9,6 +9,11 @@
 # - code engine 
 # - cloud databases (ibmcloud plugin install cloud-databases)
 
+# Needed tools (https://www.compose.com/articles/postgresql-tips-installing-the-postgresql-client/?_ga=2.31285695.124869551.1633324536-496882334.1633002728)
+# ============
+# brew install libpq
+# brew link --force libpq   
+
 # **********************************************************************************
 # Set global variables using parameters
 # **********************************************************************************
@@ -31,6 +36,9 @@ echo "Application Service Catalog image: $6"
 echo "Application Frontend image       : $7"
 echo "Application Frontend category    : $8"
 echo "---------------------------------"
+echo "Postgres instance name           : $9"
+echo "Postgres service key name        : $10"
+echo "---------------------------------"
 echo ""
 
 # **************** Global variables set by parameters
@@ -43,10 +51,10 @@ export APPID_SERVICE_KEY_NAME=$3
 # ecommerce application names
 export SERVICE_CATALOG_NAME=$4
 export FRONTEND_NAME=$5
-# ecommerce application container registry
-export SERVICE_CATALOG_IMAGE=$6
-export FRONTEND_IMAGE=$7
 export FRONTEND_CATEGORY=$8
+# Postgres database configuration
+export POSTGRES_SERVICE_INSTANCE=$9
+export POSTGRES_SERVICE_KEY_NAME=$10
 
 # **************** Global variables set as default values
 
@@ -56,6 +64,10 @@ export NAMESPACE=""
 export STATUS="Running"
 export SECRET_NAME="multi.tenancy.cr.sec"
 export EMAIL=thomas@example.com
+
+# ecommerce application container registry
+export FRONTEND_IMAGE=$7
+export SERVICE_CATALOG_IMAGE=$6
 
 # ecommerce application URLs
 export FRONTEND_URL=""
@@ -86,8 +98,15 @@ export APPLICATION_CLIENTID=""
 export APPLICATION_TENANTID=""
 export APPLICATION_OAUTHSERVERURL=""
 
-# Postgres database configuration
-export POSTGRES_SERVICE_INSTANCE=multi-tenant-a-pg-temp
+# Postgres Service
+export POSTGRES_SERVICE_NAME=databases-for-postgresql
+export POSTGRES_PLAN=standard
+
+# Postgres database defaults
+export DEFAULT_DATASOURCE_CERT_CONTENT=""
+export DEFAULT_DATASOURCE_USERNAME=""
+export DEFAULT_DATASOURCE_PASSWORD=""
+export DEFAULT_DATASOURCE_JDBC_URL=""
 
 # **********************************************************************************
 # Functions definition
@@ -150,10 +169,8 @@ function setupCRenvCE() {
 
 function setupPostgres () {
 
-    POSTGRES_SERVICE_NAME=databases-for-postgresql
-    POSTGRES_PLAN=standard
-    POSTGRES_USER=tenant
-    POSTGRES_PASSWORD=testPostgres998
+    # POSTGRES_USER=tenant_01
+    # POSTGRES_PASSWORD=testPostgres998
     
     echo ""
     echo "-------------------------"
@@ -161,22 +178,28 @@ function setupPostgres () {
     echo "-------------------------"
     echo "" 
     ibmcloud resource service-instance-create $POSTGRES_SERVICE_INSTANCE $POSTGRES_SERVICE_NAME $POSTGRES_PLAN $REGION \
-                                              -g $RESOURCE_GROUP
-    
-    #Loop
+                                             -g $RESOURCE_GROUP
+    # ***** Wait for postgres instance
     echo ""
     echo "-------------------------"
     echo "Wait for postgres instance, it can take up to 10 minutes"
     echo "-------------------------"
     echo ""
     export STATUS_POSTGRES="succeeded"
+    export TMP_STATUS="FAILED"
     while :
         do
             FIND="Postgres database"
             STATUS_CHECK=$(ibmcloud resource service-instance $POSTGRES_SERVICE_INSTANCE --output json | grep '"state":' | awk '{print $2;}' | sed 's/"//g' | sed 's/,//g')
-            echo "Status: $STATUS_CHECK" 
-            STATUS_VERIFICATION=$(echo  "$STATUS_CHECK" | grep "succeeded")
-            if [ "$STATUS_POSTGRES" = "$STATUS_VERIFICATION" ]; then
+            echo "Status: $STATUS_CHECK"
+            STATUS_VERIFICATION=$(echo "$STATUS_CHECK" | grep "FAILED")
+            if [ "$STATUS_VERIFICATION" = "$TMP_STATUS" ]; then
+                echo "$(date +'%F %H:%M:%S') Status: $FIND not found, I will stop the script"
+                echo "------------------------------------------------------------------------"
+                break
+            fi
+            STATUS_VERIFICATION=$(echo "$STATUS_CHECK" | grep "succeeded")
+            if [ "$STATUS_VERIFICATION" = "$STATUS_POSTGRES" ]; then
                 echo "$(date +'%F %H:%M:%S') Status: $FIND is Ready"
                 echo "------------------------------------------------------------------------"
                 break
@@ -187,28 +210,99 @@ function setupPostgres () {
             sleep 10
         done
     
+    # ***** Get instance ID
     echo ""
     echo "-------------------------"
-    echo "Create user for postgres instance"
+    echo "Get instance ID"
     echo "-------------------------"
     echo ""
-    POSTGRES_USER=$(ibmcloud cdb deployment-user-create $POSTGRES_SERVICE_INSTANCE $POSTGRES_USER $POSTGRES_PASSWORD) 
-    echo "Postgres user: $POSTGRES_USER"
+    POSTGRES_INSTANCE_ID=$(ibmcloud resource service-instance $POSTGRES_SERVICE_INSTANCE --id | tail -1 | awk '{print $1;}')
+    echo "Postgres instance ID: $POSTGRES_INSTANCE_ID"
+
+    # **** Create service key and get the postgres connection
+    echo ""
+    echo "-------------------------"
+    echo "Create service key and get the postgres connection"
+    echo "-------------------------"
+    echo ""
+    # **** Create a service key for the service
+    ibmcloud resource service-key-create $POSTGRES_SERVICE_KEY_NAME --instance-id $POSTGRES_INSTANCE_ID
+}
+
+function createTablesPostgress () {
 
     echo ""
     echo "-------------------------"
-    echo "Create cert"
+    echo "Get the postgres connection statement"
     echo "-------------------------"
+    echo ""   
+    # ***** Get service key of the service
+    ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json
+    POSTGRES_CONNECTION_TEMP=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.cli.composed[]' | sed 's/"//g' | sed '$ s/.$//' )
+    rm -f ./postgres-config/postgres-key-temp.json
     echo ""
+    echo "-------------------------"
+    echo "Build command step 1 : $POSTGRES_CONNECTION_TEMP"
+    echo "-------------------------"
+    export POSTGRES_CONNECTION="$POSTGRES_CONNECTION_TEMP' -a -f create-populate-tenant-a.sql"
+    echo ""
+    echo "-------------------------"
+    echo "Result: [$POSTGRES_CONNECTION]" 
+    echo "-------------------------"
+    
+    # **** Get cert
+    echo ""
+    echo "-------------------------"
+    echo "Get cert"
+    echo "-------------------------"
+    echo ""  
+    cd postgres
+    # **** We will delete this 'postgres_cert' folder later
+    mkdir postgres_cert
+    cd postgres_cert
     ibmcloud cdb deployment-cacert $POSTGRES_SERVICE_INSTANCE \
-                                    --user $POSTGRES_USER \
                                     --save \
                                     --certroot .
+
+    # **** Get connection to db with cert
+    echo "-------------------------"
+    echo "Get connection to db with cert"
+    echo "-------------------------"
+    echo ""
+    ibmcloud cdb deployment-connections $POSTGRES_SERVICE_INSTANCE \
+                                        --certroot . 
+    # **** Copy need sql script
+    cp "../../postgres-config/create-populate-tenant-a.sql" "create-populate-tenant-a.sql"
+    # **** Create bash script
+    sed "s+COMMAND_INSERT+$POSTGRES_CONNECTION+g" "../../postgres-config/insert-template.sh" > ./insert.sh
+    # **** Execute the bash script with the extracted format
+    bash insert.sh
+    cd ..
+    # **** Clean-up the temp folder and content
+    rm -f -r ./postgres_cert
+}
+
+function extractPostgresConfiguration () {
+
+    # ***** Get service key of the service
+    ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json
+
+
+    # ***** Extract needed configuration of the service key
+    DEFAULT_DATASOURCE_CERT_CONTENT=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' | sed '$ s/.$//' )
+    DEFAULT_DATASOURCE_USERNAME=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' | sed '$ s/.$//' )
+    DEFAULT_DATASOURCE_PASSWORD=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.password' | sed 's/"//g' | sed '$ s/.$//' )
+    DEFAULT_DATASOURCE_JDBC_URL=$(cat ./postgres-config/postgres-key-temp.json | jq '.[].credentials.connection.postgres.composed[]' | sed 's/"//g' )
     
-    #ibmcloud cdb deployment-connections multi-tenant-a-pg \
-    #                                    --user tenant \
-    #                                    --password testPostgres998 \
-    #                                    --certroot .
+    # ***** Delete temp file    
+    rm -f ./postgres-config/postgres-key-temp.json
+    
+    # ***** Display variables
+    #echo "Cert Content:  $DEFAULT_DATASOURCE_CERT_CONTENT"
+    #echo "Username:      $DEFAULT_DATASOURCE_USERNAME"
+    #echo "Password:      $DEFAULT_DATASOURCE_PASSWORD"
+    #echo "JDBC    :      $DEFAULT_DATASOURCE_JDBC_URL"
+
 }
 
 # **** AppID ****
@@ -334,7 +428,7 @@ function configureAppIDInformation(){
     echo ""
     sed "s+FRONTENDNAME+$FRONTEND_NAME+g" ./appid-configs/add-ui-text-template.json > ./$ADD_UI_TEXT
     OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    echo "PUT url: $MANAGEMENTURL/config/ui/theme_text"
+    echo "PUT url: $MANAGEMENTURL/config/ui/theme_txt"
     #result=$(curl -d @./$ADD_UI_TEXT -H "Content-Type: application/json" -X PUT -v -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_text)
     result=$(curl -d @./$ADD_UI_TEXT -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_text)
     rm -f $ADD_UI_TEXT
@@ -365,7 +459,7 @@ function configureAppIDInformation(){
     echo ""
     OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
     echo "POST url: $MANAGEMENTURL/config/ui/media?mediaType=logo"
-    result=$(curl -F "file=@./$ADD_IMAGE" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/media?mediaType=logo")
+    result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/mediamedia?mediaType=logo")
     echo "-------------------------"
     echo "Result import: $result"
     echo "-------------------------"
@@ -395,7 +489,7 @@ function addRedirectURIAppIDInformation(){
 # **** application and microservices ****
 
 function deployServiceCatalog(){
-
+    OUTPUTFILE=./ce-get-application-outpout.json
     ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
                                    --image "$SERVICE_CATALOG_IMAGE" \
                                    --cpu "1" \
@@ -403,8 +497,9 @@ function deployServiceCatalog(){
                                    --port 8081 \
                                    --registry-secret "$SECRET_NAME" \
                                    --max-scale 1 \
-                                   --min-scale 0
+                                   --min-scale 1 \
                                        
+    #ibmcloud ce application get --name "$SERVICE_CATALOG_NAME"  --output json > $OUTPUTFILE
     SERVICE_CATALOG_URL=$(ibmcloud ce application get --name "$SERVICE_CATALOG_NAME" -o url)
     echo "Set SERVICE CATALOG URL: $SERVICE_CATALOG_URL"
 }
@@ -425,7 +520,7 @@ function deployFrontend(){
                                    --env VUE_APP_ROOT="/" \
                                    --registry-secret "$SECRET_NAME" \
                                    --max-scale 1 \
-                                   --min-scale 0 \
+                                   --min-scale 1 \
                                    --port 8081 
 
     ibmcloud ce application get --name $FRONTEND_NAME
@@ -511,57 +606,59 @@ echo "************************************"
 echo " Configure container registry access"
 echo "************************************"
 
-setupCRenvCE
+#setupCRenvCE
 
 echo "************************************"
 echo " Create Postgres instance and database"
 echo "************************************"
 
 #setupPostgres
+#createTablesPostgress
+extractPostgresConfiguration
 
 echo "************************************"
 echo " AppID creation"
 echo "************************************"
 
-createAppIDService
+#createAppIDService
 
 echo "************************************"
 echo " AppID configuration"
 echo "************************************"
 
-configureAppIDInformation
+#configureAppIDInformation
 
 echo "************************************"
 echo " service catalog"
 echo "************************************"
 
-deployServiceCatalog
-ibmcloud ce application events --application $SERVICE_CATALOG_NAME
+#deployServiceCatalog
+#ibmcloud ce application events --application $SERVICE_CATALOG_NAME
 
 echo "************************************"
 echo " frontend"
 echo "************************************"
 
-deployFrontend
-ibmcloud ce application events --application $FRONTEND_NAME
+#deployFrontend
+#ibmcloud ce application events --application $FRONTEND_NAME
 
-echo "************************************"
-echo " AppID add redirect URI"
-echo "************************************"
+#echo "************************************"
+#echo " AppID add redirect URI"
+#echo "************************************"
 
-addRedirectURIAppIDInformation
+#addRedirectURIAppIDInformation
 
 echo "************************************"
 echo " Verify deployments"
 echo "************************************"
 
-kubeDeploymentVerification
+#kubeDeploymentVerification
 
 echo "************************************"
 echo " Container logs"
 echo "************************************"
 
-getKubeContainerLogs
+#getKubeContainerLogs
 
 echo "************************************"
 echo " URLs"
@@ -570,4 +667,3 @@ echo " - oAuthServerUrl   : $APPLICATION_OAUTHSERVERURL"
 echo " - discoveryEndpoint: $APPLICATION_DISCOVERYENDPOINT"
 echo " - Frontend         : $FRONTEND_URL"
 echo " - ServiceCatalog   : $SERVICE_CATALOG_URL"
-
