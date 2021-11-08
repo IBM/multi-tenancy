@@ -112,6 +112,7 @@ export POSTGRES_CERTIFICATE_DATA=""
 export POSTGRES_USERNAME=""
 export POSTGRES_PASSWORD=""
 export POSTGRES_URL=""
+export POSTGRES_USE_CERT="&sslrootcert=/cloud-postgres-cert"
 
 
 # **********************************************************************************
@@ -509,12 +510,13 @@ function addRedirectURIAppIDInformation(){
 
 function deployServiceCatalog(){
     OUTPUTFILE=./ce-get-application-outpout.json
+    URL="$POSTGRES_URL$POSTGRES_USE_CERT"
     ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
                                    --image "$SERVICE_CATALOG_IMAGE" \
                                    --env POSTGRES_CERTIFICATE_DATA="$POSTGRES_CERTIFICATE_DATA" \
                                    --env POSTGRES_USERNAME="$POSTGRES_USERNAME" \
                                    --env POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
-                                   --env POSTGRES_URL="$POSTGRES_URL" \
+                                   --env POSTGRES_URL="$URL" \
                                    --cpu "1" \
                                    --memory "4G" \
                                    --port 8081 \
@@ -543,7 +545,7 @@ function deployFrontend(){
                                    --registry-secret "$SECRET_NAME" \
                                    --max-scale 1 \
                                    --min-scale 1 \
-                                   --port 8081 
+                                   --port 8080 
 
     ibmcloud ce application get --name $FRONTEND_NAME
     FRONTEND_URL=$(ibmcloud ce application get --name "$FRONTEND_NAME" -o url)
