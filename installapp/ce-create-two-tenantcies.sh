@@ -45,9 +45,11 @@ export APPID_SERVICE_KEY_NAME_B="multi-tenancy-serverless-appid-key-b"
 # Postgres
 export POSTGRES_SERVICE_INSTANCE_A="multi-tenant-pg-a-working"
 export POSTGRES_SERVICE_INSTANCE_B="multi-tenant-pg-b"
+export POSTGRES_SQL_FILE_A="create-populate-tenant-a.sql"
 
 export POSTGRES_SERVICE_KEY_NAME_A="multi-tenant-pg-service-key-a-working"
 export POSTGRES_SERVICE_KEY_NAME_B="multi-tenant-pg-service-key-b"
+export POSTGRES_SQL_FILE_B="create-populate-tenant-b.sql"
 
 # **********************************************************************************
 # Functions definition
@@ -82,7 +84,8 @@ bash ./ce-install-application.sh $PROJECT_NAME_A \
                                  $FRONTEND_IMAGE \
                                  $CATEGORY_A \
                                  $POSTGRES_SERVICE_INSTANCE_A \
-                                 $POSTGRES_SERVICE_KEY_NAME_A
+                                 $POSTGRES_SERVICE_KEY_NAME_A \
+                                 $POSTGRES_SQL_FILE_A
 
 # echo "************************************"
 # echo " Tenant B"
@@ -97,4 +100,5 @@ bash ./ce-install-application.sh $PROJECT_NAME_A \
 #                                  $FRONTEND_IMAGE \
 #                                  $CATEGORY_B \
 #                                  $POSTGRES_SERVICE_INSTANCE_B \
-#                                  $POSTGRES_SERVICE_KEY_NAME_A
+#                                  $POSTGRES_SERVICE_KEY_NAME_A \
+#                                  $POSTGRES_SQL_FILE_B
