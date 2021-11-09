@@ -1,37 +1,55 @@
 #!/bin/bash
 
+echo "************************************"
+echo " Display parameter"
+echo "************************************"
 echo ""
 echo "Parameter count : $@"
 echo "Parameter zero 'name of the script': $0"
 echo "---------------------------------"
-echo "Code Engine project name         : $1"
+echo "Tenant configuration         : $1"
 echo "---------------------------------"
-echo "App ID service instance name     : $2"
-echo "App ID service key name          : $3"
+
+
 echo "---------------------------------"
-echo "Application Service Catalog name : $4"
-echo "Application Frontend name        : $5"
+# **************** Global variables set by parameters
+
+# Code Engine
+export PROJECT_NAME=$(cat ./$1 | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
+# postgres
+export POSTGRES_SERVICE_INSTANCE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
+export POSTGRES_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
+export POSTGRES_SQL_FILE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
+# ecommerce application container registry
+export FRONTEND_IMAGE=$(cat ./$1 | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
+export SERVICE_CATALOG_IMAGE=$(cat ./$1 | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
+# ecommerce application names
+export SERVICE_CATALOG_NAME=$(cat ./$1 | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
+export FRONTEND_NAME=$(cat ./$1 | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
+export FRONTEND_CATEGORY=$(cat ./$1 | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
+# App ID
+export APPID_SERVICE_INSTANCE_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
+export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+
+echo "Code Engine project              : $YPROJECT_NAME"
 echo "---------------------------------"
-echo "Postgres instance name           : $6"
-echo "Postgres service key name        : $7"
+echo "App ID service instance name     : $YOUR_SERVICE_FOR_APPID"
+echo "App ID service key name          : $APPID_SERVICE_KEY_NAME"
+echo "---------------------------------"
+echo "Application Service Catalog name : $SERVICE_CATALOG_NAME"
+echo "Application Frontend name        : $FRONTEND_NAME"
+echo "Application Frontend category    : $FRONTEND_CATEGORY"
+echo "Application Service Catalog image: $SERVICE_CATALOG_IMAGE"
+echo "Application Frontend image       : $FRONTEND_IMAGE"
+echo "---------------------------------"
+echo "Postgres instance name           : $POSTGRES_SERVICE_INSTANCE"
+echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
+echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
 echo "---------------------------------"
 echo ""
+echo "Verify parameters and press return"
 
-# **************** Global variables set by parameters
-# Code Engine
-export PROJECT_NAME=$1
-
-# App ID
-export APPID_INSTANCE_NAME=$2
-export APPID_SERVICE_KEY_NAME=$3
-
-# CE applications
-export SERVICE_CATALOG=$4
-export FRONTEND=$5
-
-# Postgres
-export POSTGRES_SERVICE_INSTANCE=$6
-export POSTGRES_SERVICE_KEY_NAME=$7
+read input
 
 # **************** Global variables
 
@@ -67,8 +85,8 @@ function setupCLIenvCE() {
 }
 
 function cleanCEapplications () {
-    ibmcloud ce application delete --name $FRONTEND  --force
-    ibmcloud ce application delete --name $SERVICE_CATALOG  --force
+    ibmcloud ce application delete --name $FRONTEND_NAME  --force
+    ibmcloud ce application delete --name $SERVICE_CATALOG_NAME  --force
 }
 
 function cleanCEregistry(){

@@ -1,0 +1,19 @@
+[{ 
+    "appid": { "APPID_SERVICE_INSTANCE_NAME": "multi-tenancy-serverless-appid-b",
+               "APPID_SERVICE_KEY_NAME": "multi-tenancy-serverless-appid-key-b"
+             },
+    "postgres": {"POSTGRES_SERVICE_INSTANCE":"multi-tenant-pg-b-working",
+                 "POSTGRES_SERVICE_KEY_NAME":"multi-tenant-pg-service-key-b-working",
+                 "POSTGRES_SQL_FILE":"create-populate-tenant-b.sql"
+                },
+    "container_images": { "SERVICE_CATALOG_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10",
+                           "FRONTEND_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-frontend:v10"
+                         },
+    "applications": { "SERVICE_CATALOG_NAME":"service-catalog-fantasy",
+                       "FRONTEND_NAME":"frontend-fantasy",
+                       "CATEGORY":"Fantasy"
+                    },
+    "codeengine": { "PROJECT_NAME":"multi-tenancy-serverless-tmp-b"
+                   }
+   }
+ ]

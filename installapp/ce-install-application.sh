@@ -27,38 +27,49 @@ echo ""
 echo "Parameter count : $@"
 echo "Parameter zero 'name of the script': $0"
 echo "---------------------------------"
-echo "Code Engine project name         : $1"
+echo "Tenant configuration         : $1"
 echo "---------------------------------"
-echo "App ID service instance name     : $2"
-echo "App ID service key name          : $3"
-echo "---------------------------------"
-echo "Application Service Catalog name : $4"
-echo "Application Frontend name        : $5"
-echo "Application Service Catalog image: $6"
-echo "Application Frontend image       : $7"
-echo "Application Frontend category    : $8"
-echo "---------------------------------"
-echo "Postgres instance name           : $9"
-echo "Postgres service key name        : $10"
-echo "Postgres sample data sql         : $11"
-echo "---------------------------------"
-echo ""
 
+
+echo "---------------------------------"
 # **************** Global variables set by parameters
 
 # Code Engine
-export PROJECT_NAME=$1
-# App
-export YOUR_SERVICE_FOR_APPID=$2
-export APPID_SERVICE_KEY_NAME=$3
+export PROJECT_NAME=$(cat ./$1 | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
+# postgres
+export POSTGRES_SERVICE_INSTANCE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
+export POSTGRES_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
+export POSTGRES_SQL_FILE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
+# ecommerce application container registry
+export FRONTEND_IMAGE=$(cat ./$1 | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
+export SERVICE_CATALOG_IMAGE=$(cat ./$1 | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
 # ecommerce application names
-export SERVICE_CATALOG_NAME=$4
-export FRONTEND_NAME=$5
-export FRONTEND_CATEGORY=$8
-# Postgres database configuration
-export POSTGRES_SERVICE_INSTANCE=$9
-export POSTGRES_SERVICE_KEY_NAME=$10
-export POSTGRES_SQL_FILE=$11"create-populate-tenant-a.sql"
+export SERVICE_CATALOG_NAME=$(cat ./$1 | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
+export FRONTEND_NAME=$(cat ./$1 | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
+export FRONTEND_CATEGORY=$(cat ./$1 | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
+# App ID
+export YOUR_SERVICE_FOR_APPID=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
+export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+
+echo "Code Engine project              : $YPROJECT_NAME"
+echo "---------------------------------"
+echo "App ID service instance name     : $YOUR_SERVICE_FOR_APPID"
+echo "App ID service key name          : $APPID_SERVICE_KEY_NAME"
+echo "---------------------------------"
+echo "Application Service Catalog name : $SERVICE_CATALOG_NAME"
+echo "Application Frontend name        : $FRONTEND_NAME"
+echo "Application Frontend category    : $FRONTEND_CATEGORY"
+echo "Application Service Catalog image: $SERVICE_CATALOG_IMAGE"
+echo "Application Frontend image       : $FRONTEND_IMAGE"
+echo "---------------------------------"
+echo "Postgres instance name           : $POSTGRES_SERVICE_INSTANCE"
+echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
+echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
+echo "---------------------------------"
+echo ""
+echo "Verify parameters and press return"
+
+read input
 
 # **************** Global variables set as default values
 
@@ -112,9 +123,6 @@ export POSTGRES_CERTIFICATE_DATA=""
 export POSTGRES_USERNAME=""
 export POSTGRES_PASSWORD=""
 export POSTGRES_URL=""
-export POSTGRES_USE_CERT_01="&sslrootcert=/cloud-postgres-cert"
-export POSTGRES_USE_CERT_02="jdbc:"
-
 
 # **********************************************************************************
 # Functions definition
@@ -230,11 +238,55 @@ function setupPostgres () {
     echo "Create service key and get the postgres connection"
     echo "-------------------------"
     echo ""
+
     # **** Create a service key for the service
     ibmcloud resource service-key-create $POSTGRES_SERVICE_KEY_NAME --instance-id $POSTGRES_INSTANCE_ID
 }
 
+
+
+function extractPostgresConfiguration () {
+    
+    # ***** Get service key of the service
+    ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json  
+
+    # ***** Extract needed configuration of the service key
+    POSTGRES_CERTIFICATE_CONTENT=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' | sed '$ s/.$//' ) 
+    POSTGRES_USERNAME=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' | sed '$ s/.$//' )
+    POSTGRES_PASSWORD=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.password' | sed 's/"//g' | sed '$ s/.$//' )
+    POSTGRES_HOST=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.hosts[].hostname' | sed 's/"//g' )
+    POSTGRES_PORT=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.hosts[].port' | sed 's/"//g' )
+  
+    # ***** Build postgres URL
+    CONNECTION_TYPE='jdbc:postgresql://'
+    CERTIFICATE_PATH='/cloud-postgres-cert'
+    DATABASE_NAME="ibmclouddb"
+    POSTGRES_URL="$CONNECTION_TYPE$POSTGRES_HOST:$POSTGRES_PORT/$DATABASE_NAME/?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
+
+    # ***** Build needed cert content format  
+    sed "s+POSTGRES_CERTIFICATE_DATA+$POSTGRES_CERTIFICATE_CONTENT+g" "./$POSTGRES_CONFIG_FOLDER/cert.template" > ./$POSTGRES_CONFIG_FOLDER/cert.temp
+    POSTGRES_CERTIFICATE_DATA=$(<./$POSTGRES_CONFIG_FOLDER/cert.temp)
+    rm -f ./"$POSTGRES_CONFIG_FOLDER"/cert.temp
+
+    # ***** Delete temp file    
+    rm -f ./"$POSTGRES_CONFIG_FOLDER"/postgres-key-temp.json
+    
+    # ***** verfy variables
+    echo "-------------------------"
+    echo "POSTGRES_CERTIFICATE_DATA:  $POSTGRES_CERTIFICATE_DATA"
+    echo "POSTGRES_USERNAME:          $POSTGRES_USERNAME"
+    echo "POSTGRES_PASSWORD:          $POSTGRES_PASSWORD"
+    echo "POSTGRES_URL     :          $POSTGRES_URL"
+    echo "-------------------------"
+
+}
+
 function createTablesPostgress () {
+    echo ""
+    echo "+++++++++++++++++++++++++"
+    echo "Create table in postgres"
+    echo "+++++++++++++++++++++++++"
+    echo ""
 
     echo ""
     echo "-------------------------"
@@ -247,84 +299,63 @@ function createTablesPostgress () {
     rm -f ./"$POSTGRES_CONFIG_FOLDER"/postgres-key-temp.json
     echo ""
     echo "-------------------------"
-    echo "Build command step 1 : $POSTGRES_CONNECTION_TEMP"
+    echo "Prepare postgres connection command: $POSTGRES_CONNECTION_TEMP"
     echo "-------------------------"
     export POSTGRES_CONNECTION="$POSTGRES_CONNECTION_TEMP' -a -f $POSTGRES_SQL_FILE"
     echo ""
     echo "-------------------------"
-    echo "Result: [$POSTGRES_CONNECTION]" 
+    echo "Postgres connection command: [$POSTGRES_CONNECTION]" 
     echo "-------------------------"
     
     # **** Get cert
     echo ""
     echo "-------------------------"
-    echo "Get cert"
+    echo "Get certificate"
     echo "-------------------------"
     echo ""  
     cd $POSTGRES_CONFIG_FOLDER
     echo "-------------------------"
-    echo "Path"
+    echo "Current path"
     pwd
     # **** Create a tmp folder for the 'postgres_cert'
     TMP_FOLDER=postgres_temp_cert
     mkdir $TMP_FOLDER
     cd $TMP_FOLDER
     echo "-------------------------"
-    echo "Path"
+    echo "Temp path"
     pwd
     ibmcloud cdb deployment-cacert $POSTGRES_SERVICE_INSTANCE \
                                     --save \
                                     --certroot .
 
-    # **** Get connection to db with cert
+    # **** Get connection to postgres with cert
     echo "-------------------------"
-    echo "Get connection to db with cert"
+    echo "Get connection to postgres with cert"
     echo "-------------------------"
     echo ""
     ibmcloud cdb deployment-connections "$POSTGRES_SERVICE_INSTANCE" \
                                         --certroot . 
-    # **** Copy need sql script
+    # **** Copy needed sql script
     cp ../"$POSTGRES_SQL_FILE" ./"$POSTGRES_SQL_FILE"
     # **** Create bash script
     sed "s+COMMAND_INSERT+$POSTGRES_CONNECTION+g" "../insert-template.sh" > ./insert.sh
     # **** Execute the bash script with the extracted format
+    echo "-------------------------"
+    echo "Create table in postgres using ($POSTGRES_SQL_FILE)"
+    echo "-------------------------"
+    echo ""
+    more insert.sh
     bash insert.sh
     cd ..
     echo "-------------------------"
-    echo "Path"
+    echo "Clean up"
     pwd
     # **** Clean-up the temp folder and content
     rm -f -r ./$TMP_FOLDER
     cd ..
     echo "-------------------------"
-    echo "Path"
+    echo "Done"
     pwd
-}
-
-function extractPostgresConfiguration () {
-    
-    pwd
-
-    # ***** Get service key of the service
-    ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json
-
-    # ***** Extract needed configuration of the service key
-    POSTGRES_CERTIFICATE_DATA=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' | sed '$ s/.$//' )
-    POSTGRES_USERNAME=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' | sed '$ s/.$//' )
-    POSTGRES_PASSWORD=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.password' | sed 's/"//g' | sed '$ s/.$//' )
-    POSTGRES_URL=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.composed[]' | sed 's/"//g' )
-    
-    # ***** Delete temp file    
-    rm -f ./"$POSTGRES_CONFIG_FOLDER"/postgres-key-temp.json
-    
-    # ***** verfy variables
-    echo "-------------------------"
-    echo "POSTGRES_CERTIFICATE_DATA:  $POSTGRES_CERTIFICATE_DATA"
-    echo "POSTGRES_USERNAME:          $POSTGRES_USERNAME"
-    echo "POSTGRES_PASSWORD:          $POSTGRES_PASSWORD"
-    echo "POSTGRES_URL     :          $POSTGRES_URL"
-    echo "-------------------------"
-
 }
 
 # **** AppID ****
@@ -511,14 +542,13 @@ function addRedirectURIAppIDInformation(){
 
 function deployServiceCatalog(){
     OUTPUTFILE=./ce-get-application-outpout.json
-    URL="$POSTGRES_USE_CERT_02$POSTGRES_URL$POSTGRES_USE_CERT_01"
-    echo "URL: $URL"
+
     ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
                                    --image "$SERVICE_CATALOG_IMAGE" \
                                    --env POSTGRES_CERTIFICATE_DATA="$POSTGRES_CERTIFICATE_DATA" \
                                    --env POSTGRES_USERNAME="$POSTGRES_USERNAME" \
                                    --env POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
-                                   --env POSTGRES_URL="$URL" \
+                                   --env POSTGRES_URL="$POSTGRES_URL" \
                                    --cpu "1" \
                                    --memory "4G" \
                                    --port 8081 \
