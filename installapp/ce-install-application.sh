@@ -59,8 +59,8 @@ echo "---------------------------------"
 echo "Application Service Catalog name : $SERVICE_CATALOG_NAME"
 echo "Application Frontend name        : $FRONTEND_NAME"
 echo "Application Frontend category    : $FRONTEND_CATEGORY"
-echo "Application Service Catalog image: $SERVICE_CATALOG_IMAGE"
-echo "Application Frontend image       : $FRONTEND_IMAGE"
+echo "Application Service Catalog image: [$SERVICE_CATALOG_IMAGE]"
+echo "Application Frontend image       : [$FRONTEND_IMAGE]"
 echo "---------------------------------"
 echo "Postgres instance name           : $POSTGRES_SERVICE_INSTANCE"
 echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
@@ -548,10 +548,9 @@ function addRedirectURIAppIDInformation(){
 # **** application and microservices ****
 
 function deployServiceCatalog(){
-    OUTPUTFILE=./ce-get-application-outpout.json
 
     ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
-                                   --image "$SERVICE_CATALOG_IMAGE" \
+                                   --image $SERVICE_CATALOG_IMAGE \
                                    --env POSTGRES_CERTIFICATE_DATA="$POSTGRES_CERTIFICATE_DATA" \
                                    --env POSTGRES_USERNAME="$POSTGRES_USERNAME" \
                                    --env POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
@@ -569,8 +568,8 @@ function deployServiceCatalog(){
 
 function deployFrontend(){
 
-    ibmcloud ce application create --name "$FRONTEND_NAME" \
-                                   --image "$FRONTEND_IMAGE" \
+    ibmcloud ce application create --name $FRONTEND_NAME \
+                                   --image $FRONTEND_IMAGE \
                                    --cpu "1" \
                                    --memory "2G" \
                                    --env VUE_APPID_CLIENT_ID="$APPLICATION_CLIENTID" \
