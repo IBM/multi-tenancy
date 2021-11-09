@@ -11,7 +11,7 @@
                          },
     "applications": { "SERVICE_CATALOG_NAME":"service-catalog-fantasy",
                        "FRONTEND_NAME":"frontend-fantasy",
-                       "CATEGORY":"Fantasy"
+                       "FRONTEND_CATEGORY":"Fantasy"
                     },
     "codeengine": { "PROJECT_NAME":"multi-tenancy-serverless-tmp-b"
                    }
