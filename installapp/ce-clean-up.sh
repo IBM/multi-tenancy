@@ -10,8 +10,6 @@ echo "---------------------------------"
 echo "Tenant configuration         : $1"
 echo "---------------------------------"
 
-
-echo "---------------------------------"
 # **************** Global variables set by parameters
 
 # Code Engine
@@ -31,9 +29,9 @@ export FRONTEND_CATEGORY=$(cat ./$1 | jq '.[].applications.FRONTEND_CATEGORY' | 
 export APPID_SERVICE_INSTANCE_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
 export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
 
-echo "Code Engine project              : $YPROJECT_NAME"
+echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
-echo "App ID service instance name     : $YOUR_SERVICE_FOR_APPID"
+echo "App ID service instance name     : $APPID_SERVICE_INSTANCE_NAME"
 echo "App ID service key name          : $APPID_SERVICE_KEY_NAME"
 echo "---------------------------------"
 echo "Application Service Catalog name : $SERVICE_CATALOG_NAME"
@@ -102,7 +100,7 @@ function cleanKEYS () {
    
    #AppID
    ibmcloud resource service-keys | grep $APPID_SERVICE_KEY_NAME
-   ibmcloud resource service-keys --instance-name $APPID_INSTANCE_NAME
+   ibmcloud resource service-keys --instance-name $APPID_SERVICE_INSTANCE_NAME
    ibmcloud resource service-key-delete $APPID_SERVICE_KEY_NAME -f
 
    #Postgres
@@ -112,8 +110,8 @@ function cleanKEYS () {
 }
 
 function cleanAppIDservice (){ 
-    ibmcloud resource service-instance $APPID_INSTANCE_NAME
-    ibmcloud resource service-instance-delete $APPID_INSTANCE_NAME -f
+    ibmcloud resource service-instance $APPID_SERVICE_INSTANCE_NAME
+    ibmcloud resource service-instance-delete $APPID_SERVICE_INSTANCE_NAME -f
 }
 
 function cleanPostgresService (){ 
