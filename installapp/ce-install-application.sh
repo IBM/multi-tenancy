@@ -80,10 +80,6 @@ export STATUS="Running"
 export SECRET_NAME="multi.tenancy.cr.sec"
 export EMAIL=thomas@example.com
 
-# ecommerce application container registry
-export FRONTEND_IMAGE=$7
-export SERVICE_CATALOG_IMAGE=$6
-
 # ecommerce application URLs
 export FRONTEND_URL=""
 export SERVICE_CATALOG_URL=""
@@ -548,9 +544,8 @@ function addRedirectURIAppIDInformation(){
 # **** application and microservices ****
 
 function deployServiceCatalog(){
-
-    ibmcloud ce application create --name "$SERVICE_CATALOG_NAME" \
-                                   --image $SERVICE_CATALOG_IMAGE \
+    echo "Image: ($SERVICE_CATALOG_IMAGE)"
+    ibmcloud ce application create --name $SERVICE_CATALOG_NAME --image $SERVICE_CATALOG_IMAGE \
                                    --env POSTGRES_CERTIFICATE_DATA="$POSTGRES_CERTIFICATE_DATA" \
                                    --env POSTGRES_USERNAME="$POSTGRES_USERNAME" \
                                    --env POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
@@ -568,6 +563,7 @@ function deployServiceCatalog(){
 
 function deployFrontend(){
 
+    echo "Image: ($FRONTEND_IMAGE)"
     ibmcloud ce application create --name $FRONTEND_NAME \
                                    --image $FRONTEND_IMAGE \
                                    --cpu "1" \
@@ -673,21 +669,21 @@ echo "************************************"
 echo " Create Postgres instance and database"
 echo "************************************"
 
-createPostgres
-createTablesPostgress
-extractPostgresConfiguration
+#createPostgres
+#createTablesPostgress
+#extractPostgresConfiguration
 
 echo "************************************"
 echo " AppID creation"
 echo "************************************"
 
-createAppIDService
+#createAppIDService
 
 echo "************************************"
 echo " AppID configuration"
 echo "************************************"
 
-configureAppIDInformation
+#configureAppIDInformation
 
 echo "************************************"
 echo " service catalog"
@@ -707,19 +703,19 @@ echo "************************************"
 echo " AppID add redirect URI"
 echo "************************************"
 
-addRedirectURIAppIDInformation
+#addRedirectURIAppIDInformation
 
 echo "************************************"
 echo " Verify deployments"
 echo "************************************"
 
-kubeDeploymentVerification
+#kubeDeploymentVerification
 
 echo "************************************"
 echo " Container logs"
 echo "************************************"
 
-getKubeContainerLogs
+#getKubeContainerLogs
 
 echo "************************************"
 echo " URLs"
