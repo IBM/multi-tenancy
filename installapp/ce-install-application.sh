@@ -183,7 +183,12 @@ function setupCRenvCE() {
 
 # **** Postgres ****
 
-function setupPostgres () {
+function createPostgres () {
+    echo ""
+    echo "+++++++++++++++++++++++++"
+    echo "Create postgres instance"
+    echo "+++++++++++++++++++++++++"
+    echo ""
     
     echo ""
     echo "-------------------------"
@@ -243,10 +248,12 @@ function setupPostgres () {
     ibmcloud resource service-key-create $POSTGRES_SERVICE_KEY_NAME --instance-id $POSTGRES_INSTANCE_ID
 }
 
-
-
 function extractPostgresConfiguration () {
-    
+    echo ""
+    echo "+++++++++++++++++++++++++"
+    echo "Extract postgres configuration"
+    echo "+++++++++++++++++++++++++"
+    echo ""
     # ***** Get service key of the service
     ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json  
 
@@ -667,7 +674,7 @@ echo "************************************"
 echo " Create Postgres instance and database"
 echo "************************************"
 
-setupPostgres
+createPostgres
 createTablesPostgress
 extractPostgresConfiguration
 
