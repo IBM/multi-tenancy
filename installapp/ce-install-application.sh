@@ -544,7 +544,7 @@ function addRedirectURIAppIDInformation(){
 # **** application and microservices ****
 
 function deployServiceCatalog(){
-    echo "Image: ($SERVICE_CATALOG_IMAGE)"
+
     ibmcloud ce application create --name $SERVICE_CATALOG_NAME --image $SERVICE_CATALOG_IMAGE \
                                    --env POSTGRES_CERTIFICATE_DATA="$POSTGRES_CERTIFICATE_DATA" \
                                    --env POSTGRES_USERNAME="$POSTGRES_USERNAME" \
@@ -563,7 +563,6 @@ function deployServiceCatalog(){
 
 function deployFrontend(){
 
-    echo "Image: ($FRONTEND_IMAGE)"
     ibmcloud ce application create --name $FRONTEND_NAME \
                                    --image $FRONTEND_IMAGE \
                                    --cpu "1" \
