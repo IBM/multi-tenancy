@@ -6,8 +6,8 @@
                 "POSTGRES_SERVICE_KEY_NAME":"multi-tenant-pg-service-key-a-working",
                 "POSTGRES_SQL_FILE":"create-populate-tenant-a.sql"
                },
-   "container_images": { "SERVICE_CATALOG_IMAGE":"'quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10'",
-                          "FRONTEND_IMAGE":"'quay.io/tsuedbroecker/multi-tenancy-frontend:v10'"
+   "container_images": { "SERVICE_CATALOG_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10",
+                          "FRONTEND_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-frontend:v10"
                         },
    "applications": { "SERVICE_CATALOG_NAME":"service-catalog-movies",
                       "FRONTEND_NAME":"frontend-movies",
