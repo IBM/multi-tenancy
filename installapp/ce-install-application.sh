@@ -51,7 +51,7 @@ export FRONTEND_CATEGORY=$(cat ./$1 | jq '.[].applications.FRONTEND_CATEGORY' | 
 export YOUR_SERVICE_FOR_APPID=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
 export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
 
-echo "Code Engine project              : $YPROJECT_NAME"
+echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
 echo "App ID service instance name     : $YOUR_SERVICE_FOR_APPID"
 echo "App ID service key name          : $APPID_SERVICE_KEY_NAME"
