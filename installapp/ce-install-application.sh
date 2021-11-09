@@ -557,11 +557,11 @@ function deployServiceCatalog(){
                                    --env POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
                                    --env POSTGRES_URL="$POSTGRES_URL" \
                                    --cpu "1" \
-                                   --memory "4G" \
+                                   --memory "2G" \
                                    --port 8081 \
                                    --registry-secret "$SECRET_NAME" \
                                    --max-scale 1 \
-                                   --min-scale 1 
+                                   --min-scale 0 
                                        
     SERVICE_CATALOG_URL=$(ibmcloud ce application get --name "$SERVICE_CATALOG_NAME" -o url)
     echo "Set SERVICE CATALOG URL: $SERVICE_CATALOG_URL"
@@ -572,7 +572,7 @@ function deployFrontend(){
     ibmcloud ce application create --name "$FRONTEND_NAME" \
                                    --image "$FRONTEND_IMAGE" \
                                    --cpu "1" \
-                                   --memory "8G" \
+                                   --memory "2G" \
                                    --env VUE_APPID_CLIENT_ID="$APPLICATION_CLIENTID" \
                                    --env VUE_APPID_DISCOVERYENDPOINT="$APPLICATION_DISCOVERYENDPOINT" \
                                    --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
@@ -583,7 +583,7 @@ function deployFrontend(){
                                    --env VUE_APP_ROOT="/" \
                                    --registry-secret "$SECRET_NAME" \
                                    --max-scale 1 \
-                                   --min-scale 1 \
+                                   --min-scale 0 \
                                    --port 8080 
 
     ibmcloud ce application get --name $FRONTEND_NAME
