@@ -14,11 +14,15 @@
 export TENANT_A="tenant-a-parameters.json"
 export TENANT_B="tenant-b-parameters.json"
 
+# ecommerce application container registry
+export FRONTEND_IMAGE=$(cat ./tenant-a-parameters.json | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
+export SERVICE_CATALOG_IMAGE=$(cat ./tenant-a-parameters.json | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
+
 # **********************************************************************************
 # Functions definition
 # **********************************************************************************
 
-function createAndPushContainer () {
+function createAndPushQuayContainer () {
     bash ./ce-build-images-quay-docker.sh $SERVICE_CATALOG_IMAGE \
                                           $FRONTEND_IMAGE
 
@@ -32,7 +36,7 @@ echo "************************************"
 echo " Create container in Quay registry"
 echo "************************************"
 
-# createAndPushContainer
+# createAndPushQuayContainer
 
 echo "************************************"
 echo " Tenant A"
