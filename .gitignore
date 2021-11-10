@@ -15,10 +15,16 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 
+#various files
+temp_information.txt
+
 #fontend configs
 env-config.js
 env-config
 -env-config
+
+#env configs
+local.env_tmp
 
 #appid configs
 add-redirecturis.json

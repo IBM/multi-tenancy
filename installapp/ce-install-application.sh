@@ -264,7 +264,7 @@ function extractPostgresConfiguration () {
     CONNECTION_TYPE='jdbc:postgresql://'
     CERTIFICATE_PATH='/cloud-postgres-cert'
     DATABASE_NAME="ibmclouddb"
-    POSTGRES_URL="$CONNECTION_TYPE$POSTGRES_HOST:$POSTGRES_PORT/$DATABASE_NAME/?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
+    POSTGRES_URL="$CONNECTION_TYPE$POSTGRES_HOST:$POSTGRES_PORT/$DATABASE_NAME?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
 
     # ***** Build needed cert content format  
     sed "s+POSTGRES_CERTIFICATE_DATA+$POSTGRES_CERTIFICATE_CONTENT+g" "./$POSTGRES_CONFIG_FOLDER/cert.template" > ./$POSTGRES_CONFIG_FOLDER/cert.temp
@@ -657,65 +657,65 @@ echo "************************************"
 echo " CLI config"
 echo "************************************"
 
-setupCLIenvCE
+#setupCLIenvCE
 
 echo "************************************"
 echo " Configure container registry access"
 echo "************************************"
 
-setupCRenvCE
+#setupCRenvCE
 
 echo "************************************"
 echo " Create Postgres instance and database"
 echo "************************************"
 
-createPostgres
-createTablesPostgress
+#createPostgres
+#createTablesPostgress
 extractPostgresConfiguration
 
 echo "************************************"
 echo " AppID creation"
 echo "************************************"
 
-createAppIDService
+#createAppIDService
 
 echo "************************************"
 echo " AppID configuration"
 echo "************************************"
 
-configureAppIDInformation
+#configureAppIDInformation
 
 echo "************************************"
 echo " service catalog"
 echo "************************************"
 
-deployServiceCatalog
-ibmcloud ce application events --application $SERVICE_CATALOG_NAME
+#deployServiceCatalog
+#ibmcloud ce application events --application $SERVICE_CATALOG_NAME
 
 echo "************************************"
 echo " frontend"
 echo "************************************"
 
-deployFrontend
-ibmcloud ce application events --application $FRONTEND_NAME
+#deployFrontend
+#ibmcloud ce application events --application $FRONTEND_NAME
 
 echo "************************************"
 echo " AppID add redirect URI"
 echo "************************************"
 
-addRedirectURIAppIDInformation
+#addRedirectURIAppIDInformation
 
 echo "************************************"
 echo " Verify deployments"
 echo "************************************"
 
-kubeDeploymentVerification
+#kubeDeploymentVerification
 
 echo "************************************"
 echo " Container logs"
 echo "************************************"
 
-getKubeContainerLogs
+#getKubeContainerLogs
 
 echo "************************************"
 echo " URLs"
