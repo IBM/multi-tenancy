@@ -91,8 +91,8 @@ function cleanCEsecrets () {
     ibmcloud ce secret delete --name postgres.url --force
 
     echo "delete secrets appid"
-    ibmcloud ce secret create --name appid.client-id --force
-    ibmcloud ce secret create --name appid.discovery-endpoint --force
+    ibmcloud ce secret delete --name appid.client-id --force
+    ibmcloud ce secret delete --name appid.discovery-endpoint --force
 
 }
 
@@ -147,6 +147,12 @@ echo " CLI config"
 echo "************************************"
 
 setupCLIenvCE
+
+echo "************************************"
+echo " Clean secrets"
+echo "************************************"
+
+cleanCEsecrets
 
 echo "************************************"
 echo " Clean CE apps"
