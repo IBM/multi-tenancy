@@ -16,9 +16,6 @@ echo ""
 export SERVICE_CATALOG_IMAGE=$1
 export FRONTEND_IMAGE=$2
 
-export NAMESPACE=multi-tenancy-example
-export REGION=us-south
-
 # Verification
 # In case the script doesn't use the parameters
 #export FRONTEND_IMAGE='us.icr.io/multi-tenancy-example/multi-tenancy-frontend:v1'

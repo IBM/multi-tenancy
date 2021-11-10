@@ -82,6 +82,15 @@ function setupCLIenvCE() {
   kubectl get pods -n $NAMESPACE
 }
 
+function cleanIBMContainerImages() {
+
+    echo "delete images"
+    ibmcloud cr login
+    ibmcloud cr image-rm $SERVICE_CATALOG_IMAGE
+    ibmcloud cr image-rm $FRONTEND_IMAGE
+
+}
+
 function cleanCEsecrets () {
     
     echo "delete secrects postgres"
@@ -103,10 +112,12 @@ function cleanCEapplications () {
 }
 
 function cleanCEregistry(){
+
     ibmcloud ce registry delete --name $SECRET_NAME
 }
 
 function cleanKEYS () {
+
    echo "IBM Cloud Key: $IBMCLOUDCLI_KEY_NAME"
    #List api-keys
    ibmcloud iam api-keys | grep $IBMCLOUDCLI_KEY_NAME
@@ -165,6 +176,12 @@ echo " Clean CE registry"
 echo "************************************"
 
 cleanCEregistry
+
+echo "************************************"
+echo " Clean IBM  ContainerImages registry"
+echo "************************************"
+
+cleanIBMContainerImages
 
 echo "************************************"
 echo " Clean keys "
