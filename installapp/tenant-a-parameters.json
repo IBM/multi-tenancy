@@ -10,8 +10,8 @@
       "POSTGRES_SQL_FILE": "create-populate-tenant-a.sql"
     },
     "container_images": {
-      "SERVICE_CATALOG_IMAGE": "us.icr.io/multi-tenancy-example/multi-tenancy-service-catalog:v1",
-      "FRONTEND_IMAGE": "us.icr.io/multi-tenancy-example/multi-tenancy-frontend:v1",
+      "SERVICE_CATALOG_IMAGE": "us.icr.io/multi-tenancy-example/multi-tenancy-service-catalog:v2",
+      "FRONTEND_IMAGE": "us.icr.io/multi-tenancy-example/multi-tenancy-frontend:v2",
       "SERVICE_CATALOG_NAME": "multi-tenancy-service-catalog",
       "FRONTEND_NAME": "multi-tenancy-frontend"
     },
@@ -23,7 +23,7 @@
     "container_ibmregistry": {
       "IBMCLOUD_CR_NAMESPACE": "multi-tenancy-example",
       "IBMCLOUD_CR_REGION_URL": "us.icr.io",
-      "IBMCLOUD_CR_TAG": "v1"
+      "IBMCLOUD_CR_TAG": "v2"
     },
     "applications": {
       "SERVICE_CATALOG_NAME": "service-catalog-movies",

@@ -46,15 +46,17 @@ function createAndPushQuayContainer () {
     echo "FRONTEND_IMAGE: $FRONTEND_IMAGE"
     echo "SERVICE_CATALOG_IMAGE: $SERVICE_CATALOG_IMAGE"
     
+    echo "Update configuration file ./$TENANT_A "
     RESULT=$(cat ./$TENANT_A | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
     echo "$RESULT" > ./$TENANT_A 
     RESULT=$(cat ./$TENANT_A | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
     echo "$RESULT" > ./$TENANT_A
 
-    echo "Update configuration file ./$TENANT_A "
+    echo "Update configuration file ./$TENANT_B "
+    RESULT=""
     RESULT=$(cat ./$TENANT_B | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
     echo "$RESULT" > ./$TENANT_B 
-    RESULT=$(cat ./$TENANT_A | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
+    RESULT=$(cat ./$TENANT_B | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
     echo "$RESULT" > ./$TENANT_B
 
     bash ./ce-build-images-quay-docker.sh $SERVICE_CATALOG_IMAGE \
@@ -80,15 +82,19 @@ function createAndPushIBMContainer () {
     echo "SERVICE_CATALOG_IMAGE: $SERVICE_CATALOG_IMAGE"
 
     echo "Update configuration files ./$TENANT_A and ./$TENANT_B "
-
+    
+    RESULT=""
+    cat ./$TENANT_A
     RESULT=$(cat ./$TENANT_A | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
     echo "$RESULT" > ./$TENANT_A 
     RESULT=$(cat ./$TENANT_A | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
     echo "$RESULT" > ./$TENANT_A
-
+    
+    RESULT=""
+    cat ./$TENANT_B
     RESULT=$(cat ./$TENANT_B | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
     echo "$RESULT" > ./$TENANT_B 
-    RESULT=$(cat ./$TENANT_A | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
+    RESULT=$(cat ./$TENANT_B | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
     echo "$RESULT" > ./$TENANT_B
 
     createNamespace

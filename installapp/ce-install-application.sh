@@ -34,22 +34,24 @@ echo "---------------------------------"
 echo "---------------------------------"
 # **************** Global variables set by parameters
 
+export CONFIG_FILE=$1
+
 # Code Engine
-export PROJECT_NAME=$(cat ./$1 | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
+export PROJECT_NAME=$(cat ./$CONFIG_FILE | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
 # postgres
-export POSTGRES_SERVICE_INSTANCE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
-export POSTGRES_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
-export POSTGRES_SQL_FILE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
+export POSTGRES_SERVICE_INSTANCE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
+export POSTGRES_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
+export POSTGRES_SQL_FILE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
 # ecommerce application container registry
-export FRONTEND_IMAGE=$(cat ./$1 | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
-export SERVICE_CATALOG_IMAGE=$(cat ./$1 | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
+export FRONTEND_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
+export SERVICE_CATALOG_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
 # ecommerce application names
-export SERVICE_CATALOG_NAME=$(cat ./$1 | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
-export FRONTEND_NAME=$(cat ./$1 | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
-export FRONTEND_CATEGORY=$(cat ./$1 | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
+export SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
+export FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
+export FRONTEND_CATEGORY=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
 # App ID
-export YOUR_SERVICE_FOR_APPID=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
-export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+export YOUR_SERVICE_FOR_APPID=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
+export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
