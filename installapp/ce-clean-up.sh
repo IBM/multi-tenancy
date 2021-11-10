@@ -82,7 +82,22 @@ function setupCLIenvCE() {
   kubectl get pods -n $NAMESPACE
 }
 
+function cleanCEsecrets () {
+    
+    echo "delete secrects postgres"
+    ibmcloud ce secret delete --name postgres.certificate_data --force
+    ibmcloud ce secret delete --name postgres.username --force
+    ibmcloud ce secret delete --name postgres.password --force
+    ibmcloud ce secret delete --name postgres.url --force
+
+    echo "delete secrets appid"
+    ibmcloud ce secret create --name appid.clientId --force
+    ibmcloud ce secret create --name appid.discoveryEndpoint --force
+
+}
+
 function cleanCEapplications () {
+
     ibmcloud ce application delete --name $FRONTEND_NAME  --force
     ibmcloud ce application delete --name $SERVICE_CATALOG_NAME  --force
 }
