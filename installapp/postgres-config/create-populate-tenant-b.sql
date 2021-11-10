@@ -29,11 +29,11 @@ CREATE TABLE category
   parent INT
 );
 
-INSERT INTO category VALUES (nextval('category_id_seq'), 'Fantasy', 0);
+INSERT INTO category VALUES (nextval('category_id_seq'), 'Fantasy', null);
 INSERT INTO category VALUES (nextval('category_id_seq'), 'Thriller', 1);
 INSERT INTO category VALUES (nextval('category_id_seq'), 'Mystery', 1);
 INSERT INTO category VALUES (nextval('category_id_seq'), 'Fiction', 1);
-INSERT INTO category VALUES (nextval('category_id_seq'), 'Non-Fiction', 0);
+INSERT INTO category VALUES (nextval('category_id_seq'), 'Non-Fiction', null);
 
 CREATE SEQUENCE productcategory_id_seq START 1;
 CREATE TABLE productcategory

@@ -32,11 +32,11 @@ CREATE TABLE category
   parent INT
 );
 
-INSERT INTO category VALUES (nextval('category_id_seq'), 'Entertainment', 0); 
+INSERT INTO category VALUES (nextval('category_id_seq'), 'Entertainment', null); 
 INSERT INTO category VALUES (nextval('category_id_seq'), 'Movies', 1); 
 INSERT INTO category VALUES (nextval('category_id_seq'), 'Music', 1); 
 INSERT INTO category VALUES (nextval('category_id_seq'), 'Games', 1); 
-INSERT INTO category VALUES (nextval('category_id_seq'), 'Electronics', 0); 
+INSERT INTO category VALUES (nextval('category_id_seq'), 'Electronics', null); 
 INSERT INTO category VALUES (nextval('category_id_seq'), 'TV', 5); 
 INSERT INTO category VALUES (nextval('category_id_seq'), 'CellPhones', 5); 
 INSERT INTO category VALUES (nextval('category_id_seq'), 'DVD Players', 5); 
