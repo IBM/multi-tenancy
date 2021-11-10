@@ -254,23 +254,23 @@ function extractPostgresConfiguration () {
     ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-config/postgres-key-temp.json  
 
     # ***** Extract needed configuration of the service key
+
     POSTGRES_CERTIFICATE_CONTENT_ENCODED=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' ) 
-    POSTGRES_CERTIFICATE_CONTENT=$(base64 –decode $POSTGRES_CERTIFICATE_CONTENT_ENCODED)
     POSTGRES_USERNAME=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' )
     POSTGRES_PASSWORD=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.password' | sed 's/"//g' )
     POSTGRES_HOST=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.hosts[].hostname' | sed 's/"//g' )
     POSTGRES_PORT=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.hosts[].port' | sed 's/"//g' )
-  
+
+    # ***** Build needed cert content format  
+    base64 –decode $POSTGRES_CERTIFICATE_CONTENT_ENCODED > ./$POSTGRES_CONFIG_FOLDER/cert.temp
+    POSTGRES_CERTIFICATE_DATA=$(<./$POSTGRES_CONFIG_FOLDER/cert.temp)
+    rm -f ./"$POSTGRES_CONFIG_FOLDER"/cert.temp
+
     # ***** Build postgres URL
     CONNECTION_TYPE='jdbc:postgresql://'
     CERTIFICATE_PATH='/cloud-postgres-cert'
     DATABASE_NAME="ibmclouddb"
     POSTGRES_URL="$CONNECTION_TYPE$POSTGRES_HOST:$POSTGRES_PORT/$DATABASE_NAME?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
-
-    # ***** Build needed cert content format  
-    sed "s+POSTGRES_CERTIFICATE_DATA+$POSTGRES_CERTIFICATE_CONTENT+g" "./$POSTGRES_CONFIG_FOLDER/cert.template" > ./$POSTGRES_CONFIG_FOLDER/cert.temp
-    POSTGRES_CERTIFICATE_DATA=$(<./$POSTGRES_CONFIG_FOLDER/cert.temp)
-    rm -f ./"$POSTGRES_CONFIG_FOLDER"/cert.temp
 
     # ***** Delete temp file    
     rm -f ./"$POSTGRES_CONFIG_FOLDER"/postgres-key-temp.json
@@ -658,65 +658,65 @@ echo "************************************"
 echo " CLI config"
 echo "************************************"
 
-#setupCLIenvCE
+setupCLIenvCE
 
 echo "************************************"
 echo " Configure container registry access"
 echo "************************************"
 
-#setupCRenvCE
+setupCRenvCE
 
 echo "************************************"
 echo " Create Postgres instance and database"
 echo "************************************"
 
-#createPostgres
-#createTablesPostgress
+createPostgres
+createTablesPostgress
 extractPostgresConfiguration
 
 echo "************************************"
 echo " AppID creation"
 echo "************************************"
 
-#createAppIDService
+createAppIDService
 
 echo "************************************"
 echo " AppID configuration"
 echo "************************************"
 
-#configureAppIDInformation
+configureAppIDInformation
 
 echo "************************************"
 echo " service catalog"
 echo "************************************"
 
-#deployServiceCatalog
-#ibmcloud ce application events --application $SERVICE_CATALOG_NAME
+deployServiceCatalog
+ibmcloud ce application events --application $SERVICE_CATALOG_NAME
 
 echo "************************************"
 echo " frontend"
 echo "************************************"
 
-#deployFrontend
-#ibmcloud ce application events --application $FRONTEND_NAME
+deployFrontend
+ibmcloud ce application events --application $FRONTEND_NAME
 
 echo "************************************"
 echo " AppID add redirect URI"
 echo "************************************"
 
-#addRedirectURIAppIDInformation
+addRedirectURIAppIDInformation
 
 echo "************************************"
 echo " Verify deployments"
 echo "************************************"
 
-#kubeDeploymentVerification
+kubeDeploymentVerification
 
 echo "************************************"
 echo " Container logs"
 echo "************************************"
 
-#getKubeContainerLogs
+getKubeContainerLogs
 
 echo "************************************"
 echo " URLs"
