@@ -15,17 +15,10 @@ RUN npm run build
 #           PRODUCTION
 ##############################
 # https://blog.openshift.com/deploy-vuejs-applications-on-openshift/
-FROM docker.io/nginx:1.20.0-alpine
+FROM docker.io/nginx:1.21.4-alpine
 
-# security check related update
 RUN apk update \
     apk upgrade \
-    apk add --update libssl1.1 \
-    apk add --update libcrypto1.1 \
-    apk add --update apk-tools \
-    apk add --update libjpeg-turbo \
-    apk add --update libgcrypt \
-    apk add --update libxml2 \
     apk add --update coreutils
 
 # Add a user how will have the rights to change the files in code
