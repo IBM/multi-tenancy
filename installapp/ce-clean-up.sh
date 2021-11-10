@@ -85,14 +85,14 @@ function setupCLIenvCE() {
 function cleanCEsecrets () {
     
     echo "delete secrects postgres"
-    ibmcloud ce secret delete --name postgres.certificate_data --force
+    ibmcloud ce secret delete --name postgres.certificate-data --force
     ibmcloud ce secret delete --name postgres.username --force
     ibmcloud ce secret delete --name postgres.password --force
     ibmcloud ce secret delete --name postgres.url --force
 
     echo "delete secrets appid"
-    ibmcloud ce secret create --name appid.clientId --force
-    ibmcloud ce secret create --name appid.discoveryEndpoint --force
+    ibmcloud ce secret create --name appid.client-id --force
+    ibmcloud ce secret create --name appid.discovery-endpoint --force
 
 }
 

@@ -28,6 +28,6 @@ echo "************************************"
 echo " Clean Tenant A"
 echo "************************************"
 
-bash ./ce-clean-up.sh $TENANT_A
+# bash ./ce-clean-up.sh $TENANT_A
 
-# bash ./ce-clean-up.sh $TENANT_B
+bash ./ce-clean-up.sh $TENANT_B

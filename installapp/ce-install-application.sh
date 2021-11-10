@@ -549,14 +549,14 @@ function addRedirectURIAppIDInformation(){
 function deployServiceCatalog(){
     
     echo "Create secrets"
-    ibmcloud ce secret create --name postgres.certificate_data --from-literal "POSTGRES_CERTIFICATE_DATA=$POSTGRES_CERTIFICATE_DATA"
+    ibmcloud ce secret create --name postgres.certificate-data --from-literal "POSTGRES_CERTIFICATE_DATA=$POSTGRES_CERTIFICATE_DATA"
     ibmcloud ce secret create --name postgres.username --from-literal "POSTGRES_USERNAME=$POSTGRES_USERNAME"
     ibmcloud ce secret create --name postgres.password --from-literal "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
     ibmcloud ce secret create --name postgres.url --from-literal "POSTGRES_URL=$POSTGRES_URL"
 
     ibmcloud ce application create --name $SERVICE_CATALOG_NAME \
                                    --image $SERVICE_CATALOG_IMAGE \
-                                   --env-from-secret postgres.certificate_data \
+                                   --env-from-secret postgres.certificate-data \
                                    --env-from-secret postgres.username \
                                    --env-from-secret postgres.password \
                                    --env-from-secret postgres.url \
@@ -574,15 +574,15 @@ function deployServiceCatalog(){
 function deployFrontend(){
     
     echo "Create secrets"
-    ibmcloud ce secret create --name appid.clientId --from-literal "VUE_APPID_CLIENT_ID=$APPLICATION_CLIENTID"
-    ibmcloud ce secret create --name appid.discoveryEndpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
+    ibmcloud ce secret create --name appid.client-id --from-literal "VUE_APPID_CLIENT_ID=$APPLICATION_CLIENTID"
+    ibmcloud ce secret create --name appid.discovery-endpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
 
     ibmcloud ce application create --name $FRONTEND_NAME \
                                    --image $FRONTEND_IMAGE \
                                    --cpu "1" \
                                    --memory "2G" \
-                                   --env-from-secret appid.clientId \
-                                   --env-from-secret appid.discoveryEndpoint \
+                                   --env-from-secret appid.client-id \
+                                   --env-from-secret appid.discovery-endpoint \
                                    --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
                                    --env VUE_APP_API_URL_ORDERS="$SERVICE_CATALOG_URL/base/customer/Orders" \
                                    --env VUE_APP_API_URL_CATEGORIES="$SERVICE_CATALOG_URL/base/category" \
