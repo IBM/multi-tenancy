@@ -69,13 +69,13 @@ echo "************************************"
 echo " Create and push container image to IBM Container Registry"
 echo "************************************"
 
-createAndPushIBMContainer
+# createAndPushIBMContainer
 
 echo "************************************"
 echo " Tenant A"
 echo "************************************"
 
-#bash ./ce-install-application.sh $TENANT_A
+bash ./ce-install-application.sh $TENANT_A
 
 # echo "************************************"
 # echo " Tenant B"
