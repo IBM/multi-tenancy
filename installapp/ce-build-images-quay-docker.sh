@@ -18,8 +18,8 @@ export FRONTEND_IMAGE=$2
 
 # Verification
 # In case the script doesn't use the parameters
-export FRONTEND_IMAGE='quay.io/tsuedbroecker/multi-tenancy-frontend:v10'
-export SERVICE_CATALOG_IMAGE='quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10'
+export FRONTEND_IMAGE='quay.io/tsuedbroecker/multi-tenancy-frontend:v11'
+export SERVICE_CATALOG_IMAGE='quay.io/tsuedbroecker/multi-tenancy-service-catalog:v11'
 
 # **********************************************************************************
 # Execution

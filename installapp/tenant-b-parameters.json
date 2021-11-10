@@ -6,14 +6,24 @@
                  "POSTGRES_SERVICE_KEY_NAME":"multi-tenant-pg-service-key-b-working",
                  "POSTGRES_SQL_FILE":"create-populate-tenant-b.sql"
                 },
-    "container_images": { "SERVICE_CATALOG_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10",
-                           "FRONTEND_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-frontend:v10"
+    "container_images": { "SERVICE_CATALOG_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-service-catalog:v11",
+                           "FRONTEND_IMAGE":"quay.io/tsuedbroecker/multi-tenancy-frontend:v11"
                          },
+    "container_ibmregistry": { "SERVICE_CATALOG_NAME":"multi-tenancy-service-catalog",
+                              "FRONTEND_NAME":"multi-tenancy-frontend",
+                              "IBMCLOUD_CR_NAMESPACE":"multi-tenancy-example",
+                              "IBMCLOUD_CR_REGION_URL":"us.icr.io",
+                              "IBMCLOUD_CR_FRONTEND":"frontend",
+                              "IBMCLOUD_CR_SERVICE_CATALOG":"service-catalog",
+                              "IBMCLOUD_CR_TAG":"v1",
+                              "SERVICE_CATALOG_IMAGE":"",
+                              "FRONTEND_IMAGE":""
+                            },
     "applications": { "SERVICE_CATALOG_NAME":"service-catalog-fantasy",
                        "FRONTEND_NAME":"frontend-fantasy",
                        "FRONTEND_CATEGORY":"Fantasy"
                     },
     "codeengine": { "PROJECT_NAME":"multi-tenancy-serverless-tmp-b"
-                   }
+                  }
    }
  ]

@@ -21,13 +21,12 @@ export REGION=us-south
 
 # Verification
 # In case the script doesn't use the parameters
-export FRONTEND_IMAGE='quay.io/tsuedbroecker/multi-tenancy-frontend:v10'
-export SERVICE_CATALOG_IMAGE='quay.io/tsuedbroecker/multi-tenancy-service-catalog:v10'
+#export FRONTEND_IMAGE='us.icr.io/multi-tenancy-example/multi-tenancy-frontend:v1'
+#export SERVICE_CATALOG_IMAGE='us.icr.io/multi-tenancy-example/multi-tenancy-service-catalog:v1'
 
 # **********************************************************************************
 # Functions
 # **********************************************************************************
-
 
 
 # **********************************************************************************
