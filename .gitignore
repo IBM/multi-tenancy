@@ -25,6 +25,7 @@ env-config
 
 #env configs
 local.env_tmp
+local.env-tmp
 
 #appid configs
 add-redirecturis.json
