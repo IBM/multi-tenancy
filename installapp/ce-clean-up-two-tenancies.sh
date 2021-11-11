@@ -25,8 +25,8 @@
 # **************** Global variables
 
 # Tenancies
-export TENANT_A="tenant-a-parameters.json"
-export TENANT_B="tenant-b-parameters.json"
+export TENANT_A="tenants-config/tenant-a-parameters.json"
+export TENANT_B="tenants-config/tenant-b-parameters.json"
 
 # **********************************************************************************
 # Functions definition
