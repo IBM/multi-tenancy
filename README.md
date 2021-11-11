@@ -69,6 +69,7 @@ The example ecommerce mircorservices application is build on following `technolo
   * [Postgres](https://cloud.ibm.com/databases/databases-for-postgresql/create)
   * [AppID](https://www.ibm.com/de-de/cloud/app-id)
   * [Toolchain](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-toolchains_getting_started)
+  * [IBM Cloud Container Registry](https://cloud.ibm.com/registry/catalog)
 
 ---
 
@@ -81,13 +82,18 @@ The example ecommerce mircorservices application is build on following `technolo
   * [git 2.24.1 or higher](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
   * [yarn 1.22.4 or higher](https://yarnpkg.com)
   * [Node.js v14.6.0 or higher](https://nodejs.org/en/)
+  * [npm](https://www.npmjs.com/)
   * [Apache Maven 3.6.3](https://maven.apache.org/ref/3.6.3/maven-embedder/cli.html)
-  * [Quay](https://quay.io/)
+  * [Quay](https://quay.io/) 
   * [Tekton](https://tekton.dev/)
 
 ---
-
+  
   * [Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell))
   * [jq](https://lzone.de/cheat-sheet/jq)
   * [sed](https://en.wikipedia.org/wiki/Sed)
   * [grep](https://en.wikipedia.org/wiki/Grep)
+  * [libpq](https://github.com/lpsmith/postgresql-libpq)
+  * [cURL](https://curl.se/)
+  * [Docker](https://www.docker.com/) (deploy to IBM Cloud Container Registry)
+  * [Podman](https://podman.io/)

@@ -1,8 +1,22 @@
 #!/bin/bash
 
-# CLI Documentation
+# CLI tools Documentation
 # ================
-# command documentation: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
+# IBM Cloud CLI
+# Code Engine: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
+# Cloud databases
+# IBM Cloud Container Registry 
+
+# Needed IBM Cloud CLI plugins
+# =============
+# - code engine 
+# - cloud databases (ibmcloud plugin install cloud-databases)
+# - ibm cloud container registry 
+
+# Needed tools 
+# ============
+# brew install libpq
+# brew link --force libpq
 
 # Install jq to extract json in bash on mac
 # ===============
@@ -28,6 +42,6 @@ echo "************************************"
 echo " Clean Tenant A"
 echo "************************************"
 
-# bash ./ce-clean-up.sh $TENANT_A
+bash ./ce-clean-up.sh $TENANT_A
 
 bash ./ce-clean-up.sh $TENANT_B

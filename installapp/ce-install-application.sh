@@ -3,18 +3,22 @@
 # CLI tools Documentation
 # ================
 # Code Engine: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
-# libpq: https://www.compose.com/articles/postgresql-tips-installing-the-postgresql-client/?_ga=2.31285695.124869551.1633324536-496882334.1633002728
 # Cloud databases
+# IBM Cloud Container Registry 
 
-# Needed IBM CLoud CLI plugins
+# Needed IBM Cloud CLI plugins
 # =============
 # - code engine 
 # - cloud databases (ibmcloud plugin install cloud-databases)
+# - container registry 
 
 # Needed tools 
 # ============
-# brew install libpq
-# brew link --force libpq   
+# For Postgres database
+# - brew install libpq
+# - brew link --force libpq
+# Install jq to extract json in bash on mac
+# - brew install jq
 
 # **********************************************************************************
 # Set global variables using parameters
@@ -30,8 +34,6 @@ echo "---------------------------------"
 echo "Tenant configuration         : $1"
 echo "---------------------------------"
 
-
-echo "---------------------------------"
 # **************** Global variables set by parameters
 
 export CONFIG_FILE=$1

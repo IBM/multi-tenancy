@@ -123,7 +123,7 @@ createAndPushIBMContainer
 #echo " Tenant A"
 #echo "************************************"
 
-#bash ./ce-install-application.sh $TENANT_A
+bash ./ce-install-application.sh $TENANT_A
 
 echo "************************************"
 echo " Tenant B"

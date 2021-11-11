@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# CLI tools Documentation
+# ================
+# Code Engine: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
+# Cloud databases
+# IBM Cloud Container Registry 
+
+# Needed IBM Cloud CLI plugins
+# =============
+# - code engine 
+# - cloud databases (ibmcloud plugin install cloud-databases)
+# - container registry 
+
+# Needed tools 
+# ============
+# For Postgres database
+# - brew install libpq
+# - brew link --force libpq
+# Install jq to extract json in bash on mac
+# - brew install jq
+
 echo "************************************"
 echo " Display parameter"
 echo "************************************"
