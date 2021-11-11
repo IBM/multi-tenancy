@@ -1,0 +1,41 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: check-health
+spec:
+  params:
+    - name: app-hostname
+      description: application protocol + hostname, e.g. https://example.com
+    - name: health-endpoint
+      description: application health endpoint, e.g. /health
+      default: ""
+    - name: pipeline-debug
+      description: Pipeline debug mode
+      default: "0"
+    - name: task-image
+      description: image used to execute this task
+      default: "icr.io/continuous-delivery/pipeline/pipeline-base-image:2.15"
+  steps:
+    - name: check-health
+      image: $(params.task-image)
+      script: |
+        #!/bin/bash
+        set -e -o pipefail
+
+        if [ $(params.pipeline-debug) == 1 ]; then
+            pwd
+            env
+            trap env EXIT
+            set -x
+        fi
+
+        if [ $(curl -isL -o /dev/null -w "%{http_code}" "$(params.app-hostname)$(params.health-endpoint)") == 200 ]; then
+          echo "Successfully reached health endpoint at $(params.app-hostname)$(params.health-endpoint)"
+          echo "====================================================================="
+        elif [ $(curl -isL -o /dev/null -w "%{http_code}" "$(params.app-hostname)") == 200 ]; then
+          echo "Successfully reached application at $(params.app-hostname)"
+          echo "====================================================================="
+        else
+          echo "Could not reach health endpoint at $(params.app-hostname) or at $(params.app-hostname)$(params.health-endpoint)"
+          exit 1
+        fi

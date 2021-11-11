@@ -1,0 +1,151 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: publish-code-engine-deployable-mapping
+spec:
+  params:
+    - name: ibmcloud-api
+      description: the ibmcloud api
+      default: https://cloud.ibm.com
+    - name: continuous-delivery-context-secret
+      description: Name of the secret containing the continuous delivery pipeline context secrets
+      default: "secure-properties"
+    - name: toolchain-apikey-secret-key
+      description: field in the secret that contains the api key used to access toolchain and DOI instance
+      default: "toolchain-apikey"
+    - name: app-name
+      description: name of the Code Engine application
+      default: ""
+    - name: resource-group
+      description: target resource group (name or id) for the ibmcloud login operation
+      default: ""
+    - name: region
+      description: target region for the ibmcloud login operation. A fully qualified id is expected (such as ibm:yp:us-south). If not fully qualified, the ibmcloud production prefix is appended (ie 'ibm:yp:')
+      default: ""
+    - name: code-engine-project
+      description: name of the Code Engine project for deploying application
+      default: ""
+    - name: pipeline-debug
+      description: Pipeline debug mode
+      default: "0"
+    - name: task-image
+      description: image used to execute this task
+      default: "icr.io/continuous-delivery/pipeline/pipeline-base-image:2.15"
+  steps:
+    - name: publish-deployable-mapping
+      image: $(params.task-image)
+      env:
+        - name: PIPELINE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['devops.cloud.ibm.com/pipeline-id']
+        - name: IBM_CLOUD_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: $(params.continuous-delivery-context-secret)
+              key: $(params.toolchain-apikey-secret-key)
+      script: |
+        #!/bin/bash
+        set -e -o pipefail
+
+        if [ $(params.pipeline-debug) == 1 ]; then
+            pwd
+            env
+            trap env EXIT
+            set -x
+        fi
+
+        # SETUP BEGIN
+        ibmcloud config --check-version false
+        if [ "$(params.region)" ]; then
+          # if region is in the 'ibm:yp:<region>' format just keep the region part
+          IBM_CLOUD_REGION=$(echo "$(params.region)" | awk -F ':' '{print $NF;}')
+        else
+          IBM_CLOUD_REGION=$(jq -r '.region_id' /artifacts/_toolchain.json | awk -F: '{print $3}')
+        fi
+
+        ibmcloud login -a $(params.ibmcloud-api) -r $IBM_CLOUD_REGION --apikey $IBM_CLOUD_API_KEY
+        ibmcloud target -g $(params.resource-group)
+        ibmcloud plugin install code-engine
+        ibmcloud ce proj select -n $(params.code-engine-project)
+
+        DEPLOYABLE_JSON=$(ibmcloud ce app get -n $(params.app-name) -o json)
+        APPLICATION_URL=$(echo $DEPLOYABLE_JSON | jq -j '.status.url')
+
+        # Get Code Engine app ID to use as deployable mapping ID
+        DEPLOYABLE_GUID=$(ibmcloud ce app get -n $(params.app-name) -o json | jq -j '.metadata.uid')
+
+        # Update deployable mapping
+        TOOLCHAIN_ENVIRONMENT=$(jq -j '.region_id' /artifacts/_toolchain.json | awk -F: '{print $2}')
+
+        if [ "$TOOLCHAIN_ENVIRONMENT" == "ys1" ]; then
+          TOOLCHAIN_ENVIRONMENT="dev."
+        else
+          TOOLCHAIN_ENVIRONMENT=""
+        fi
+
+        TOOLCHAIN_REGION=$(jq -j '.region_id' /artifacts/_toolchain.json | awk -F: '{print $3}')
+        OTC_API_DM_URL="https://otc-api.${TOOLCHAIN_REGION}.devops.${TOOLCHAIN_ENVIRONMENT}cloud.ibm.com/api/v1/toolchain_deployable_mappings"
+        IAM_TOKEN=$(ibmcloud iam oauth-tokens --output JSON | jq -j '.iam_token')
+
+        # Check if an existing mapping exist with the given deployable guid in toolchain
+        EXISTING_MAPPING=$(curl -H "Authorization: ${IAM_TOKEN}" "${OTC_API_DM_URL}?deployable_guid=${DEPLOYABLE_GUID}")
+        MAPPING_GUID=$(echo ${EXISTING_MAPPING} | jq -j '.items[0].mapping_guid')
+
+        if [ "${MAPPING_GUID}" != "null" ]; then
+          # Delete mapping
+          curl -X DELETE -H "Authorization: ${IAM_TOKEN}" "${OTC_API_DM_URL}/${MAPPING_GUID}"
+        fi
+
+        RESOURCE_GROUP_ID=$(ibmcloud target --output JSON | jq -j '.resource_group.guid')
+
+        CONSOLE_URL=$(ibmcloud ce app get -n $(params.app-name) | grep "Console URL:" | egrep -o 'https?://[^ ]+')
+
+        # Create deployable mapping
+        MAPPING_JSON=$(cat <<END
+        {
+          "deployable": {
+            "deployable_guid": "${DEPLOYABLE_GUID}",
+            "type": "code_engine",
+            "container": {
+              "guid": "${RESOURCE_GROUP_ID}",
+              "type": "resource_group_id"
+            },
+            "url": [
+              "${APPLICATION_URL}",
+              "${CONSOLE_URL}"
+            ]
+          },
+          "toolchain": {
+            "toolchain_guid": "$(jq -j '.toolchain_guid' /artifacts/_toolchain.json)",
+            "region_id": "$(jq -j '.region_id' /artifacts/_toolchain.json)"
+          },
+          "source": {
+            "type": "service_instance",
+            "source_guid": "${PIPELINE_ID}"
+          }
+        }
+        END
+        )
+
+        HTTP_STATUS_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H "Authorization: ${IAM_TOKEN}" -H "Content-Type: application/json" -d "${MAPPING_JSON}" "${OTC_API_DM_URL}")
+
+        if [ "$HTTP_STATUS_CODE" == "201" ] || [ "$HTTP_STATUS_CODE" == "204" ]; then
+          echo "Deployable mapping created/updated. HTTP Status code = $HTTP_STATUS_CODE"
+        else
+          echo "Fail to create deployable mapping ! HTTP Status code = $HTTP_STATUS_CODE"
+          exit 1
+        fi
+      volumeMounts:
+        - mountPath: /cd-config
+          name: cd-config-volume
+        - mountPath: /artifacts/_toolchain.json
+          subPath: toolchain.json
+          name: cd-config-volume
+  volumes:
+    - name: cd-config-volume
+      configMap:
+        name: toolchain
+        items:
+          - key: toolchain.json
+            path: toolchain.json

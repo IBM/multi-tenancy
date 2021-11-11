@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: read-config
+spec:
+  workspaces:
+    - name: output
+      description: shared workspace  
+  params:
+    - name: test-param
+      description: test-param
+  steps:
+    - name: task-read-config
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
+      script: |
+        #!/bin/bash
+        echo "task-read-config"        
+        set -x
+        cd $(workspaces.output.path)
+        #pwd
+        #ls
+        #cat config-tenants/tenant-a-parameters.json
+
+        export CONFIG_FILE="installapp/tenants-config/tenant-a-parameters.json"
+        export PROJECT_NAME=$(cat ./$CONFIG_FILE | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
+
+        export POSTGRES_SERVICE_INSTANCE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
+        export POSTGRES_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
+        export POSTGRES_SQL_FILE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
+
+        export FRONTEND_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
+        export SERVICE_CATALOG_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
+
+        export SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
+        export FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
+        export FRONTEND_CATEGORY=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
+
+        export YOUR_SERVICE_FOR_APPID=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
+        export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+
+        #echo "niklas"
+        env

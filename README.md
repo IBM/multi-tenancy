@@ -4,6 +4,11 @@
 
 Multi-tenancy samples for IBM partners who want to build SaaS software.
 
+## Run Pipeline to deploy Catalog Service
+
+[Create Catalog Service on Code Engine](https://cloud.ibm.com/devops/setup/deploy?repository=https://github.com/ibm/multi-tenancy)
+
+
 ## Run Sample locally
 
 To run the catalog service locally, a [managed Postgres](https://cloud.ibm.com/databases/databases-for-postgresql/create) instance needs to be created first. After this you need to define four variables in local.env. See local.env.template for more:
