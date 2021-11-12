@@ -48,6 +48,8 @@ export FRONTEND_CATEGORY=$(cat ./$1 | jq '.[].applications.FRONTEND_CATEGORY' | 
 # App ID
 export APPID_SERVICE_INSTANCE_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
 export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+# IBM Cloud Container Registry
+export IBM_CR_SERVER=$(cat ./$1 | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
@@ -63,6 +65,8 @@ echo "---------------------------------"
 echo "Postgres instance name           : $POSTGRES_SERVICE_INSTANCE"
 echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
 echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
+echo "---------------------------------"
+echo "IBM Cloud Container Registry URL : $IBM_CR_SERVER"
 echo "---------------------------------"
 echo ""
 echo "Verify parameters and press return"
