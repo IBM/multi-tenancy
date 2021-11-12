@@ -38,5 +38,12 @@ spec:
         export YOUR_SERVICE_FOR_APPID=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
         export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
 
+
+
         #echo "niklas"
         env
+
+        export SECRET_NAME="multi.tenancy.cr.sec"
+
+        echo "api key"
+        echo ${IBMCLOUD_API}
