@@ -5,7 +5,7 @@ template.description: "[G'Ｗｉｔｈ ｔｈｉｓ ｔｏｏｌｃｈａｉｎ,
 template.gettingStarted: "[G' **Ｙｏｕｒ ｔｏｏｌｃｈａｉｎ ｉｓ ｒｅａｄｙ!**\n**Ｑｕｉｃｋ ｓｔａｒｔ:** Ｃｏｍｍｉｔ ａ ｃｈａｎｇｅ ｔｏ ｔｈｅ Ｇｉｔ ｒｅｐｏ ｔｏ ｔｒｉｇｇｅｒ ａ ｎｅｗ Ｄｏｃｋｅｒ ｉｍａｇｅ ｂｕｉｌｄ, ｗｈｉｃｈ ｉｓ ｓｃａｎｎed for vulnerabilites and deployed in your Kubernetes cluster. For step-by-step instructions, see the [tutorial](https://www.ibm.com/cloud/garage/tutorials/use-develop-kubernetes-app-toolchain?task=2) for this toolchain.ฏูİı｜]"
 deploy.title: "[G'Ｈｅｌｌｏ Ｗｏｒld Deploy Stageฏูİı｜]"
 deploy.description: "[G'ｈｅｌｌｏ-ｗｏｒｌd simple toolchainฏูİı｜]"
-deploy.longDescription: "[G'Ｔｈｅ Ｄｅｌｉｖｅｒｙ Ｐｉｐｅｌｉｎe automates continuous build, test, and deploy of the Docker application.ฏูİı｜]"
+deploy.longDescription: "[G'Ｔｈｅ Ｄｅｌｉｖｅｒｙ Ｐｉｐｅｌｉｎe automates continuous build, test, and deployment of the application.ฏูİı｜]"
 deploy.appName: "[G'App nameฏูİı｜]"
 deploy.appDescription: "[G'Ｔｈｅ ｎａｍｅ ｏｆ your application.ฏูİı｜]"
 deploy.apikeyDescription: "[G'Ｔｈｅ ＩＢＭ Ｃｌｏｕｄ ＡＰＩ ｋｅｙ ｉｓ ｕｓｅｄ ｔｏ ａｃｃｅｓｓ ｔｈｅ ＩＢＭ Ｃｌｏｕｄ Ｋｕｂｅｒｎｅｔｅｓ Ｓｅｒｖｉｃｅ ＡＰＩ ａｎｄ ｉｎｔｅｒａｃｔ ｗｉｔｈ ｔｈe cluster. You can obtain your API key with 'bx iam api-key-create' or through the console at https://cloud.ibm.com/iam#/apikeys by clicking **Create API key** (Each API key only can be viewed once).ฏูİı｜]"

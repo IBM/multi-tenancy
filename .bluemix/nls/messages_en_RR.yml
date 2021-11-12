@@ -5,7 +5,7 @@ template.description: "With this toolchain, you can develop, and deploy a Knativ
 template.gettingStarted: " **Your toolchain is ready!**\n**Quick start:** Commit a change to the Git repo to trigger a new Docker image build, which is scanned for vulnerabilites and deployed in your Kubernetes cluster. For step-by-step instructions, see the [tutorial](https://www.ibm.com/cloud/garage/tutorials/use-develop-kubernetes-app-toolchain?task=2) for this toolchain.~otc-ui1228"
 deploy.title: "Hello World Deploy Stage~otc-ui1229"
 deploy.description: "hello-world simple toolchain~otc-ui1230"
-deploy.longDescription: "The Delivery Pipeline automates continuous build, test, and deploy of the Docker application.~otc-ui1231"
+deploy.longDescription: "The Delivery Pipeline automates continuous build, test, and deployment of the application.~otc-ui1231"
 deploy.appName: "App name~otc-ui1232"
 deploy.appDescription: "The name of your application.~otc-ui1233"
 deploy.apikeyDescription: "The IBM Cloud API key is used to access the IBM Cloud Kubernetes Service API and interact with the cluster. You can obtain your API key with 'bx iam api-key-create' or through the console at https://cloud.ibm.com/iam#/apikeys by clicking **Create API key** (Each API key only can be viewed once).~otc-ui1234"
