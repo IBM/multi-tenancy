@@ -2,8 +2,8 @@ version: '2'
 messages:
   $i18n: locales.yml
 template:
-  name: "Develop Multi Tenancy app"
-  description: "tbd ... With this toolchain, ...\n\n ... [console](https://cloud.ibm.com/codeengine/overview).\n\nThe toolchain uses tools that are part of the Continuous Delivery service. If an instance of that service isn't already in the selected resource group or organization, when you click **Create**, it is automatically added with the free [Lite](/catalog/services/continuous-delivery/) plan selected.\n\nTo get started, click **Create**."
+  name: "Deploy a multi-tenancy Application on Code Engine"
+  description: "tbd ... With this toolchain, ...\n\n ... [console](https://cloud.ibm.com/codeengine/overview).\n\nThe toolchain uses tools that are part of the Continuous Delivery service. If an instance of that service isn't already in the selected resource group or organization, when you click **Create**, it is automatically added.\n\nTo get started, click **Create**."
   header: '![](toolchain.svg?localize)'
   icon: knative.svg
   required:

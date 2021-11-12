@@ -87,12 +87,7 @@
   },
   "required": [
     "app-name",
-    "api-key",
-    "registry-region",
-    "registry-namespace",
-    "code-engine-project",
-    "code-engine-region",
-    "code-engine-resource-group"
+    "api-key"
   ],
   "form": [
     {
@@ -114,108 +109,6 @@
         "$ref": "#/messages/deploy.apikey"
       },
       "key": "api-key"
-    },
-    {
-      "type": "table",
-      "columnCount": 3,
-      "widths": [
-        "50%",
-        "3%",
-        "47%"
-      ],
-      "items": [
-        {
-          "type": "label",
-          "title": {
-            "$ref": "#/messages/deploy.containerregRegion"
-          }
-        },
-        {
-          "type": "label",
-          "title": ""
-        },
-        {
-          "type": "label",
-          "title": {
-            "$ref": "#/messages/deploy.containerregns"
-          }
-        },
-        {
-          "type": "select",
-          "title": {
-            "$ref": "#/messages/deploy.containerregRegion"
-          },
-          "key": "registry-region"
-        },
-        {
-          "type": "label",
-          "title": ""
-        },
-        {
-          "type": "select",
-          "readonly": false,
-          "title": {
-            "$ref": "#/messages/deploy.containerregns"
-          },
-          "key": "registry-namespace"
-        }
-      ]
-    },
-    {
-      "type": "table",
-      "columnCount": 5,
-      "widths": [
-        "32%",
-        "2%",
-        "32%",
-        "2%",
-        "32%"
-      ],
-      "items": [
-        {
-          "type": "label",
-          "title": "Code Engine Region"
-        },
-        {
-          "type": "label",
-          "title": ""
-        },
-        {
-          "type": "label",
-          "title": "Code Engine Resource Group"
-        },
-        {
-          "type": "label",
-          "title": ""
-        },
-        {
-          "type": "label",
-          "title": "Code Engine Project"
-        },
-        {
-          "type": "select",
-          "key": "code-engine-region",
-          "readonly": false
-        },
-        {
-          "type": "label",
-          "title": ""
-        },
-        {
-          "type": "select",
-          "key": "code-engine-resource-group",
-          "readonly": false
-        },
-        {
-          "type": "label",
-          "title": ""
-        },
-        {
-          "type": "select",
-          "key": "code-engine-project",
-          "readonly": false
-        }
-      ]
     }
   ]
 }
