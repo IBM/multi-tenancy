@@ -54,6 +54,8 @@ export FRONTEND_CATEGORY=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_CA
 # App ID
 export YOUR_SERVICE_FOR_APPID=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
 export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+# IBM Cloud Container Registry
+export IBM_CR_SERVER=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
@@ -69,6 +71,8 @@ echo "---------------------------------"
 echo "Postgres instance name           : $POSTGRES_SERVICE_INSTANCE"
 echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
 echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
+echo "---------------------------------"
+echo "IBM Cloud Container Registry URL : $IBM_CR_SERVER"
 echo "---------------------------------"
 echo ""
 echo "Verify parameters and press return"
@@ -166,7 +170,6 @@ function setupCRenvCE() {
    IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
    IBMCLOUDCLI_KEY_DESCRIPTION="CLI APIkey $IBMCLOUDCLI_KEY_NAME"
    CLIKEY_FILE="cli_key.json"
-   CR_SERVER="us.icr.io"
    USERNAME="iamapikey"
 
    ibmcloud iam api-key-create $IBMCLOUDCLI_KEY_NAME -d "My IBM CLoud CLI API key for project $PROJECT_NAME" --file $CLIKEY_FILE
@@ -175,7 +178,7 @@ function setupCRenvCE() {
    rm -f $CLIKEY_FILE
 
    ibmcloud ce registry create --name $SECRET_NAME \
-                               --server $CR_SERVER \
+                               --server $IBM_CR_SERVER \
                                --username $USERNAME \
                                --password $CLIAPIKEY \
                                --email $EMAIL
