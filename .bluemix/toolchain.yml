@@ -101,7 +101,45 @@ services:
           REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
           REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
           SERVICE_BINDINGS: '{{form.pipeline.parameters.service-bindings}}'
-        execute: 'manual-run'  
+        execute: 'manual-run'
+  build-frontend:
+    service_id: pipeline
+    parameters:
+      services:
+        - repo
+      name: 'pipeline-frontend'
+      ui-pipeline: true
+      type: 'tekton'
+      configuration:
+        content:
+          $text: config-pipeline-frontend.yml
+        env:
+          API_KEY: '{{form.pipeline.parameters.api-key}}'
+          APP_NAME: '{{form.pipeline.parameters.app-name}}'
+          APP_REPO: repo
+          APP_REPO_BRANCH: 'main'
+          CODE_ENGINE_PROJECT: '{{form.pipeline.parameters.code-engine-project}}'
+          CODE_ENGINE_REGION: '{{form.pipeline.parameters.code-engine-region}}'
+          CODE_ENGINE_RESOURCE_GROUP: '{{form.pipeline.parameters.code-engine-resource-group}}'
+          GIT_COMMIT_EVENT_LISTENER_NAME: >
+            if ( $env.source_provider === 'githubconsolidated' ) {
+              'github-commit';
+            } else if ( $env.source_provider === 'gitlab' ) {
+              'grit-or-gitlab-commit';
+            } else if ( $env.source_provider === 'bitbucketgit' ) {
+              'bitbucket-commit';
+            } else if ( $env.source_provider === 'github_integrated' ) {
+              'github-ent-commit';
+            } else {
+              'grit-or-gitlab-commit';
+            }
+          IBMCLOUD_API: "https://cloud.ibm.com"
+          PIPELINE_REPO: pipeline-repo
+          PIPELINE_REPO_BRANCH: 'main'
+          REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
+          REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
+          SERVICE_BINDINGS: '{{form.pipeline.parameters.service-bindings}}'
+        execute: 'manual-run'
   webide:
     service_id: orion
 form:
