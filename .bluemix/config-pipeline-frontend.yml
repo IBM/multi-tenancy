@@ -8,6 +8,12 @@ inputs:
     service: ${PIPELINE_REPO}
     path: .tekton/tasks
 triggers:
+  - type: git
+    name: commit-push
+    eventListener: ${GIT_COMMIT_EVENT_LISTENER_NAME}
+    service: ${APP_REPO}
+    branch: ${APP_REPO_BRANCH}
+    events: { "push": true }
   - type: manual
     name: manual-run
     eventListener: manual-run

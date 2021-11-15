@@ -89,9 +89,9 @@ spec:
       workspaces:
         - name: output
           workspace: workspace-frontend
-    - name: read-config
+    - name: read-tenant
       taskRef:
-        name: read-config
+        name: read-tenant
       params:
         - name: test-param
           value: test-niklas

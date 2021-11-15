@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: read-tenant
+spec:
+  workspaces:
+    - name: output
+      description: shared workspace  
+  params:
+    - name: test-param
+      description: test-param
+    - name: ibmcloud-apikey-secret-key
+      description: field in the secret that contains the api key used to login to ibmcloud
+      default: apikey
+  steps:
+    - name: task-read-tenant
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
+      script: |
+        #!/bin/bash
+        echo "task-read-tenant"        
+        set -x
+        cd $(workspaces.output.path)
+        #pwd
+        #ls
+        #cat config-tenants/tenant-a-parameters.json
+        #echo "niklas"
