@@ -45,9 +45,3 @@ spec:
 
         #echo "niklas"
         env
-
-        export SECRET_NAME="multi.tenancy.cr.sec"
-
-        echo "api key"
-        
-        ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
