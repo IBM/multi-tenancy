@@ -9,6 +9,9 @@ spec:
   params:
     - name: test-param
       description: test-param
+    - name: ibmcloud-apikey-secret-key
+      description: field in the secret that contains the api key used to login to ibmcloud
+      default: apikey
   steps:
     - name: task-read-config
       image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
@@ -46,4 +49,5 @@ spec:
         export SECRET_NAME="multi.tenancy.cr.sec"
 
         echo "api key"
-        echo ${IBMCLOUD_API}
+        
+        ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY

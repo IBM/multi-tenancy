@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: pipeline-backend
+  name: pipeline-frontend
 spec:
   params:
     - name: ibmcloud-api
@@ -58,7 +58,7 @@ spec:
       description: Pipeline debug mode. Value can be 0 or 1. Default to 0
       default: "0"
   workspaces:
-    - name: workspace-backend
+    - name: workspace-frontend
   tasks:
     - name: extract-repository-url
       taskRef:
@@ -88,7 +88,7 @@ spec:
           value: $(params.pipeline-debug)
       workspaces:
         - name: output
-          workspace: workspace-backend
+          workspace: workspace-frontend
     - name: read-config
       taskRef:
         name: read-config
@@ -99,5 +99,5 @@ spec:
           value: "toolchain-apikey"
       workspaces:
         - name: output
-          workspace: workspace-backend
+          workspace: workspace-frontend
       runAfter: [git-clone-repo]
