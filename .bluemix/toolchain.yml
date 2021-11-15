@@ -102,7 +102,7 @@ services:
           REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
           SERVICE_BINDINGS: '{{form.pipeline.parameters.service-bindings}}'
         execute: 'manual-run'
-build-frontend:
+  build-frontend:
     service_id: pipeline
     parameters:
       services:
