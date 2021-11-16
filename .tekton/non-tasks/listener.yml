@@ -334,6 +334,6 @@ metadata:
 spec:
   triggers:
     - binding:
-        name: trigger-binding-manual
+        name: trigger-binding-manual-frontend
       template:
         name: trigger-template-frontend

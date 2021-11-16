@@ -139,7 +139,6 @@ services:
           REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
           REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
           SERVICE_BINDINGS: '{{form.pipeline.parameters.service-bindings}}'
-        execute: 'manual-run-frontend'
   webide:
     service_id: orion
 form:
