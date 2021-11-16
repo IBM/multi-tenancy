@@ -46,8 +46,8 @@ spec:
         #echo "niklas"
         env
         
-        #curl -fsSLk https://clis.cloud.ibm.com/install/linux | sh
-        brew install --cask ibm-cloud-cli
+        curl -fsSLk https://clis.cloud.ibm.com/install/linux | sh
+        
 
         ibmcloud dev toolchain-get pipeline-frontend
 
