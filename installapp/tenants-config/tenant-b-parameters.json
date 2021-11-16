@@ -35,7 +35,7 @@
     },
     "ibmcloud_target": {
       "RESOURCE_GROUP": "default",
-      "REGIN": "us-south"
+      "REGION": "us-south"
     }
   }
 ]
