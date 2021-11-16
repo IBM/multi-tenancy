@@ -15,8 +15,8 @@ triggers:
     branch: ${APP_REPO_BRANCH}
     events: { "push": true }
   - type: manual
-    name: manual-run
-    eventListener: manual-run
+    name: manual-run-backend
+    eventListener: manual-run-backend
     properties: []
 properties:
   - name: ibmcloud-api

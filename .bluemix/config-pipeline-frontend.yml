@@ -9,8 +9,8 @@ inputs:
     path: .tekton/tasks
 triggers:
   - type: manual
-    name: manual-run
-    eventListener: manual-run
+    name: manual-run-frontend
+    eventListener: manual-run-frontend
     properties: []
 properties:
   - name: ibmcloud-api
