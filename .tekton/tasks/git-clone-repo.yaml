@@ -146,7 +146,8 @@ spec:
         if [ -z "$GIT_TOKEN" ]; then
           echo "Fetching token for $REPOSITORY"
           ibmcloud config --check-version false
-          ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
+          env
+          ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $(params.apikey)
           if [ "$(params.resource-group)" ]; then
             ibmcloud target -g "$(params.resource-group)"
           fi

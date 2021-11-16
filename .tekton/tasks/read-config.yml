@@ -11,8 +11,16 @@ spec:
       description: test-param
     - name: ibmcloud-apikey-secret-key
       description: field in the secret that contains the api key used to login to ibmcloud
+      default: apikey
   steps:
     - name: task-read-config
+      env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: $(params.continuous-delivery-context-secret)
+            key: $(params.ibmcloud-apikey-secret-key)
+            optional: true
       image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
       script: |
         #!/bin/bash
@@ -45,7 +53,7 @@ spec:
         #echo "niklas"
         env
         
-        ibmcloud login --apikey $(params.ibmcloud-apikey-secret-key) 
+        ibmcloud login --apikey $API_KEY 
         ibmcloud target -g resource-group-niklas-heidloff7
         ibmcloud target -r eu-de    
         ibmcloud dev toolchains
