@@ -56,6 +56,9 @@ export YOUR_SERVICE_FOR_APPID=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE
 export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
 # IBM Cloud Container Registry
 export IBM_CR_SERVER=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
+# IBM Cloud target
+export RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
+export REGION=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
@@ -74,6 +77,9 @@ echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
 echo "---------------------------------"
 echo "IBM Cloud Container Registry URL : $IBM_CR_SERVER"
 echo "---------------------------------"
+echo "IBM Cloud RESOURCE_GROUP         : $RESOURCE_GROUP"
+echo "IBM Cloud REGION                 : $REGION"
+echo "---------------------------------"
 echo ""
 echo "Verify parameters and press return"
 
@@ -81,8 +87,6 @@ read input
 
 # **************** Global variables set as default values
 
-export RESOURCE_GROUP=default
-export REGION="us-south"
 export NAMESPACE=""
 export STATUS="Running"
 export SECRET_NAME="multi.tenancy.cr.sec"
