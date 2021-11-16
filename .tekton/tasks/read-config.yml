@@ -64,7 +64,9 @@ spec:
         ibmcloud config --check-version false
         ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
         # to be done: read from json
-        ibmcloud target -g "resource-group-niklas-heidloff7"        
+        ibmcloud target -g "resource-group-niklas-heidloff7"
+        # to be done: read from json
+        ibmcloud target -r "eu-de"      
 
         ibmcloud dev toolchains
         
