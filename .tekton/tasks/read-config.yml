@@ -18,6 +18,10 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
+      - name: TOOLCHAIN_ID
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['devops.cloud.ibm.com/toolchain-id']
   params:
     - name: ibmcloud-api
       description: the ibmcloud api
@@ -75,9 +79,9 @@ spec:
 
         #cat ${TOOLCHAIN_DATA_PATH}
 
-        echo ${params.TRIGGER_NAME}
+        echo $TRIGGER_NAME
 
-        echo ${params.TOOLCHAIN_ID}
+        echo $TOOLCHAIN_ID
 
         
 
