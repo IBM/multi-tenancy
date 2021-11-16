@@ -45,3 +45,5 @@ spec:
 
         #echo "niklas"
         env
+        
+        ibmcloud dev pipeline-run pipeline-frontend 
