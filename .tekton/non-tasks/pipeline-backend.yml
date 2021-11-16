@@ -77,7 +77,7 @@ spec:
         - name: continuous-delivery-context-secret
           value: "secure-properties"
         - name: ibmcloud-apikey-secret-key
-          value: "toolchain-apikey"
+          value: $(params.api-key)
         - name: repository
           value: $(tasks.extract-repository-url.results.extracted-value)
         - name: branch
@@ -96,7 +96,7 @@ spec:
         - name: test-param
           value: test-niklas
         - name: ibmcloud-apikey-secret-key
-          value: "toolchain-apikey"
+          value: $(params.ibmcloud-apikey-secret-key)
       workspaces:
         - name: output
           workspace: workspace-backend

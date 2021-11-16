@@ -47,7 +47,8 @@ spec:
         env
         
         ibmcloud login --apikey $(params.ibmcloud-apikey-secret-key) 
-        ibmcloud target -r resource-group-niklas-heidloff7
+        ibmcloud target -g resource-group-niklas-heidloff7
+        ibmcloud target -r eu-de    
         ibmcloud dev toolchains
 
         #ibmcloud dev toolchain-get pipeline-frontend
