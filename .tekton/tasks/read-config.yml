@@ -72,6 +72,8 @@ spec:
 
         cat ${TOOLCHAIN_DATA_PATH}
 
-        echo $app-name
+        echo ${app-name}
+
+        ibmcloud dev toolchain-get ${app-name}
         
         
