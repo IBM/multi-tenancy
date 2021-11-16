@@ -11,6 +11,7 @@ spec:
       description: the git repo containing source code. If empty, the repository url will be found from toolchain
       default: ""
     - name: apikey
+      value: $(params.apikey)
     - name: branch
       description: the branch for the git repo
       default: "main"
@@ -97,7 +98,7 @@ spec:
         - name: test-param
           value: test-niklas
         - name: ibmcloud-apikey-secret-key
-          value: $(params.ibmcloud-apikey-secret-key)
+          value: $(params.apikey)
       workspaces:
         - name: output
           workspace: workspace-backend
