@@ -128,18 +128,18 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: trigger-binding-manual
+  name: trigger-binding-manual-backend
 spec:
   params:
 ---
 apiVersion: tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: manual-run
+  name: manual-run-backend
 spec:
   triggers:
     - binding:
-        name: trigger-binding-manual
+        name: trigger-binding-manual-backend
       template:
         name: trigger-template-backend
 
@@ -147,7 +147,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: github-commit
+  name: github-commit-backend
 spec:
   params:
     - name: repository
@@ -160,11 +160,11 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: github-commit
+  name: github-commit-backend
 spec:
   triggers:
     - binding:
-        name: github-commit
+        name: github-commit-backend
       template:
         name: trigger-template-backend
 
@@ -172,7 +172,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: grit-or-gitlab-commit
+  name: grit-or-gitlab-commit-backend
 spec:
   params:
     - name: repository
@@ -185,11 +185,11 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: grit-or-gitlab-commit
+  name: grit-or-gitlab-commit-backend
 spec:
   triggers:
     - binding:
-        name: grit-or-gitlab-commit
+        name: grit-or-gitlab-commit-backend
       template:
         name: trigger-template-backend
 
@@ -323,14 +323,14 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: trigger-binding-manual
+  name: trigger-binding-manual-frontend
 spec:
   params:
 ---
 apiVersion: tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: manual-run
+  name: manual-run-frontend
 spec:
   triggers:
     - binding:
