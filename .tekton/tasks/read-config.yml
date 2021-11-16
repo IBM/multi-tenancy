@@ -14,7 +14,7 @@ spec:
       default: apikey
   steps:
     - name: task-read-config
-      image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
       script: |
         #!/bin/bash
         echo "task-read-config"        
@@ -46,9 +46,9 @@ spec:
         #echo "niklas"
         env
         
-        curl -fsSLk https://clis.cloud.ibm.com/install/linux | sh
+        curl -fsSL -k https://clis.cloud.ibm.com/install/linux | sh
         
 
-        ibmcloud dev toolchain-get pipeline-frontend
+        #ibmcloud dev toolchain-get pipeline-frontend
 
-        #ibmcloud dev pipeline-run fa6c93ed-ea8c-4b52-9b40-38998a47a9f9
+        ibmcloud dev pipeline-run fa6c93ed-ea8c-4b52-9b40-38998a47a9f9
