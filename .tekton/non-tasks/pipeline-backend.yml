@@ -101,6 +101,8 @@ spec:
           value: "toolchain-apikey"
         - name: test-param
           value: test-niklas
+        - name: app-name
+          value: $(params.app-name)
       workspaces:
         - name: output
           workspace: workspace-backend

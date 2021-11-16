@@ -33,6 +33,7 @@ spec:
     - name: ibmcloud-apikey-secret-key
       description: field in the secret that contains the api key used to login to ibmcloud
       default: apikey
+    - name: app-name
   steps:
     - name: task-read-config
       image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
@@ -83,7 +84,11 @@ spec:
 
         echo $PIPELINE_ID
 
-        ibmcloud dev pipeline-get $PIPELINE_ID
+        echo $(params.app-name)
+
+        #ibmcloud dev pipeline-get $PIPELINE_ID
+
+        ibmcloud dev toolchain-get $(params.app-name)
 
         #ibmcloud dev tekton-trigger f04ec496-3e0e-45a4-9f63-9d87a0050eda --trigger-name manual-run-frontend
 
