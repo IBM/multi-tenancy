@@ -69,5 +69,7 @@ spec:
         ibmcloud target -r "eu-de"      
 
         ibmcloud dev toolchains
+
+        cat ${TOOLCHAIN_DATA_PATH}
         
         
