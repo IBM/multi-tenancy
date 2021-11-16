@@ -38,8 +38,6 @@ spec:
     - name: registry-create-namespace
       description: create container registry namespace if it doesn't already exists
       default: "true"
-    - name: api-key
-      description: application name
     - name: app-name
       description: application name
     - name: image-name

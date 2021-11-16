@@ -7,6 +7,8 @@ spec:
     - name: ibmcloud-api
       description: the ibmcloud api
       default: https://cloud.ibm.com
+    - name: api-key
+      description: adfasdf
     - name: repository
       description: the git repo containing source code. If empty, the repository url will be found from toolchain
       default: ""
