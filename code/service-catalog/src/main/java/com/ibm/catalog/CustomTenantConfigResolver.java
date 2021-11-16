@@ -21,27 +21,18 @@ public class CustomTenantConfigResolver implements TenantConfigResolver {
     @Override
     public OidcTenantConfig resolve(RoutingContext context) {
         System.out.println("-->log: com.ibm.catalog.CustomTenantResolver.resolve : " + context.request().path());
-        String path = context.request().path();
-        String[] parts = path.split("/");
 
-        if (parts.length == 0) {
-            // resolve to default tenant configuration
-            return null;
-        }
+        OidcTenantConfig config = new OidcTenantConfig();
 
-        if ("articlesA".equals(parts[1])) {
-            OidcTenantConfig config = new OidcTenantConfig();
+        System.out.println("-->log: com.ibm.catalog.CustomTenantResolver.resolve: " + config.getToken().getIssuer().toString());
 
-            System.out.println("-->log: com.ibm.catalog.CustomTenantResolver.resolve A: " + config.getToken().getIssuer().toString());
-
-            config.setTenantId("tenant");
-            config.setAuthServerUrl(auth_server_url_tenant);
-            config.setClientId(client_id_tenant);
-            System.out.println("-->log: com.ibm.catalog.CustomTenantResolver.resolve A: " + config.toString());
+        config.setTenantId("tenant");
+        config.setAuthServerUrl(auth_server_url_tenant);
+        config.setClientId(client_id_tenant);
             
-            return config;
-        }
+        System.out.println("-->log: com.ibm.catalog.CustomTenantResolver.resolve: " + config.toString());
+            
+        return config;
 
-        return null;
     }
 }
