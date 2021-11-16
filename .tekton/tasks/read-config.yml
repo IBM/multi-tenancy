@@ -25,6 +25,14 @@ spec:
     - name: ibmcloud-apikey-secret-key
       description: field in the secret that contains the api key used to login to ibmcloud
       default: apikey
+    - name: TRIGGER_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
+    - name: TOOLCHAIN_ID
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.annotations['devops.cloud.ibm.com/toolchain-id']
 
   steps:
     - name: task-read-config
@@ -70,10 +78,14 @@ spec:
 
         ibmcloud dev toolchains
 
-        cat ${TOOLCHAIN_DATA_PATH}
+        #cat ${TOOLCHAIN_DATA_PATH}
 
-        echo ${app-name}
+        echo ${params.TRIGGER_NAME}
 
-        ibmcloud dev toolchain-get ${app-name}
+        echo ${params.TOOLCHAIN_ID}
+
+        
+
+        #ibmcloud dev toolchain-get ${app-name}
         
         
