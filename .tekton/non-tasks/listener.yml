@@ -8,7 +8,7 @@ spec:
     - name: ibmcloud-api
       description: the ibmcloud api
       default: https://cloud.ibm.com
-    - name: api-key
+    - name: apikey
       description: whatever
     - name: repository
       description: the git repo containing source code. If empty, the repository url will be found from toolchain
@@ -106,8 +106,8 @@ spec:
             value: $(params.registry-create-namespace)
           - name: app-name
             value: $(params.app-name)
-          - name: api-key
-            value: $(params.api-key)
+          - name: apikey
+            value: $(params.apikey)
           - name: image-name
             value: $(params.image-name)
           - name: region
