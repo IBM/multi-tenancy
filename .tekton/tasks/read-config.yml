@@ -11,7 +11,6 @@ spec:
       description: test-param
     - name: ibmcloud-apikey-secret-key
       description: field in the secret that contains the api key used to login to ibmcloud
-      default: apikey
   steps:
     - name: task-read-config
       image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
