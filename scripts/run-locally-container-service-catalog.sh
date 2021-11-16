@@ -40,6 +40,7 @@ function triggerScript() {
 
   podman run --name=service-catalog \
     -it \
+    -e APPID_AUTH_SERVER_URL_TENANT="${APPID_AUTH_SERVER_URL_TENANT}" \
     -e POSTGRES_CERTIFICATE_DATA="${POSTGRES_CERTIFICATE_DATA}" \
     -e POSTGRES_USERNAME="${POSTGRES_USERNAME}" \
     -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \

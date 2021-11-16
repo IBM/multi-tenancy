@@ -22,8 +22,6 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import io.quarkus.oidc.IdToken;
 import io.quarkus.oidc.RefreshToken;
-import javax.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 @Produces("application/json")
@@ -32,6 +30,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class CategoryResource {
 
     private static final Logger LOGGER = Logger.getLogger(CategoryResource.class.getName());
+
+    @Inject
+    @IdToken
+    JsonWebToken idToken;
+    @Inject
+    JsonWebToken accessToken;
+    @Inject
+    RefreshToken refreshToken;
 
     @Inject
     EntityManager entityManager;
