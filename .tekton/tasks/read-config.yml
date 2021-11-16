@@ -14,13 +14,6 @@ spec:
       default: apikey
   steps:
     - name: task-read-config
-      env:
-      - name: API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: $(params.continuous-delivery-context-secret)
-            key: $(params.ibmcloud-apikey-secret-key)
-            optional: true
       image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
       script: |
         #!/bin/bash
@@ -52,12 +45,6 @@ spec:
 
         #echo "niklas"
         env
+        ibmcloud dev help
         
-        ibmcloud login --apikey $API_KEY 
-        ibmcloud target -g resource-group-niklas-heidloff7
-        ibmcloud target -r eu-de    
-        ibmcloud dev toolchains
-
-        #ibmcloud dev toolchain-get pipeline-frontend
-
-        #ibmcloud dev pipeline-run fa6c93ed-ea8c-4b52-9b40-38998a47a9f9
+        
