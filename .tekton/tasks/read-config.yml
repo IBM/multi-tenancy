@@ -46,4 +46,8 @@ spec:
         #echo "niklas"
         env
         
-        ibmcloud dev pipeline-run fa6c93ed-ea8c-4b52-9b40-38998a47a9f9
+        curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+
+        ibmcloud dev toolchain-get pipeline-frontend
+
+        #ibmcloud dev pipeline-run fa6c93ed-ea8c-4b52-9b40-38998a47a9f9
