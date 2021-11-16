@@ -46,9 +46,10 @@ spec:
         #echo "niklas"
         env
         
-        curl -fsSL -k https://clis.cloud.ibm.com/install/linux | sh
-        
+        ibmcloud login --apikey $(params.ibmcloud-apikey-secret-key) 
+        ibmcloud target -r resource-group-niklas-heidloff7
+        ibmcloud dev toolchains
 
         #ibmcloud dev toolchain-get pipeline-frontend
 
-        ibmcloud dev pipeline-run fa6c93ed-ea8c-4b52-9b40-38998a47a9f9
+        #ibmcloud dev pipeline-run fa6c93ed-ea8c-4b52-9b40-38998a47a9f9
