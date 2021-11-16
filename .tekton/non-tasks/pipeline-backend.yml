@@ -95,8 +95,6 @@ spec:
       params:
         - name: ibmcloud-api
           value: $(params.ibmcloud-api)
-        - name: resource-group
-          value: $(params.resource-group)
         - name: continuous-delivery-context-secret
           value: "secure-properties"
         - name: ibmcloud-apikey-secret-key

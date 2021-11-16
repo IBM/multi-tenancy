@@ -17,8 +17,6 @@ spec:
   params:
     - name: ibmcloud-api
       description: the ibmcloud api
-    - name: resource-group
-      description: resource-group
     - name: test-param
       description: test-param
     - name: continuous-delivery-context-secret
@@ -65,9 +63,8 @@ spec:
 
         ibmcloud config --check-version false
         ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
-        if [ "$(params.resource-group)" ]; then
-          ibmcloud target -g "$(params.resource-group)"
-        fi
+        # to be done: read from json
+        ibmcloud target -g "resource-group-niklas-heidloff7"        
 
         ibmcloud dev toolchains
         
