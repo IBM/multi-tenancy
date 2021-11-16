@@ -15,6 +15,10 @@ spec:
             key: $(params.ibmcloud-apikey-secret-key)
             optional: true
   params:
+    - name: ibmcloud-api
+      description: the ibmcloud api
+    - name: resource-group
+      description: resource-group
     - name: test-param
       description: test-param
     - name: continuous-delivery-context-secret
