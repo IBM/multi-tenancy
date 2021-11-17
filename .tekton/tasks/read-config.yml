@@ -97,7 +97,9 @@ spec:
 
         echo $OTHER_PIPELINE_ID
 
-        #ibmcloud dev tekton-trigger f04ec496-3e0e-45a4-9f63-9d87a0050eda --trigger-name manual-run-frontend
+        TENANT_ID="tenant-b-parameters"
+
+        ibmcloud dev tekton-trigger $OTHER_PIPELINE_ID --trigger-name $TENANT_ID
 
         
 

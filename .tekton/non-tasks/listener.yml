@@ -337,3 +337,14 @@ spec:
         name: trigger-binding-manual-frontend
       template:
         name: trigger-template-frontend
+---
+apiVersion: tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: tenant-b-parameters
+spec:
+  triggers:
+    - binding:
+        name: trigger-binding-manual-frontend
+      template:
+        name: trigger-template-frontend
