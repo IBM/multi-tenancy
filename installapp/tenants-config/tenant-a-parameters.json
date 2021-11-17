@@ -34,8 +34,8 @@
       "PROJECT_NAME": "multi-tenancy-serverless-tmp-a"
     },
     "ibmcloud_target": {
-      "RESOURCE_GROUP": "default",
-      "REGION": "us-south"
+      "RESOURCE_GROUP": "resource-group-niklas-heidloff7",
+      "REGION": "eu-de"
     }
   }
 ]

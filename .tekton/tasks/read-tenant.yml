@@ -6,6 +6,18 @@ spec:
   workspaces:
     - name: output
       description: shared workspace  
+  stepTemplate:
+    env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: $(params.continuous-delivery-context-secret)
+            key: $(params.ibmcloud-apikey-secret-key)
+            optional: true
+      - name: TRIGGER_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
   params:
     - name: test-param
       description: test-param
@@ -13,14 +25,48 @@ spec:
       description: field in the secret that contains the api key used to login to ibmcloud
       default: apikey
   steps:
-    - name: task-read-tenant
+    - name: read-tenant
       image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
       script: |
         #!/bin/bash
-        echo "task-read-tenant"        
+        echo "read-tenant"        
         set -x
         cd $(workspaces.output.path)
-        #pwd
-        #ls
         #cat config-tenants/tenant-a-parameters.json
-        #echo "niklas"
+        #example: https://github.com/IBM/multi-tenancy/blob/main/installapp/tenants-config/tenant-a-parameters.json
+
+        echo $TRIGGER_NAME
+        export CONFIG_FILE="installapp/tenants-config/tenant-a-parameters.json"
+
+        export APPID_SERVICE_INSTANCE_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
+        export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+
+        export POSTGRES_SERVICE_INSTANCE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
+        export POSTGRES_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
+        export POSTGRES_SQL_FILE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
+
+        export SERVICE_CATALOG_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
+        export FRONTEND_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
+        export SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
+        export FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
+
+        export IBMCLOUD_CR_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_NAMESPACE' | sed 's/"//g')
+        export IBMCLOUD_CR_REGION_URL=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
+        export IBMCLOUD_CR_TAG=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_TAG' | sed 's/"//g')
+
+        export APPLICATIONS_SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
+        export APPLICATIONS_FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
+        export APPLICATIONS_FRONTEND_CATEGORY=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
+
+        export PROJECT_NAME=$(cat ./$CONFIG_FILE | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
+
+        export RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
+        export REGION=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
+
+        env
+
+        ibmcloud config --check-version false
+        ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
+        ibmcloud target -g $RESOURCE_GROUP
+        ibmcloud target -r $REGION        
+
