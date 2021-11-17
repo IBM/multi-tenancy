@@ -42,7 +42,7 @@ spec:
         #example: https://github.com/IBM/multi-tenancy/blob/main/installapp/tenants-config/tenant-a-parameters.json
 
         echo $TRIGGER_NAME
-        export CONFIG_FILE="installapp/tenants-config/tenant-a-parameters.json"
+        export CONFIG_FILE="installapp/tenants-config/${TRIGGER_NAME}-parameters.json"
 
         export APPID_SERVICE_INSTANCE_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
         export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
