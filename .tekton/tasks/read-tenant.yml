@@ -38,7 +38,6 @@ spec:
         echo "read-tenant"        
         set -x
         cd $(workspaces.output.path)
-        #cat config-tenants/tenant-a-parameters.json
         #example: https://github.com/IBM/multi-tenancy/blob/main/installapp/tenants-config/tenant-a-parameters.json
 
         echo $TRIGGER_NAME

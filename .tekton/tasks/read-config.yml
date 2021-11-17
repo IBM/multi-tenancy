@@ -42,7 +42,6 @@ spec:
         echo "read-config"        
         set -x
         cd $(workspaces.output.path)
-        #cat config-tenants/tenant-a-parameters.json
         #example: https://github.com/IBM/multi-tenancy/blob/main/installapp/tenants-config/tenant-a-parameters.json
 
         export CONFIG_FILE="installapp/tenants-config/tenant-a-parameters.json"
@@ -62,8 +61,13 @@ spec:
         OTHER_PIPELINE_ID=$(echo $ALMOST_OTHER_PIPELINE_ID | cut -c5-40)
         echo $OTHER_PIPELINE_ID
 
-        TENANT_ID="tenant-b"
-
-        ibmcloud dev tekton-trigger $OTHER_PIPELINE_ID --trigger-name $TENANT_ID
+        CONFIG_FILES="installapp/tenants-config/*"
+        for file in $CONFIG_FILES
+        do
+          CONFIG_FILE=$file
+          # to be done: don't hardcode number of characters
+          TENANT_ID=$(echo $CONFIG_FILE | cut -c27-34)
+          ibmcloud dev tekton-trigger $OTHER_PIPELINE_ID --trigger-name $TENANT_ID
+        done
         
         
