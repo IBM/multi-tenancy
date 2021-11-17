@@ -16,7 +16,8 @@ import javax.ws.rs.ext.Provider;
 import java.util.List;
 
 // Security
-import org.jboss.resteasy.annotations.cache.NoCache;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 
 // Token
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -24,6 +25,7 @@ import io.quarkus.oidc.IdToken;
 import io.quarkus.oidc.RefreshToken;
 
 @ApplicationScoped
+@RolesAllowed("**")
 @Produces("application/json")
 @Consumes("application/json")
 @Path("/")

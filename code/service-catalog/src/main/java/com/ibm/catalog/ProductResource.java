@@ -18,6 +18,7 @@ import java.util.List;
 
 // Security
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 
 // Token
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -71,9 +72,9 @@ public class ProductResource {
     public Product getSingleTenant(@PathParam("id") Integer id) {
         return findById(id);
     }
-
-    @PermitAll 
+ 
     @GET
+    @RolesAllowed("**")
     @Path("{tenant}/category/{id}/products")
     public ArrayList<Product> getProductsFromCategory(@PathParam("id") Integer id) {
         tenantJSONWebToken("{tenant}/category/{id}/products");
@@ -284,6 +285,9 @@ public class ProductResource {
 
             String[] parts = issuer.toString().split("/");
             System.out.println("-->log: com.ibm.catalog.ProductResource.log part[5]: " + parts[5]);
+
+            Object given_name = this.idToken.getClaim("given_name");
+            System.out.println("-->log: com.ibm.catalog.ProductResource.log idToken given_name: " + given_name);
 
             if (parts.length == 0) {
                 return "empty";

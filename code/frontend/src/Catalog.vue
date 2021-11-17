@@ -135,7 +135,7 @@ export default {
         axiosService
         .get(this.apiUrlProducts + "/" + categoryId + "/products")
         .then(function(response) {
-          console.log("--> log: Product data : " + response.data);
+          console.log("--> log: Product data : " + JSON.stringify(response.data));
           that.loadingProducts = false;
           that.error = "";
           that.$store.commit("addProducts", response.data);
@@ -145,6 +145,7 @@ export default {
             that.loadingProducts = false;
             console.error(error);
             that.errorLoadingProducts = error;
+            that.$store.commit("logout");
         });
       }
     },
