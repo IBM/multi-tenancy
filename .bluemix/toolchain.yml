@@ -102,17 +102,17 @@ services:
           REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
           SERVICE_BINDINGS: '{{form.pipeline.parameters.service-bindings}}'
         execute: 'manual-run-backend'
-  build-frontend:
+  build-backend-tenant:
     service_id: pipeline
     parameters:
       services:
         - repo
-      name: 'pipeline-frontend'
+      name: 'pipeline-backend-tenant'
       ui-pipeline: true
       type: 'tekton'
       configuration:
         content:
-          $text: config-pipeline-frontend.yml
+          $text: config-pipeline-backend-tenant.yml
         env:
           API_KEY: '{{form.pipeline.parameters.api-key}}'
           APP_NAME: '{{form.pipeline.parameters.app-name}}'

@@ -197,7 +197,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: trigger-template-frontend
+  name: trigger-template-backend-tenant
 spec:
   params:
     - name: ibmcloud-api
@@ -257,7 +257,7 @@ spec:
     - apiVersion: v1
       kind: PersistentVolumeClaim
       metadata:
-        name: workspace-frontend-$(uid)-pvc
+        name: workspace-backend-tenant-$(uid)-pvc
       spec:
         resources:
           requests:
@@ -268,10 +268,10 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        name: pipelinerun-frontend-$(uid)
+        name: pipelinerun-backend-tenant-$(uid)
       spec:
         pipelineRef:
-          name: pipeline-frontend
+          name: pipeline-backend-tenant
         params:
           - name: ibmcloud-api
             value: $(params.ibmcloud-api)
@@ -316,24 +316,24 @@ spec:
           - name: pipeline-debug
             value: $(params.pipeline-debug)
         workspaces:
-          - name: workspace-frontend
+          - name: workspace-backend-tenant
             persistentVolumeClaim:
-              claimName: workspace-frontend-$(uid)-pvc
+              claimName: workspace-backend-tenant-$(uid)-pvc
 ---
 apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: trigger-binding-manual-frontend
+  name: trigger-binding-manual-backend-tenant
 spec:
   params:
 ---
 apiVersion: tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: manual-run-frontend
+  name: manual-run-backend-tenant
 spec:
   triggers:
     - binding:
-        name: trigger-binding-manual-frontend
+        name: trigger-binding-manual-backend-tenant
       template:
-        name: trigger-template-frontend
+        name: trigger-template-backend-tenant
