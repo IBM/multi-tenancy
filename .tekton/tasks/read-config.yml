@@ -47,32 +47,8 @@ spec:
 
         export CONFIG_FILE="installapp/tenants-config/tenant-a-parameters.json"
 
-        export APPID_SERVICE_INSTANCE_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
-        export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
-
-        export POSTGRES_SERVICE_INSTANCE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
-        export POSTGRES_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
-        export POSTGRES_SQL_FILE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
-
-        export SERVICE_CATALOG_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
-        export FRONTEND_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
-        export SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
-        export FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
-
-        export IBMCLOUD_CR_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_NAMESPACE' | sed 's/"//g')
-        export IBMCLOUD_CR_REGION_URL=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
-        export IBMCLOUD_CR_TAG=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_TAG' | sed 's/"//g')
-
-        export APPLICATIONS_SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
-        export APPLICATIONS_FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
-        export APPLICATIONS_FRONTEND_CATEGORY=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
-
-        export PROJECT_NAME=$(cat ./$CONFIG_FILE | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
-
         export RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
         export REGION=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
-
-        env
 
         ibmcloud config --check-version false
         ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
@@ -82,7 +58,7 @@ spec:
         TOOLCHAIN_ID=$(params.app-name)
         echo $TOOLCHAIN_ID        
 
-        ALMOST_OTHER_PIPELINE_ID=$(ibmcloud dev toolchain-get $TOOLCHAIN_ID | grep "pipeline-frontend" -A 1 | grep -v "frontend")
+        ALMOST_OTHER_PIPELINE_ID=$(ibmcloud dev toolchain-get $TOOLCHAIN_ID | grep "pipeline-backend-tenant" -A 1 | grep -v "pipeline-backend-tenant")
         OTHER_PIPELINE_ID=$(echo $ALMOST_OTHER_PIPELINE_ID | cut -c5-40)
         echo $OTHER_PIPELINE_ID
 
