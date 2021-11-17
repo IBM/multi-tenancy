@@ -15,7 +15,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>2.4.0.Final</quarkus.platform.version>
+    <quarkus.platform.version>2.4.2.Final</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
   </properties>
   <dependencyManagement>
@@ -64,6 +64,16 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-oidc</artifactId>
+    </dependency>
+    <!-- OpenID Connect related : "Error:java.lang.RuntimeException: java.lang.RuntimeException: Failed to start quarkus
+        at io.quarkus.dev.appstate.ApplicationStateNotification" -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-jsonb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-client</artifactId>
     </dependency>
   </dependencies>
   <build>
