@@ -1,0 +1,10 @@
+apiVersion: tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: tenant-a-parameters
+spec:
+  triggers:
+    - binding:
+        name: trigger-binding-manual-frontend
+      template:
+        name: trigger-template-frontend

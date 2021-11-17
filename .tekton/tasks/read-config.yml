@@ -76,32 +76,15 @@ spec:
         # to be done: read from json
         ibmcloud target -r "eu-de"      
 
-        ibmcloud dev toolchains
-
-        #cat ${TOOLCHAIN_DATA_PATH}
-
-        echo $TRIGGER_NAME
-
-        echo $PIPELINE_ID
-
-        echo $(params.app-name)
-
-        #ibmcloud dev pipeline-get $PIPELINE_ID
-
-        TOOLCHAIN_ID=$(ibmcloud dev toolchain-get $(params.app-name))
+        TOOLCHAIN_ID=$(params.app-name)
+        echo $TOOLCHAIN_ID        
 
         ALMOST_OTHER_PIPELINE_ID=$(ibmcloud dev toolchain-get $TOOLCHAIN_ID | grep "pipeline-frontend" -A 1 | grep -v "frontend")
-
         OTHER_PIPELINE_ID=$(echo $ALMOST_OTHER_PIPELINE_ID | cut -c5-40)
-
         echo $OTHER_PIPELINE_ID
 
         TENANT_ID="tenant-b-parameters"
 
         ibmcloud dev tekton-trigger $OTHER_PIPELINE_ID --trigger-name $TENANT_ID
-
-        
-
-        #ibmcloud dev toolchain-get ${app-name}
         
         
