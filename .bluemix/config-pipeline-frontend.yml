@@ -9,9 +9,6 @@ inputs:
     path: .tekton/tasks
 triggers:
   - type: manual
-    name: manual-run-frontend
-    eventListener: manual-run-frontend
-  - type: manual
     name: tenant-a
     eventListener: manual-run-frontend
   - type: manual

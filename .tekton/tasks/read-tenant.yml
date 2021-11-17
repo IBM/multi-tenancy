@@ -19,11 +19,17 @@ spec:
           fieldRef:
             fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
   params:
+    - name: ibmcloud-api
+      description: the ibmcloud api
     - name: test-param
       description: test-param
+    - name: continuous-delivery-context-secret
+      description: name of the secret containing the continuous delivery pipeline context secrets
+      default: secure-properties
     - name: ibmcloud-apikey-secret-key
       description: field in the secret that contains the api key used to login to ibmcloud
       default: apikey
+    - name: app-name
   steps:
     - name: read-tenant
       image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6

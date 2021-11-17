@@ -93,10 +93,16 @@ spec:
       taskRef:
         name: read-tenant
       params:
-        - name: test-param
-          value: test-niklas
+        - name: ibmcloud-api
+          value: $(params.ibmcloud-api)
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
         - name: ibmcloud-apikey-secret-key
           value: "toolchain-apikey"
+        - name: test-param
+          value: test-niklas
+        - name: app-name
+          value: $(params.app-name)
       workspaces:
         - name: output
           workspace: workspace-frontend
