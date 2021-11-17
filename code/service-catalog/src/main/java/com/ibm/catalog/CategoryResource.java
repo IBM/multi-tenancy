@@ -45,12 +45,14 @@ public class CategoryResource {
     @GET
     @Path("category")
     public Category[] getDefault() {
+        tenantJSONWebToken("category");  
         return get();
     }
 
     @GET
     @Path("{tenant}/category")
     public Category[] getTenant() {
+        tenantJSONWebToken("category/{id}");       
         return get();
     }
 
@@ -62,12 +64,14 @@ public class CategoryResource {
     @GET
     @Path("category/{id}")
     public Category getSingleDefault(@PathParam("id") Integer id) {
+        tenantJSONWebToken("category/{id}");
         return findById(id);
     }
 
     @GET
     @Path("{tenant}/category/{id}")
     public Category getSingleTenant(@PathParam("id") Integer id) {
+        tenantJSONWebToken("{tenant}/category/{id}");
         return findById(id);
     }
 
@@ -159,12 +163,14 @@ public class CategoryResource {
     @GET
     @Path("categoryFindBy")
     public Response findByDefault(@QueryParam("type") String type, @QueryParam("value") String value) {
+        tenantJSONWebToken("categoryFindBy");
         return findBy(type, value);
     }
 
     @GET
     @Path("{tenant}/categoryFindBy")
     public Response findByTenant(@QueryParam("type") String type, @QueryParam("value") String value) {
+        tenantJSONWebToken("{tenant}/categoryFindBy");
         return findBy(type, value);
     }
 
@@ -208,5 +214,29 @@ public class CategoryResource {
                     .build();
         }
 
+    }
+
+    private String tenantJSONWebToken(String info){  
+        System.out.println("-->log: info" + info);
+        try {
+            Object issuer = this.accessToken.getClaim("iss");
+            System.out.println("-->log: com.ibm.catalog.CategoryResource.tenantJSONWebToken issuer: " + issuer.toString());
+            Object scope = this.accessToken.getClaim("scope");
+            System.out.println("-->log: com.ibm.catalog.CategoryResource.tenantJSONWebToken scope: " + scope.toString());
+            System.out.println("-->log: com.ibm.catalog.CategoryResource.tenantJSONWebToken access token: " + this.accessToken.toString());
+
+            String[] parts = issuer.toString().split("/");
+            System.out.println("-->log: com.ibm.catalog.CategoryResource.log part[5]: " + parts[5]);
+
+            if (parts.length == 0) {
+                return "empty";
+            }
+    
+            return  parts[5];
+
+        } catch ( Exception e ) {
+            System.out.println("-->log: com.ibm.catalog.CategoryResource.log Exception: " + e.toString());
+            return "error";
+        }
     }
 }

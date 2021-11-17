@@ -16,6 +16,14 @@ import javax.ws.rs.ext.Provider;
 import java.util.ArrayList;
 import java.util.List;
 
+// Security
+import javax.annotation.security.PermitAll;
+
+// Token
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import io.quarkus.oidc.IdToken;
+import io.quarkus.oidc.RefreshToken;
+
 @ApplicationScoped
 @Produces("application/json")
 @Consumes("application/json")
@@ -23,6 +31,14 @@ import java.util.List;
 public class ProductResource {
 
     private static final Logger LOGGER = Logger.getLogger(ProductResource.class.getName());
+
+    @Inject
+    @IdToken
+    JsonWebToken idToken;
+    @Inject
+    JsonWebToken accessToken;
+    @Inject
+    RefreshToken refreshToken;
 
     @Inject
     EntityManager entityManager;
@@ -56,9 +72,11 @@ public class ProductResource {
         return findById(id);
     }
 
+    @PermitAll 
     @GET
     @Path("{tenant}/category/{id}/products")
     public ArrayList<Product> getProductsFromCategory(@PathParam("id") Integer id) {
+        tenantJSONWebToken("{tenant}/category/{id}/products");
 
         List<ProductCategory> queryProductCategory =
                 entityManager.createNamedQuery("ProductCategory.findByCategoryId")
@@ -91,6 +109,7 @@ public class ProductResource {
     @Path("category/{id}/products")
     public ArrayList<Product> getProductsFromCategoryNoTenant(@PathParam("id") Integer id) {
 
+        tenantJSONWebToken("category/{id}/products");
         List<ProductCategory> queryProductCategory =
                 entityManager.createNamedQuery("ProductCategory.findByCategoryId")
                         .setParameter("categoryid", id)
@@ -252,5 +271,29 @@ public class ProductResource {
                     .build();
         }
 
+    }
+
+    private String tenantJSONWebToken(String info){  
+        System.out.println("-->log: info [ " + info + " ] ");
+        try {
+            Object issuer = this.accessToken.getClaim("iss");
+            System.out.println("-->log: com.ibm.catalog.ProductResource.tenantJSONWebToken issuer: " + issuer.toString());
+            Object scope = this.accessToken.getClaim("scope");
+            System.out.println("-->log: com.ibm.catalog.ProductResource.tenantJSONWebToken scope: " + scope.toString());
+            System.out.println("-->log: com.ibm.catalog.ProductResource.tenantJSONWebToken access token: " + this.accessToken.toString());
+
+            String[] parts = issuer.toString().split("/");
+            System.out.println("-->log: com.ibm.catalog.ProductResource.log part[5]: " + parts[5]);
+
+            if (parts.length == 0) {
+                return "empty";
+            }
+    
+            return  parts[5];
+
+        } catch ( Exception e ) {
+            System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.log Exception: " + e.toString());
+            return "error";
+        }
     }
 }

@@ -45,20 +45,19 @@ public class ProductCategoryResource {
     @GET
     @Path("productcategory")
     public ProductCategory[] getDefault() {
-        String tenant =  tenantJSONWebToken();
-        System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.getDefault tenant: " + tenant); 
+        tenantJSONWebToken("productcategory");
         return get();
     }
 
     @GET
     @Path("{tenant}/productcategory")
     public ProductCategory[] getTenant() {
-        String tenant =  tenantJSONWebToken();
-        System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.getTenant tenant: " + tenant); 
+        tenantJSONWebToken("{tenant}/productcategory");
         return get();
     }
 
     private ProductCategory[] get() {
+        tenantJSONWebToken("private ProductCategory[] get()");
         return entityManager.createNamedQuery("ProductCategory.findAll", ProductCategory.class)
                 .getResultList().toArray(new ProductCategory[0]);
     }
@@ -66,16 +65,19 @@ public class ProductCategoryResource {
     @GET
     @Path("productcategory/{id}")
     public ProductCategory getSingleDefault(@PathParam("id") Integer id) {
-        return findById(id);
+         tenantJSONWebToken("productcategory/{id}");
+         return findById(id);
     }
 
     @GET
     @Path("{tenant}/productcategory/{id}")
     public ProductCategory getSingleTenant(@PathParam("id") Integer id) {
+        tenantJSONWebToken("{tenant}/productcategory/{id}");
         return findById(id);
     }
 
     private ProductCategory findById(Integer id) {
+        tenantJSONWebToken("private ProductCategory findById(Integer id)");
         ProductCategory entity = entityManager.find(ProductCategory.class, id);
         if (entity == null) {
             throw new WebApplicationException("ProductCategory with id of " + id + " does not exist.", 404);
@@ -87,6 +89,7 @@ public class ProductCategoryResource {
     @Transactional
     @Path("productcategory")
     public Response createDefault(ProductCategory productcategory) {
+        tenantJSONWebToken("productcategory");
         return create(productcategory);
     }
 
@@ -94,6 +97,7 @@ public class ProductCategoryResource {
     @Transactional
     @Path("{tenant}/productcategory")
     public Response createTenant(ProductCategory productcategory) {
+        tenantJSONWebToken("{tenant}/productcategory");
         return create(productcategory);
     }
 
@@ -214,7 +218,8 @@ public class ProductCategoryResource {
 
     }
 
-    private String tenantJSONWebToken(){
+    private String tenantJSONWebToken(String info){  
+        System.out.println("-->log: info" + info);
         try {
             Object issuer = this.accessToken.getClaim("iss");
             System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.tenantJSONWebToken issuer: " + issuer.toString());
@@ -236,4 +241,5 @@ public class ProductCategoryResource {
             return "error";
         }
     }
+
 }

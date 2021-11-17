@@ -117,6 +117,7 @@ export default {
       Messaging.send(message);
     },
     readProducts(categoryId, categoryName) {
+      console.log("--> log readProducts.categoryId:  ", categoryId);
       var logURL= this.apiUrlProducts + "/" + categoryId + "/products";
       console.log("--> log readProducts.categoryId:  ", categoryId);
       console.log("--> log readProducts: URL ", logURL);
@@ -134,7 +135,7 @@ export default {
         axiosService
         .get(this.apiUrlProducts + "/" + categoryId + "/products")
         .then(function(response) {
-          console.log("-->log: Product data : " + response.data);
+          console.log("--> log: Product data : " + response.data);
           that.loadingProducts = false;
           that.error = "";
           that.$store.commit("addProducts", response.data);

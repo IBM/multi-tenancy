@@ -7,6 +7,9 @@
         <div class="mdc-top-app-bar__row" style="background: DarkCyan;">
           <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
             <span class="mdc-top-app-bar__title" style="color:white;">{{ headline }}</span>
+            <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Reload" v-on:click="onLoadProductsClicked()">
+               <span class="material-icons">refresh</span>
+            </button>
           </section>
           <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
             <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Your Account" v-on:click="onLoginClicked()">
@@ -129,6 +132,11 @@ export default {
     getUserName() {
       return this.$store.state.user.name;
     },
+    onLoadProductsClicked(){
+      console.log("--> log onLoadProductsClicked : ");
+      var categoryId = 2;   
+      this.loadProducts( categoryId, "products");
+    },   
     loadProducts (categoryId, categoryName) {
       let commandId = Date.now();
       let message = {

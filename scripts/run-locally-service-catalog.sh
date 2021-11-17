@@ -31,7 +31,9 @@ function triggerScript() {
   CERTIFICATE_PATH=${root_folder}/code/service-catalog/src/main/resources/certificates/cloud-postgres-cert
   cp ${root_folder}/code/service-catalog/src/main/resources/certificates/$POSTGRES_CERTIFICATE_FILE_NAME $CERTIFICATE_PATH
   POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
-
+  APPID_AUTH_SERVER_URL=${APPID_AUTH_SERVER_URL}
+  APPID_CLIENT_ID=${APPID_CLIENT_ID}
+  
   cd ${root_folder}/code/service-catalog
   mvn clean package
   mvn quarkus:dev
