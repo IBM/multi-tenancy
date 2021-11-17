@@ -90,7 +90,7 @@ spec:
 
         ibmcloud dev toolchain-get $(params.app-name)
 
-        ALMOST_OTHER_PIPELINE_ID=ibmcloud dev toolchain-get multi-tenancy-toolchain-20211116171712049 | grep "pipeline-frontend" -A 1 | grep -v "frontend"
+        ALMOST_OTHER_PIPELINE_ID=$(ibmcloud dev toolchain-get multi-tenancy-toolchain-20211116171712049 | grep "pipeline-frontend" -A 1 | grep -v "frontend")
 
         #ID: 50febfd0-697e-48cd-ba24-96b2c4b2cb86
         OTHER_PIPELINE_ID=$(echo $ALMOST_OTHER_PIPELINE_ID | cut -c5-40)
