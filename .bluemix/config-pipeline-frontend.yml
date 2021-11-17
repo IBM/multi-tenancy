@@ -12,7 +12,7 @@ triggers:
     name: manual-run-frontend
     eventListener: manual-run-frontend
   - type: manual
-    name: manual-run-frontend
+    name: tenant-b-parameters
     eventListener: tenant-b-parameters
 properties:
   - name: ibmcloud-api
