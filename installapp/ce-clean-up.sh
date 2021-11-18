@@ -128,9 +128,10 @@ function cleanCEsecrets () {
     ibmcloud ce secret delete --name postgres.url --force
 
     echo "delete secrets appid" 
-    ibmcloud ce secret delete --name appid.client-id --force
     ibmcloud ce secret delete --name appid.discovery-endpoint --force
     ibmcloud ce secret delete --name appid.oauthserverurl --force
+    ibmcloud ce secret delete --name appid.client-id-catalog-service --force
+    ibmcloud ce secret delete --name appid.client-id-fronted  --force
 
 }
 

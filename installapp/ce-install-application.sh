@@ -562,7 +562,8 @@ function createSecrets() {
     ibmcloud ce secret create --name postgres.password --from-literal "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
     ibmcloud ce secret create --name postgres.url --from-literal "POSTGRES_URL=$POSTGRES_URL"
     ibmcloud ce secret create --name appid.oauthserverurl --from-literal "APPID_AUTH_SERVER_URL=$APPLICATION_OAUTHSERVERURL"
-    ibmcloud ce secret create --name appid.client-id  --from-literal "APPID_CLIENT_ID=$APPLICATION_CLIENTID"
+    ibmcloud ce secret create --name appid.client-id-catalog-service  --from-literal "APPID_CLIENT_ID=$APPLICATION_CLIENTID"
+    ibmcloud ce secret create --name appid.client-id-fronted  --from-literal "VUE_APPID_CLIENT_ID=$APPLICATION_CLIENTID"
     ibmcloud ce secret create --name appid.discovery-endpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
 
 }
@@ -578,7 +579,7 @@ function deployServiceCatalog(){
                                    --env-from-secret postgres.password \
                                    --env-from-secret postgres.url \
                                    --env-from-secret appid.oauthserverurl \
-                                   --env-from-secret appid.client-id \
+                                   --env-from-secret appid.client-id-catalog-service \
                                    --cpu "1" \
                                    --memory "2G" \
                                    --port 8081 \
@@ -596,7 +597,7 @@ function deployFrontend(){
                                    --image $FRONTEND_IMAGE \
                                    --cpu "1" \
                                    --memory "2G" \
-                                   --env-from-secret appid.client-id \
+                                   --env-from-secret appid.client-id-fronted \
                                    --env-from-secret appid.discovery-endpoint \
                                    --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
                                    --env VUE_APP_API_URL_ORDERS="$SERVICE_CATALOG_URL/base/customer/Orders" \
