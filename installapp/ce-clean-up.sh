@@ -50,6 +50,9 @@ export APPID_SERVICE_INSTANCE_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INST
 export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
 # IBM Cloud Container Registry
 export IBM_CR_SERVER=$(cat ./$1 | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
+# IBM Cloud target
+export RESOURCE_GROUP=$(cat ./$1 | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
+export REGION=$(cat ./$1 | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
@@ -68,6 +71,9 @@ echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
 echo "---------------------------------"
 echo "IBM Cloud Container Registry URL : $IBM_CR_SERVER"
 echo "---------------------------------"
+echo "IBM Cloud RESOURCE_GROUP         : $RESOURCE_GROUP"
+echo "IBM Cloud REGION                 : $REGION"
+echo "---------------------------------"
 echo ""
 echo "Verify parameters and press return"
 
@@ -75,8 +81,6 @@ read input
 
 # **************** Global variables
 
-export RESOURCE_GROUP=default
-export REGION="us-south"
 export NAMESPACE=""
 
 # CE for IBM Cloud Container Registry access
@@ -123,9 +127,10 @@ function cleanCEsecrets () {
     ibmcloud ce secret delete --name postgres.password --force
     ibmcloud ce secret delete --name postgres.url --force
 
-    echo "delete secrets appid"
+    echo "delete secrets appid" 
     ibmcloud ce secret delete --name appid.client-id --force
     ibmcloud ce secret delete --name appid.discovery-endpoint --force
+    ibmcloud ce secret delete --name appid.oauthserverurl --force
 
 }
 

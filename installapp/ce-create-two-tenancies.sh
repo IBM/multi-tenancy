@@ -33,6 +33,11 @@ export QUAY_CR_PROJECT=$(cat ./$TENANT_A | jq '.[].container_quayregistry.QUAY_C
 export QUAY_URL=$(cat ./$TENANT_A | jq '.[].container_quayregistry.QUAY_URL' | sed 's/"//g')
 export QUAY_CR_TAG=$(cat ./$TENANT_A | jq '.[].container_quayregistry.QUAY_CR_TAG' | sed 's/"//g')
 
+# IBM Cloud target
+export RESOURCE_GROUP=$(cat ./$TENANT_A | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
+export REGION=$(cat ./$TENANT_A | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
+
+
 # **********************************************************************************
 # Functions definition
 # **********************************************************************************
@@ -67,6 +72,11 @@ function createAndPushQuayContainer () {
 function createNamespace(){
      
     echo "IBMCLOUD_CR_NAMESPACE: $IBMCLOUD_CR_NAMESPACE"
+    echo "RESOURCE_GROUP       : $RESOURCE_GROUP"
+    echo "REGION               : $REGION"
+    
+    ibmcloud target -g $RESOURCE_GROUP
+    ibmcloud target -r $REGION
     ibmcloud cr login
     ibmcloud cr namespace-add $IBMCLOUD_CR_NAMESPACE
 

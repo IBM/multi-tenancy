@@ -30,6 +30,8 @@ function triggerScript() {
   POSTGRES_URL=$(echo $POSTGRES_URL| cut -d'?' -f 1)
   CERTIFICATE_PATH=/cloud-postgres-cert
   POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
+  APPID_AUTH_SERVER_URL=${APPID_AUTH_SERVER_URL}
+  APPID_CLIENT_ID=${APPID_CLIENT_ID}
 
   POSTGRES_CERTIFICATE_DATA=$(<${root_folder}/code/service-catalog/src/main/resources/certificates/${POSTGRES_CERTIFICATE_FILE_NAME})
 
@@ -40,12 +42,12 @@ function triggerScript() {
 
   podman run --name=service-catalog \
     -it \
-    -e APPID_CLIENT_ID="${APPID_CLIENT_ID}" \
-    -e APPID_AUTH_SERVER_URL_TENANT="${APPID_AUTH_SERVER_URL}" \
     -e POSTGRES_CERTIFICATE_DATA="${POSTGRES_CERTIFICATE_DATA}" \
     -e POSTGRES_USERNAME="${POSTGRES_USERNAME}" \
     -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     -e POSTGRES_URL="${POSTGRES_URL}" \
+    -e APPID_AUTH_SERVER_URL="${APPID_AUTH_SERVER_URL}" \
+    -e APPID_CLIENT_ID="${APPID_CLIENT_ID}" \
     -p 8081:8081/tcp \
     localhost/service-catalog:latest
 }

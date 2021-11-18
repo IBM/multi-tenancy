@@ -56,6 +56,9 @@ export YOUR_SERVICE_FOR_APPID=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE
 export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
 # IBM Cloud Container Registry
 export IBM_CR_SERVER=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
+# IBM Cloud target
+export RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
+export REGION=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
@@ -74,15 +77,15 @@ echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
 echo "---------------------------------"
 echo "IBM Cloud Container Registry URL : $IBM_CR_SERVER"
 echo "---------------------------------"
+echo "IBM Cloud RESOURCE_GROUP         : $RESOURCE_GROUP"
+echo "IBM Cloud REGION                 : $REGION"
+echo "---------------------------------"
 echo ""
 echo "Verify parameters and press return"
 
 read input
 
 # **************** Global variables set as default values
-
-export RESOURCE_GROUP=default
-export REGION="us-south"
 export NAMESPACE=""
 export STATUS="Running"
 export SECRET_NAME="multi.tenancy.cr.sec"
@@ -551,13 +554,22 @@ function addRedirectURIAppIDInformation(){
 
 # **** application and microservices ****
 
-function deployServiceCatalog(){
-    
-    echo "Create secrets"
+function createSecrets() {
+
+    echo "Create secrets" 
     ibmcloud ce secret create --name postgres.certificate-data --from-literal "POSTGRES_CERTIFICATE_DATA=$POSTGRES_CERTIFICATE_DATA"
     ibmcloud ce secret create --name postgres.username --from-literal "POSTGRES_USERNAME=$POSTGRES_USERNAME"
     ibmcloud ce secret create --name postgres.password --from-literal "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
     ibmcloud ce secret create --name postgres.url --from-literal "POSTGRES_URL=$POSTGRES_URL"
+    ibmcloud ce secret create --name appid.oauthserverurl --from-literal "APPID_AUTH_SERVER_URL=$APPLICATION_OAUTHSERVERURL"
+    ibmcloud ce secret create --name appid.client-id  --from-literal "APPID_CLIENT_ID=$APPLICATION_CLIENTID"
+    ibmcloud ce secret create --name appid.discovery-endpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
+
+}
+
+function deployServiceCatalog(){
+    
+
 
     ibmcloud ce application create --name $SERVICE_CATALOG_NAME \
                                    --image $SERVICE_CATALOG_IMAGE \
@@ -565,6 +577,8 @@ function deployServiceCatalog(){
                                    --env-from-secret postgres.username \
                                    --env-from-secret postgres.password \
                                    --env-from-secret postgres.url \
+                                   --env-from-secret appid.oauthserverurl \
+                                   --env-from-secret appid.client-id \
                                    --cpu "1" \
                                    --memory "2G" \
                                    --port 8081 \
@@ -578,10 +592,6 @@ function deployServiceCatalog(){
 
 function deployFrontend(){
     
-    echo "Create secrets"
-    ibmcloud ce secret create --name appid.client-id --from-literal "VUE_APPID_CLIENT_ID=$APPLICATION_CLIENTID"
-    ibmcloud ce secret create --name appid.discovery-endpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
-
     ibmcloud ce application create --name $FRONTEND_NAME \
                                    --image $FRONTEND_IMAGE \
                                    --cpu "1" \
@@ -702,6 +712,12 @@ echo " AppID configuration"
 echo "************************************"
 
 configureAppIDInformation
+
+echo "************************************"
+echo " Create secrets"
+echo "************************************"
+
+createSecrets
 
 echo "************************************"
 echo " service catalog"

@@ -32,6 +32,10 @@
     },
     "codeengine": {
       "PROJECT_NAME": "multi-tenancy-serverless-tmp-a"
+    },
+    "ibmcloud_target": {
+      "RESOURCE_GROUP": "default",
+      "REGION": "us-south"
     }
   }
 ]
