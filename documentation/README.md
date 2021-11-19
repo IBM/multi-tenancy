@@ -6,7 +6,7 @@
 
 ### Multi-tenancy projects 
 
-* [Serverless](https://github.com/karimdeif/multi-tenancy)
+* [Serverless](https://github.com/ibm/multi-tenancy)
 * [OpenShift](https://github.com/kleniu/openshift-multi-tenancy)
 * [Satellite]()
 
