@@ -81,8 +81,6 @@ read input
 
 # **************** Global variables
 
-export RESOURCE_GROUP=default
-export REGION="us-south"
 export NAMESPACE=""
 
 # CE for IBM Cloud Container Registry access
@@ -129,9 +127,11 @@ function cleanCEsecrets () {
     ibmcloud ce secret delete --name postgres.password --force
     ibmcloud ce secret delete --name postgres.url --force
 
-    echo "delete secrets appid"
-    ibmcloud ce secret delete --name appid.client-id --force
+    echo "delete secrets appid" 
     ibmcloud ce secret delete --name appid.discovery-endpoint --force
+    ibmcloud ce secret delete --name appid.oauthserverurl --force
+    ibmcloud ce secret delete --name appid.client-id-catalog-service --force
+    ibmcloud ce secret delete --name appid.client-id-fronted  --force
 
 }
 

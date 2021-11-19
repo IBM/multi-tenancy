@@ -86,7 +86,6 @@ echo "Verify parameters and press return"
 read input
 
 # **************** Global variables set as default values
-
 export NAMESPACE=""
 export STATUS="Running"
 export SECRET_NAME="multi.tenancy.cr.sec"
@@ -555,13 +554,23 @@ function addRedirectURIAppIDInformation(){
 
 # **** application and microservices ****
 
-function deployServiceCatalog(){
-    
-    echo "Create secrets"
+function createSecrets() {
+
+    echo "Create secrets" 
     ibmcloud ce secret create --name postgres.certificate-data --from-literal "POSTGRES_CERTIFICATE_DATA=$POSTGRES_CERTIFICATE_DATA"
     ibmcloud ce secret create --name postgres.username --from-literal "POSTGRES_USERNAME=$POSTGRES_USERNAME"
     ibmcloud ce secret create --name postgres.password --from-literal "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
     ibmcloud ce secret create --name postgres.url --from-literal "POSTGRES_URL=$POSTGRES_URL"
+    ibmcloud ce secret create --name appid.oauthserverurl --from-literal "APPID_AUTH_SERVER_URL=$APPLICATION_OAUTHSERVERURL"
+    ibmcloud ce secret create --name appid.client-id-catalog-service  --from-literal "APPID_CLIENT_ID=$APPLICATION_CLIENTID"
+    ibmcloud ce secret create --name appid.client-id-fronted  --from-literal "VUE_APPID_CLIENT_ID=$APPLICATION_CLIENTID"
+    ibmcloud ce secret create --name appid.discovery-endpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
+
+}
+
+function deployServiceCatalog(){
+    
+
 
     ibmcloud ce application create --name $SERVICE_CATALOG_NAME \
                                    --image $SERVICE_CATALOG_IMAGE \
@@ -569,6 +578,8 @@ function deployServiceCatalog(){
                                    --env-from-secret postgres.username \
                                    --env-from-secret postgres.password \
                                    --env-from-secret postgres.url \
+                                   --env-from-secret appid.oauthserverurl \
+                                   --env-from-secret appid.client-id-catalog-service \
                                    --cpu "1" \
                                    --memory "2G" \
                                    --port 8081 \
@@ -582,15 +593,11 @@ function deployServiceCatalog(){
 
 function deployFrontend(){
     
-    echo "Create secrets"
-    ibmcloud ce secret create --name appid.client-id --from-literal "VUE_APPID_CLIENT_ID=$APPLICATION_CLIENTID"
-    ibmcloud ce secret create --name appid.discovery-endpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
-
     ibmcloud ce application create --name $FRONTEND_NAME \
                                    --image $FRONTEND_IMAGE \
                                    --cpu "1" \
                                    --memory "2G" \
-                                   --env-from-secret appid.client-id \
+                                   --env-from-secret appid.client-id-fronted \
                                    --env-from-secret appid.discovery-endpoint \
                                    --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
                                    --env VUE_APP_API_URL_ORDERS="$SERVICE_CATALOG_URL/base/customer/Orders" \
@@ -706,6 +713,12 @@ echo " AppID configuration"
 echo "************************************"
 
 configureAppIDInformation
+
+echo "************************************"
+echo " Create secrets"
+echo "************************************"
+
+createSecrets
 
 echo "************************************"
 echo " service catalog"
