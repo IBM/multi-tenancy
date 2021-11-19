@@ -19,6 +19,7 @@ function triggerScript() {
   echo "Starting catalog service locally ..."
   echo curl  \"http://localhost:8081/category\"
   echo curl  \"http://localhost:8081/category/2/products\"
+  echo "... both curl's will return with response code '401' not authorized!"
 
   CFG_FILE=${root_folder}/local.env
   if [ ! -f $CFG_FILE ]; then

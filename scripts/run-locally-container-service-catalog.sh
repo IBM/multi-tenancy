@@ -10,12 +10,16 @@ function _out() {
 
 function triggerScript() { 
 
+  echo "1. Have you created an App ID instance?"
+  echo "Copy the credentials in local.env: APPID_CLIENT_ID, APPID_AUTH_SERVER_URL"
+  echo ""
   echo "Have you created a Postgres instance?"
   echo "Copy the credentials in local.env: POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_URL, POSTGRES_CERTIFICATE_FILE_NAME"
   echo "Copy the Postgres certificate in code/service-catalog/src/main/resources/certificates"
   echo "Starting catalog service locally in a container ..."
   echo curl  \"http://localhost:8081/category\"
   echo curl  \"http://localhost:8081/category/2/products\"
+   "... both curl's will return with response code '401' not authorized!"
 
   cd ${root_folder}
   CFG_FILE=${root_folder}/local.env
