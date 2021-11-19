@@ -13,7 +13,7 @@ function triggerScript() {
   echo "Have you created a Postgres instance?"
   echo "Copy the credentials in local.env: POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_URL, POSTGRES_CERTIFICATE_FILE_NAME"
   echo "Copy the Postgres certificate in code/service-catalog/src/main/resources/certificates"
-  echo "Starting catalog service locally ..."
+  echo "Starting catalog service locally in a container ..."
   echo curl  \"http://localhost:8081/category\"
   echo curl  \"http://localhost:8081/category/2/products\"
 
@@ -28,13 +28,28 @@ function triggerScript() {
   source $CFG_FILE
 
   POSTGRES_URL=$(echo $POSTGRES_URL| cut -d'?' -f 1)
-  CERTIFICATE_PATH=${root_folder}/code/service-catalog/src/main/resources/certificates/cloud-postgres-cert
-  cp ${root_folder}/code/service-catalog/src/main/resources/certificates/$POSTGRES_CERTIFICATE_FILE_NAME $CERTIFICATE_PATH
+  CERTIFICATE_PATH=/cloud-postgres-cert
   POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
+  APPID_AUTH_SERVER_URL=${APPID_AUTH_SERVER_URL}
+  APPID_CLIENT_ID=${APPID_CLIENT_ID}
+
+  POSTGRES_CERTIFICATE_DATA=$(<${root_folder}/code/service-catalog/src/main/resources/certificates/${POSTGRES_CERTIFICATE_FILE_NAME})
 
   cd ${root_folder}/code/service-catalog
-  mvn clean package
-  mvn quarkus:dev
+  podman container stop service-catalog --ignore
+  podman container rm -f service-catalog --ignore
+  podman build --file Dockerfile --tag service-catalog
+
+  podman run --name=service-catalog \
+    -it \
+    -e POSTGRES_CERTIFICATE_DATA="${POSTGRES_CERTIFICATE_DATA}" \
+    -e POSTGRES_USERNAME="${POSTGRES_USERNAME}" \
+    -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+    -e POSTGRES_URL="${POSTGRES_URL}" \
+    -e APPID_AUTH_SERVER_URL="${APPID_AUTH_SERVER_URL}" \
+    -e APPID_CLIENT_ID="${APPID_CLIENT_ID}" \
+    -p 8081:8081/tcp \
+    localhost/service-catalog:latest
 }
 
 triggerScript
