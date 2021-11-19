@@ -15,6 +15,11 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.util.List;
 
+// Token
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import io.quarkus.oidc.IdToken;
+import io.quarkus.oidc.RefreshToken;
+
 @ApplicationScoped
 @Produces("application/json")
 @Consumes("application/json")
@@ -24,21 +29,32 @@ public class ProductCategoryResource {
     private static final Logger LOGGER = Logger.getLogger(ProductCategoryResource.class.getName());
 
     @Inject
+    @IdToken
+    JsonWebToken idToken;
+    @Inject
+    JsonWebToken accessToken;
+    @Inject
+    RefreshToken refreshToken;
+
+    @Inject
     EntityManager entityManager;
 
     @GET
     @Path("productcategory")
     public ProductCategory[] getDefault() {
+        tenantJSONWebToken("productcategory");
         return get();
     }
 
     @GET
     @Path("{tenant}/productcategory")
     public ProductCategory[] getTenant() {
+        tenantJSONWebToken("{tenant}/productcategory");
         return get();
     }
 
     private ProductCategory[] get() {
+        tenantJSONWebToken("private ProductCategory[] get()");
         return entityManager.createNamedQuery("ProductCategory.findAll", ProductCategory.class)
                 .getResultList().toArray(new ProductCategory[0]);
     }
@@ -46,16 +62,19 @@ public class ProductCategoryResource {
     @GET
     @Path("productcategory/{id}")
     public ProductCategory getSingleDefault(@PathParam("id") Integer id) {
-        return findById(id);
+         tenantJSONWebToken("productcategory/{id}");
+         return findById(id);
     }
 
     @GET
     @Path("{tenant}/productcategory/{id}")
     public ProductCategory getSingleTenant(@PathParam("id") Integer id) {
+        tenantJSONWebToken("{tenant}/productcategory/{id}");
         return findById(id);
     }
 
     private ProductCategory findById(Integer id) {
+        tenantJSONWebToken("private ProductCategory findById(Integer id)");
         ProductCategory entity = entityManager.find(ProductCategory.class, id);
         if (entity == null) {
             throw new WebApplicationException("ProductCategory with id of " + id + " does not exist.", 404);
@@ -67,6 +86,7 @@ public class ProductCategoryResource {
     @Transactional
     @Path("productcategory")
     public Response createDefault(ProductCategory productcategory) {
+        tenantJSONWebToken("productcategory");
         return create(productcategory);
     }
 
@@ -74,6 +94,7 @@ public class ProductCategoryResource {
     @Transactional
     @Path("{tenant}/productcategory")
     public Response createTenant(ProductCategory productcategory) {
+        tenantJSONWebToken("{tenant}/productcategory");
         return create(productcategory);
     }
 
@@ -193,4 +214,29 @@ public class ProductCategoryResource {
         }
 
     }
+
+    private String tenantJSONWebToken(String info){  
+        System.out.println("-->log: info" + info);
+        try {
+            Object issuer = this.accessToken.getClaim("iss");
+            System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.tenantJSONWebToken issuer: " + issuer.toString());
+            Object scope = this.accessToken.getClaim("scope");
+            System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.tenantJSONWebToken scope: " + scope.toString());
+            System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.tenantJSONWebToken access token: " + this.accessToken.toString());
+
+            String[] parts = issuer.toString().split("/");
+            System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.log part[5]: " + parts[5]);
+
+            if (parts.length == 0) {
+                return "empty";
+            }
+    
+            return  parts[5];
+
+        } catch ( Exception e ) {
+            System.out.println("-->log: com.ibm.catalog.ProductCategoryResource.log Exception: " + e.toString());
+            return "error";
+        }
+    }
+
 }
