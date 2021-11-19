@@ -48,7 +48,7 @@ import "@material/mwc-list/mwc-list.js";
 import "@material/mwc-list/mwc-list-item.js";
 import "@material/mwc-icon";
 import "@material/mwc-top-app-bar-fixed";
-
+import axios from "axios";
 export default {
   data() {
     return {
@@ -82,7 +82,6 @@ export default {
         }
       },
     });
-
     // this.readProducts( 2, window.VUE_APP_CATEGORY_NAME);
     this.readProducts( 2, "products");
   },
@@ -116,24 +115,36 @@ export default {
       Messaging.send(message);
     },
     readProducts(categoryId, categoryName) {
+      console.log("--> log readProducts.categoryId:  ", categoryId);
       var logURL= this.apiUrlProducts + "/" + categoryId + "/products";
       console.log("--> log readProducts.categoryId:  ", categoryId);
       console.log("--> log readProducts: URL ", logURL);
       this.categoryName = categoryName;
       if (this.loadingProducts == false) {
         this.loadingProducts = true;
-        fetch(this.apiUrlProducts + "/" + categoryId + "/products")
-          .then((r) => r.json())
-          .then((json) => {
-            this.loadingProducts = false;
-            this.$store.commit("addProducts", json);
-          })
-          .catch(() => {
-            var error="Can't load products";
-            this.loadingProducts = false;
+        const axiosService = axios.create({
+          timeout: 30000,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + this.$store.state.user.accessToken
+          }
+        });
+        let that = this;
+        axiosService
+        .get(this.apiUrlProducts + "/" + categoryId + "/products")
+        .then(function(response) {
+          console.log("--> log: Product data : " + JSON.stringify(response.data));
+          that.loadingProducts = false;
+          that.error = "";
+          that.$store.commit("addProducts", response.data);
+        })
+        .catch(function(e) {
+            var error="--> log: Can't load products: " + e ;
+            that.loadingProducts = false;
             console.error(error);
-            this.errorLoadingProducts = error;
-          });
+            that.errorLoadingProducts = error;
+            that.$store.commit("logout");
+        });
       }
     },
   },

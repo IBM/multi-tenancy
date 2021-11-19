@@ -7,6 +7,9 @@
         <div class="mdc-top-app-bar__row" style="background: DarkCyan;">
           <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
             <span class="mdc-top-app-bar__title" style="color:white;">{{ headline }}</span>
+            <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Reload" v-on:click="onLoadProductsAndCategoriesClicked()">
+               <span class="material-icons">refresh</span>
+            </button>
           </section>
           <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
             <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Your Account" v-on:click="onLoginClicked()">
@@ -79,7 +82,7 @@
 import Messaging from "./messaging.js";
 import Catalog from "./Catalog.vue";
 import "@material/mwc-top-app-bar-fixed";
-
+import axios from "axios";
 export default {
   name: "app",
   components: {
@@ -102,20 +105,22 @@ export default {
     };
   },
   created() {
-    this.readCategories();
-
+    
     let observable = Messaging.getObservable(
-      Messaging.MICRO_FRONTEND_NAVIGATOR
+        Messaging.MICRO_FRONTEND_NAVIGATOR
     );
     observable.subscribe({
-      next: (message) => {
-        console.log(
-          "navigator - App.vue - amountLineItems: " +
-            message.payload.amountLineItems
-        );
-        this.amountLineItems = message.payload.amountLineItems;
-      },
+        next: (message) => {
+          console.log(
+            "navigator - App.vue - amountLineItems: " +
+              message.payload.amountLineItems
+          );
+          this.amountLineItems = message.payload.amountLineItems;
+        },
     });
+    if (this.$store.state.user.isAuthenticated == true) {
+      this.readCategories();
+    }
   },
   methods: {
     onLoginClicked(){
@@ -129,7 +134,15 @@ export default {
     getUserName() {
       return this.$store.state.user.name;
     },
+    onLoadProductsAndCategoriesClicked(){
+      console.log("--> log onLoadProductsClicked : ");
+      var categoryId = 2;   
+      this.loadProducts( categoryId, "products");
+      this.readCategories();
+    },   
     loadProducts (categoryId, categoryName) {
+      console.log("--> log loadProducts : ", categoryId, categoryName);
+    
       let commandId = Date.now();
       let message = {
         topic: Messaging.TOPIC_NAVIGATOR_CATEGORY_CHANGED,
@@ -143,18 +156,32 @@ export default {
       this.$router.push('/catalog').catch(()=>{});
     },
     readCategories() {
+  
+      console.log("--> log readCategories : ", this.apiUrlCategories);
       if (this.loadingCategories == false) {
         this.loadingCategories = true;
-        fetch(this.apiUrlCategories)
-          .then((r) => r.json())
-          .then((json) => {
-            this.loadingCategories = false;
-            this.categories = json;
-            this.convertFromParentsToSubCategories(this.categories);
+        const axiosService = axios.create({
+          timeout: 30000,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + this.$store.state.user.accessToken
+          }
+        });
+        let that = this;
+        axiosService
+        .get(this.apiUrlCategories)
+        .then(function(response) {
+            console.log("--> log: Categories response : " + JSON.stringify(response));
+            that.loadingCategories = false;
+            that.categories = response.data;
+            console.log("--> log: Categories data : " + JSON.stringify(that.categories));
+            that.convertFromParentsToSubCategories(that.categories);
           })
-          .catch((error) => {
-            this.loadingCategories = false;
+          .catch(function(e) {
+            var error="--> log: Can't load categories: " + e ;
+            that.loadingCategories = false;
             console.error(error);
+            that.$store.commit("logout");
           });
       }
     },
@@ -166,6 +193,7 @@ export default {
       // [{"id":10,"name":"Electronics", "subCategories": [{"id":13,"name":"Cellphones"}]}, 
       // {"id":1,"name":"Entertainment", "subCategories": [{"id":4,"name":"Games"}, {"id":2,"name":"Movies"}]}
       let output = []
+      console.log("--> log: convertFromParentsToSubCategories ", JSON.stringify(inputJson));
       inputJson.forEach(category => {        
         if (category.parent == null) {
           output.push({
