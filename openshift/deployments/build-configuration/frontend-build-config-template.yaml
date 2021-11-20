@@ -8,7 +8,7 @@ spec:
   source:
     type: Git
     git:
-      uri: https://github.com/IBM/multi-tenancy.git
+      uri: GIT_REPO_1
     contextDir: code
   strategy:
     type: Docker                      

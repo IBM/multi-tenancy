@@ -18,7 +18,8 @@ buildNumber.properties
 #openshift
 appid-secrets.yaml
 postgres-secrets.yaml
-tmp_frontend_secrect.yaml
+configmap-frontend.yaml
+frontend-build-config.yaml
 
 #various files
 temp_information.txt
