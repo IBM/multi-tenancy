@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 8080
+      name: http
+  type: NodePort

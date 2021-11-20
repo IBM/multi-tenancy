@@ -1,0 +1,42 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: service-catalog
+spec:
+  selector:
+    matchLabels:
+      app: service-catalog
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: service-catalog
+        version: v1
+    spec:
+      containers:
+      - name: service-catalog
+        image: CONTAINER_IMAGE
+        env:
+        - name: POSTGRES_CERTIFICATE_DATA
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: certificate.data
+        - name: POSTGRES_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: password
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: url
+        ports:
+        - containerPort: 8081
+      restartPolicy: Always

@@ -570,8 +570,6 @@ function createSecrets() {
 
 function deployServiceCatalog(){
     
-
-
     ibmcloud ce application create --name $SERVICE_CATALOG_NAME \
                                    --image $SERVICE_CATALOG_IMAGE \
                                    --env-from-secret postgres.certificate-data \

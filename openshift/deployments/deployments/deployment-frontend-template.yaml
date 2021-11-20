@@ -1,0 +1,57 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: v1
+    spec:
+      containers:
+      - name: frontend
+        image: CONTAINER_IMAGE
+        env:
+        - name: VUE_APP_API_URL_PRODUCTS
+          valueFrom:
+            configMapKeyRef:
+              name: frontend
+              key: VUE_APP_API_URL_PRODUCTS
+        - name: VUE_APP_API_URL_ORDERS
+          valueFrom:
+            configMapKeyRef:
+              name: frontend
+              key: VUE_APP_API_URL_ORDERS
+        - name: VUE_APP_API_URL_CATEGORIES
+          valueFrom:
+            configMapKeyRef:
+              name: frontend
+              key: VUE_APP_API_URL_CATEGORIES
+        - name: VUE_APP_HEADLINE
+          valueFrom:
+            configMapKeyRef:
+              name: frontend
+              key: VUE_APP_HEADLINE
+        - name: VUE_APP_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: frontend
+              key: VUE_APP_ROOT
+        - name: VUE_APPID_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: appid
+              key: VUE_APPID_CLIENT_ID
+        - name: VUE_APPID_DISCOVERYENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: appid
+              key: VUE_APPID_DISCOVERYENDPOINT
+        ports:
+        - containerPort: 8080
+      restartPolicy: Always

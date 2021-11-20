@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: service-catalog
+  labels:
+    app: service-catalog
+spec:
+  selector:
+    app: service-catalog
+  ports:
+    - port: 8081
+      name: http
+  type: NodePort
