@@ -15,6 +15,11 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 
+#openshift
+appid-secrets.yaml
+postgres-secrets.yaml
+tmp_frontend_secrect.yaml
+
 #various files
 temp_information.txt
 
