@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/IBM/multi-tenancy.git
+    contextDir: code
+  strategy:
+    type: Docker                      
+    dockerStrategy:
+      dockerfilePath: frontend/Dockerfile    # Look for Dockerfile in: gitUri/contextDir/dockerfilePath
+  output:
+    to:
+      kind: ImageStreamTag
+      name: frontend-oc-config:v1
