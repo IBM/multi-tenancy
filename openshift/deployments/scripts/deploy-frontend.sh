@@ -106,10 +106,15 @@ function createAndApplyBuildConfig () {
 
   KEY_TO_REPLACE=GIT_REPO_1
   sed "s+$KEY_TO_REPLACE+$GIT_REPO+g" "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_TEMPLATE_BUILD_CONFIG_FILE" > ${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE
-
+  echo "delete build config"
+  oc delete build $OS_BUILD
+  echo "create build config"
   oc apply -f "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE"
-  oc start-build $OS_BUILD
+  echo "verify build config"
   oc describe bc/$OS_BUILD
+  echo "start build"
+  oc start-build $OS_BUILD
+  echo "verify build logs"
   oc logs -f bc/$OS_BUILD
   
   rm -f ${root_folder}/openshift/deployments/build-config/$TMP_FILE_1
@@ -117,6 +122,9 @@ function createAndApplyBuildConfig () {
 }
 
 function createProject () {
+  echo "-> delete project"
+  oc delete project "$OS_PROJECT"
+  echo "-> create project"
   oc new-project "$OS_PROJECT"
 }
 

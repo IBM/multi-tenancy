@@ -2,9 +2,14 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: frontend-build
+  namespace: multi-tenancy-openshift
   labels:
     app: frontend
 spec:
+  nodeSelector: null
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  runPolicy: Serial
   source:
     type: Git
     git:
