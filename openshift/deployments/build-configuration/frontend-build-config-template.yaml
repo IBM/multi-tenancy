@@ -1,20 +1,30 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: frontend
+  name: frontend-build
   labels:
     app: frontend
 spec:
   source:
     type: Git
     git:
-      uri: GIT_REPO_1
-    contextDir: code
+      uri: 'GIT_REPO_1'
+      ref: deploy-to-openshift
+    contextDir: code/frontend
   strategy:
     type: Docker                      
     dockerStrategy:
-      dockerfilePath: frontend/Dockerfile    # Look for Dockerfile in: gitUri/contextDir/dockerfilePath
+      dockerfilePath: Dockerfile.os4-webapp    # Look for Dockerfile in: gitUri/contextDir/dockerfilePath
   output:
     to:
       kind: ImageStreamTag
       name: frontend-oc-config:v1
+  triggers:
+    - type: Generic
+      generic:
+        secretReference:
+          name: frontend-generic-webhook-secret
+    - type: GitHub
+      github:
+        secretReference:
+          name: frontend-github-webhook-secret

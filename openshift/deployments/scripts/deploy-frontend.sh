@@ -17,9 +17,13 @@ export APP_CATEGORY_NAME="Movies"
 export APP_HEADLINE="Frontend OpenShift"
 export APP_ROOT="'/'"
 # build config
-export GIT_REPO="https://github.com/IBM/multi-tenancy.git"
+export GIT_REPO="https://github.com/IBM/multi-tenancy"
 export FRONTEND_TEMPLATE_BUILD_CONFIG_FILE="frontend-build-config-template.yaml"
 export FRONTEND_BUILD_CONFIG_FILE="frontend-build-config.yaml"
+# OpenShift
+export OS_PROJECT="multi-tenancy-openshift"
+export OS_BUILD="frontend-build"
+
 
 # **************** Load environments variables
 
@@ -101,14 +105,26 @@ function createAndApplyBuildConfig () {
   TMP_FILE_2=tmp_build-config_2.yaml
 
   KEY_TO_REPLACE=GIT_REPO_1
-  sed "s+$KEY_TO_REPLACE+$GIT_REPO+g" "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE" > ${root_folder}/openshift/deployments/build-configuration/$TMP_FILE_1
+  sed "s+$KEY_TO_REPLACE+$GIT_REPO+g" "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_TEMPLATE_BUILD_CONFIG_FILE" > ${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE
 
-  oc apply -f "${root_folder}/openshift/deployments/build-config/$FRONTEND_BUILD_CONFIG_FILE"
+  oc apply -f "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE"
+  oc start-build $OS_BUILD
+  oc describe bc/$OS_BUILD
+  oc logs -f bc/$OS_BUILD
+  
+  rm -f ${root_folder}/openshift/deployments/build-config/$TMP_FILE_1
+  rm -f ${root_folder}/openshift/deployments/build-config/$TMP_FILE_2
+}
+
+function createProject () {
+  oc new-project "$OS_PROJECT"
 }
 
 # **********************************************************************************
 # Execution
 # **********************************************************************************
+
+createProject
 
 createFrontendSecrets
 
