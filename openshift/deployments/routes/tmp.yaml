@@ -1,0 +1,11 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend-route
+spec:
+  host: frontend.roks-gen2-suedbro-162e406f043e20da9b0ef0731954a894-0000.us-south.containers.appdomain.cloud
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: OC_SERVICE_1

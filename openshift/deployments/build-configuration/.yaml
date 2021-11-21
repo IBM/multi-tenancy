@@ -12,7 +12,7 @@ spec:
   source:
     type: Git
     git:
-      uri: 'GIT_REPO_1'
+      uri: 'https://github.com/IBM/multi-tenancy'
       ref: deploy-to-openshift
     contextDir: code/frontend
   strategy:

@@ -1,0 +1,59 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: frontend-deployment
+  labels:
+      app: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: v1
+    spec:
+      containers:
+      - name: frontend
+        image: image-registry.openshift-image-registry.svc:5000/multi-tenancy-openshift/frontend-image-stream:latest
+        env:
+        - name: VUE_APP_API_URL_PRODUCTS
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-configmap
+              key: VUE_APP_API_URL_PRODUCTS
+        - name: VUE_APP_API_URL_ORDERS
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-configmap
+              key: VUE_APP_API_URL_ORDERS
+        - name: VUE_APP_API_URL_CATEGORIES
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-configmap
+              key: VUE_APP_API_URL_CATEGORIES
+        - name: VUE_APP_HEADLINE
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-configmap
+              key: VUE_APP_HEADLINE
+        - name: VUE_APP_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-configmap
+              key: VUE_APP_ROOT
+        - name: VUE_APPID_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: appid
+              key: client.id
+        - name: VUE_APPID_DISCOVERYENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: appid
+              key: discoveryendpoint
+        ports:
+        - containerPort: 8080
+      restartPolicy: Always

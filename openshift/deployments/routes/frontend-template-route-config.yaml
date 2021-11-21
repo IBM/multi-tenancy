@@ -1,0 +1,11 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend-route
+spec:
+  host: frontend.OC_DOMAIN_1
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: OC_SERVICE_1

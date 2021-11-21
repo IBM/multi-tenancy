@@ -20,6 +20,9 @@ appid-secrets.yaml
 postgres-secrets.yaml
 configmap-frontend.yaml
 frontend-build-config.yaml
+frontend-imagestream-config.yaml
+frontend-imagestream.json
+frontend-route-config.yaml
 
 #various files
 temp_information.txt
