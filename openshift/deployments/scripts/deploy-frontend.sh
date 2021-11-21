@@ -109,26 +109,26 @@ function createAndApplyBuildConfig () {
   KEY_TO_REPLACE=GIT_REPO_1
   sed "s+$KEY_TO_REPLACE+$GIT_REPO+g" "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_TEMPLATE_BUILD_CONFIG_FILE" > ${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE
   
-  echo "delete imagestream"
+  echo "-> delete imagestream"
   oc delete imagestream $OS_IMAGE_STREAM
   oc describe imagestream $OS_IMAGE_STREAM
 
-  echo "delete build config"
+  echo "-> delete build config"
   oc delete build $OS_BUILD
   oc describe bc/$OS_BUILD
 
-  echo "create image stream" 
+  echo "-> create image stream" 
   oc apply -f "${root_folder}/openshift/deployments/image-stream/$FRONTEND_IMAGESTREAM_CONFIG_FILE"
   oc describe imagestream $OS_IMAGE_STREAM
   #oc describe is/$OS_IMAGE_STREAM
   
-  echo "create build config"
+  echo "-> create build config"
   oc apply -f "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE"
-  echo "verify build config"
+  echo "-> verify build config"
   oc describe bc/$OS_BUILD
-  echo "start build"
+  echo "-> start build"
   oc start-build $OS_BUILD
-  echo "verify build logs"
+  echo "-> verify build logs"
   oc logs -f bc/$OS_BUILD
   
   rm -f ${root_folder}/openshift/deployments/build-config/$TMP_FILE_1
