@@ -1,0 +1,6 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  annotations:
+    description: Keeps track of changes in the frontend image
+  name: frontend-image-stream 

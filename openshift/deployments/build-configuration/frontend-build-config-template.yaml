@@ -2,7 +2,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: frontend-build
-  namespace: multi-tenancy-openshift
   labels:
     app: frontend
 spec:
@@ -23,7 +22,7 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: frontend-oc-config:v1
+      name: frontend-image-stream:latest
   triggers:
     - type: Generic
       generic:

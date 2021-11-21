@@ -20,9 +20,11 @@ export APP_ROOT="'/'"
 export GIT_REPO="https://github.com/IBM/multi-tenancy"
 export FRONTEND_TEMPLATE_BUILD_CONFIG_FILE="frontend-build-config-template.yaml"
 export FRONTEND_BUILD_CONFIG_FILE="frontend-build-config.yaml"
+export FRONTEND_IMAGESTREAM_CONFIG_FILE="frontend-imagestream-config.yaml"
 # OpenShift
 export OS_PROJECT="multi-tenancy-openshift"
 export OS_BUILD="frontend-build"
+export OS_IMAGE_STREAM="fronten-image-stream"
 
 
 # **************** Load environments variables
@@ -106,8 +108,20 @@ function createAndApplyBuildConfig () {
 
   KEY_TO_REPLACE=GIT_REPO_1
   sed "s+$KEY_TO_REPLACE+$GIT_REPO+g" "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_TEMPLATE_BUILD_CONFIG_FILE" > ${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE
+  
+  echo "delete imagestream"
+  oc delete imagestream $OS_IMAGE_STREAM
+  oc describe imagestream $OS_IMAGE_STREAM
+
   echo "delete build config"
   oc delete build $OS_BUILD
+  oc describe bc/$OS_BUILD
+
+  echo "create image stream" 
+  oc apply -f "${root_folder}/openshift/deployments/image-stream/$FRONTEND_IMAGESTREAM_CONFIG_FILE"
+  oc describe imagestream $OS_IMAGE_STREAM
+  #oc describe is/$OS_IMAGE_STREAM
+  
   echo "create build config"
   oc apply -f "${root_folder}/openshift/deployments/build-configuration/$FRONTEND_BUILD_CONFIG_FILE"
   echo "verify build config"
