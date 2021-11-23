@@ -125,3 +125,17 @@ spec:
         - name: output
           workspace: workspace-backend
       runAfter: [read-global-config]
+    - name: buildah
+      taskRef:
+        name: buildah
+      workspaces:
+      - name: output
+        workspace: workspace-backend
+      params:
+      - name: IMAGE
+        value: us.icr.io/multi-tenancy-example/multi-tenancy-backend:v2
+      - name: CONTEXT
+        value: $(workspaces.source.path)/code/service-catalog
+      - name: TLSVERIFY
+        value: "false"
+      runAfter: ["test-global-config"] 
