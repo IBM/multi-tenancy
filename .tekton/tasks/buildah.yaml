@@ -53,6 +53,10 @@ spec:
     image: $(params.BUILDER_IMAGE)
     workingDir: $(workspaces.workspace.path)
     script: |
+      pwd
+      ls -la
+      echo "niklas"
+      echo $(params.context)
       buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
         $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
         --tls-verify=$(params.tlsverify) --no-cache \
