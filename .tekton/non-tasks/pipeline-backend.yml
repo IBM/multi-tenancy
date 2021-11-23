@@ -96,10 +96,10 @@ spec:
       - name: workspace-backend
         workspace: workspace-backend
       params:
-      - name: IMAGE
+      - name: image
         value: us.icr.io/multi-tenancy-example/multi-tenancy-backend:v2
-      - name: CONTEXT
-        value: $(workspaces.source.path)/code/service-catalog
-      - name: TLSVERIFY
+      - name: context
+        value: $(workspaces.workspace-backend.path)/code/service-catalog
+      - name: tlsverify
         value: "false"
       runAfter: ["test-global-config"] 

@@ -4,8 +4,7 @@ metadata:
   name: read-tenant
 spec:
   workspaces:
-    - name: output
-      description: shared workspace  
+    - name: workspace-backend-tenant 
   stepTemplate:
     env:
       - name: API_KEY
@@ -37,7 +36,7 @@ spec:
         #!/bin/bash
         echo "read-tenant"        
         set -x
-        cd $(workspaces.output.path)
+        cd $(workspaces.workspace-backend-tenant.path)
         #example: https://github.com/IBM/multi-tenancy/blob/main/installapp/tenants-config/tenant-a-parameters.json
 
         echo $TRIGGER_NAME

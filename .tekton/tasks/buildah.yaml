@@ -14,7 +14,7 @@ spec:
     then pushes it to a container registry.
 
   params:
-  - name: IMAGE
+  - name: image
     description: Reference of the image buildah will produce.
   - name: BUILDER_IMAGE
     description: The location of the buildah builder image.
@@ -25,10 +25,10 @@ spec:
   - name: DOCKERFILE
     description: Path to the Dockerfile to build.
     default: ./Dockerfile
-  - name: CONTEXT
+  - name: context
     description: Path to the directory to use as context.
     default: .
-  - name: TLSVERIFY
+  - name: tlsverify
     description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
     default: "true"
   - name: FORMAT
