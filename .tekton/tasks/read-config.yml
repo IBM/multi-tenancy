@@ -54,6 +54,14 @@ spec:
         ibmcloud target -g $RESOURCE_GROUP
         ibmcloud target -r $REGION
 
+        export IBMCLOUD_CR_REGION_URL=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
+        SECRET_NAME="multi.tenancy.cr.sec"
+        ibmcloud ce registry create --name $SECRET_NAME \
+          --server $IBMCLOUD_CR_REGION_URL \
+          --username "iamapikey" \
+          --password $API_KEY \
+          --email "niklas_heidloff@de.ibm.com"
+
         TOOLCHAIN_ID=$(params.app-name)
         echo $TOOLCHAIN_ID        
 
