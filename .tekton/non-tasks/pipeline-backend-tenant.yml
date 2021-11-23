@@ -63,8 +63,6 @@ spec:
           value: "secure-properties"
         - name: ibmcloud-apikey-secret-key
           value: "toolchain-apikey"
-        - name: app-name
-          value: $(params.app-name)
       workspaces:
         - name: workspace-backend-tenant
           workspace: workspace-backend-tenant
