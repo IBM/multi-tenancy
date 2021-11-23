@@ -17,8 +17,6 @@ spec:
     - name: revision
       description: the git revision/commit for the git repo
       default: ""
-    - name: app-name
-      description: application name
     - name: pipeline-debug
       description: Pipeline debug mode. Value can be 0 or 1. Default to 0
       default: "0"
@@ -144,8 +142,6 @@ spec:
     - name: revision
       description: the git revision/commit for the git repo
       default: ""
-    - name: app-name
-      description: application name
     - name: pipeline-debug
       description: Pipeline debug mode. Value can be 0 or 1. Default to 0
       default: "0"

@@ -18,7 +18,7 @@ spec:
     description: Reference of the image buildah will produce.
   - name: BUILDER_IMAGE
     description: The location of the buildah builder image.
-    default: quay.io/buildah/stable:v1.17.0
+    default: quay.io/buildah/stable:v1.23.1
   - name: DOCKERFILE
     description: Path to the Dockerfile to build.
     default: ./Dockerfile
@@ -50,10 +50,6 @@ spec:
     image: $(params.BUILDER_IMAGE)
     workingDir: $(workspaces.workspace.path)
     script: |
-      pwd
-      ls -la
-      echo "niklas"
-      echo $(params.context)
       buildah bud \
         $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
         --tls-verify=$(params.tlsverify) --no-cache \
