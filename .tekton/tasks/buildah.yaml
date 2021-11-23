@@ -19,9 +19,6 @@ spec:
   - name: BUILDER_IMAGE
     description: The location of the buildah builder image.
     default: quay.io/buildah/stable:v1.17.0
-  - name: STORAGE_DRIVER
-    description: Set buildah storage driver
-    default: overlay
   - name: DOCKERFILE
     description: Path to the Dockerfile to build.
     default: ./Dockerfile
@@ -57,7 +54,7 @@ spec:
       ls -la
       echo "niklas"
       echo $(params.context)
-      buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
+      buildah bud \
         $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
         --tls-verify=$(params.tlsverify) --no-cache \
         -f $(params.DOCKERFILE) -t $(params.image) $(params.context)
@@ -71,7 +68,7 @@ spec:
     image: $(params.BUILDER_IMAGE)
     workingDir: $(workspaces.workspace.path)
     script: |
-      buildah --storage-driver=$(params.STORAGE_DRIVER) push \
+      buildah push \
         $(params.PUSH_EXTRA_ARGS) --tls-verify=$(params.tlsverify) \
         --digestfile $(workspaces.workspace.path)/image-digest $(params.image) \
         docker://$(params.image)
