@@ -21,8 +21,6 @@ spec:
   params:
     - name: ibmcloud-api
       description: the ibmcloud api
-    - name: test-param
-      description: test-param
     - name: continuous-delivery-context-secret
       description: name of the secret containing the continuous delivery pipeline context secrets
       default: secure-properties

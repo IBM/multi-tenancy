@@ -89,13 +89,13 @@ spec:
       taskRef:
         name: buildah
       workspaces:
-      - name: workspace-backend
+      - name: workspace
         workspace: workspace-backend
       params:
       - name: image
         value: us.icr.io/multi-tenancy-example/multi-tenancy-backend:v2
       - name: context
-        value: $(workspaces.workspace-backend.path)/code/service-catalog
+        value: $(workspaces.workspace.path)/code/service-catalog
       - name: tlsverify
         value: "false"
       runAfter: ["test-global-config"] 

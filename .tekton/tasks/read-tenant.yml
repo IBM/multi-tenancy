@@ -26,7 +26,6 @@ spec:
     - name: ibmcloud-apikey-secret-key
       description: field in the secret that contains the api key used to login to ibmcloud
       default: apikey
-    - name: app-name
   steps:
     - name: read-tenant
       image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
