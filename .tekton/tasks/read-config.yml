@@ -42,38 +42,31 @@ spec:
         echo "read-config"        
         set -x
         cd $(workspaces.output.path)
-        #example: https://github.com/IBM/multi-tenancy/blob/main/installapp/tenants-config/tenant-a-parameters.json
+        #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
 
-        export CONFIG_FILE="installapp/tenants-config/tenant-a-parameters.json"
+        export CONFIG_FILE="configuration/global.json"
 
-        export RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
-        export REGION=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
-        export IBMCLOUD_CR_REGION_URL=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
-        export IBMCLOUD_CR_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_NAMESPACE' | sed 's/"//g')
-        export IBMCLOUD_CR_TAG=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_TAG' | sed 's/"//g')
-        export SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
-        export FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
-        export PROJECT_NAME=$(cat ./$CONFIG_FILE | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
+        export IBM_CLOUD_RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
+        export IBM_CLOUD_REGION=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
+
+        export REGISTRY_URL=$(cat ./$CONFIG_FILE | jq '.REGISTRY.URL' | sed 's/"//g')
+        export REGISTRY_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
+        export REGISTRY_TAG=$(cat ./$CONFIG_FILE | jq '.REGISTRY.TAG' | sed 's/"//g')
+        
+        export IMAGES_NAME_BACKEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
+        export IMAGES_NAME_FRONTEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
         
         ibmcloud config --check-version false
         ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
-        ibmcloud target -g $RESOURCE_GROUP
-        ibmcloud target -r $REGION
+        ibmcloud target -g $IBM_CLOUD_RESOURCE_GROUP
+        ibmcloud target -r $IBM_CLOUD_REGION
 
-        ibmcloud plugin install code-engine
-        ibmcloud ce project select -n $PROJECT_NAME        
-        SECRET_NAME="multi.tenancy.cr.sec"
-        ibmcloud ce registry create --name $SECRET_NAME \
-          --server $IBMCLOUD_CR_REGION_URL \
-          --username "iamapikey" \
-          --password $API_KEY \
-          --email "niklas_heidloff@de.ibm.com"
 
-        echo "Build image names" 
-        FRONTEND_IMAGE="$IBMCLOUD_CR_REGION_URL/$IBMCLOUD_CR_NAMESPACE/$FRONTEND_NAME:$IBMCLOUD_CR_TAG"
-        SERVICE_CATALOG_IMAGE="$IBMCLOUD_CR_REGION_URL/$IBMCLOUD_CR_NAMESPACE/$SERVICE_CATALOG_NAME:$IBMCLOUD_CR_TAG"
+        FRONTEND_IMAGE="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGES_NAME_BACKEND:$REGISTRY_TAG"
+        BACKEND_IMAGE="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGES_NAME_BACKEND:$REGISTRY_TAG"
         echo "FRONTEND_IMAGE: $FRONTEND_IMAGE"
-        echo "SERVICE_CATALOG_IMAGE: $SERVICE_CATALOG_IMAGE"
+        echo "BACKEND_IMAGE: $BACKEND_IMAGE"
+
 
         TOOLCHAIN_ID=$(params.app-name)
         echo $TOOLCHAIN_ID        
@@ -82,12 +75,11 @@ spec:
         OTHER_PIPELINE_ID=$(echo $ALMOST_OTHER_PIPELINE_ID | cut -c5-40)
         echo $OTHER_PIPELINE_ID
 
-        CONFIG_FILES="installapp/tenants-config/*"
+        CONFIG_FILES="configuration/tenants/*"
         for file in $CONFIG_FILES
         do
           CONFIG_FILE=$file
-          # to be done: don't hardcode number of characters
-          TENANT_ID=$(echo $CONFIG_FILE | cut -c27-34)
+          TENANT_ID=$(echo $CONFIG_FILE | cut -d. -f1)
           ibmcloud dev tekton-trigger $OTHER_PIPELINE_ID --trigger-name $TENANT_ID
         done
         
