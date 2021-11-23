@@ -17,44 +17,8 @@ spec:
     - name: revision
       description: the git revision/commit for the git repo
       default: ""
-    - name: fail-on-lint-errors
-      description: force failure of task when docker lint errors are found
-      default: "true"
-    - name: fail-on-scanned-issues
-      description: force failure of task when vulnerability advisor scan issues are found
-      default: "false"
-    - name: path-to-context
-      default: "."
-    - name: path-to-dockerfile
-      default: "."
-    - name: dockerfile
-      default: "Dockerfile"
-    - name: registry-region
-      description: The IBM Cloud region for image registry
-    - name: registry-namespace
-      description: container registry namespace
-    - name: registry-create-namespace
-      description: create container registry namespace if it doesn't already exists
-      default: "true"
     - name: app-name
       description: application name
-    - name: image-name
-      description: image name
-    - name: region
-      description: region of application deployment
-    - name: resource-group
-      description: resource group for the application deployment
-    - name: code-engine-project
-      description: Code Engine project for the application deployment
-    - name: service-bindings
-      description: service binding JSON for the application deployment
-      default: "{}"
-    - name: port
-      description: port where the application is listening
-      default: "http1:8080"
-    - name: health-endpoint
-      description: application health endpoint, e.g. /health
-      default: ""
     - name: pipeline-debug
       description: Pipeline debug mode. Value can be 0 or 1. Default to 0
       default: "0"
@@ -86,38 +50,8 @@ spec:
             value: $(params.branch)
           - name: revision
             value: $(params.revision)
-          - name: fail-on-lint-errors
-            value: $(params.fail-on-lint-errors)
-          - name: fail-on-scanned-issues
-            value: $(params.fail-on-scanned-issues)
-          - name: path-to-context
-            value: $(params.path-to-context)
-          - name: path-to-dockerfile
-            value: $(params.path-to-dockerfile)
-          - name: dockerfile
-            value: $(params.dockerfile)
-          - name: registry-region
-            value: $(params.registry-region)
-          - name: registry-namespace
-            value: $(params.registry-namespace)
-          - name: registry-create-namespace
-            value: $(params.registry-create-namespace)
           - name: app-name
             value: $(params.app-name)
-          - name: image-name
-            value: $(params.image-name)
-          - name: region
-            value: $(params.region)
-          - name: resource-group
-            value: $(params.resource-group)
-          - name: code-engine-project
-            value: $(params.code-engine-project)
-          - name: service-bindings
-            value: $(params.service-bindings)
-          - name: port
-            value: $(params.port)
-          - name: health-endpoint
-            value: $(params.health-endpoint)
           - name: pipeline-debug
             value: $(params.pipeline-debug)
         workspaces:
@@ -212,44 +146,8 @@ spec:
     - name: revision
       description: the git revision/commit for the git repo
       default: ""
-    - name: fail-on-lint-errors
-      description: force failure of task when docker lint errors are found
-      default: "true"
-    - name: fail-on-scanned-issues
-      description: force failure of task when vulnerability advisor scan issues are found
-      default: "false"
-    - name: path-to-context
-      default: "."
-    - name: path-to-dockerfile
-      default: "."
-    - name: dockerfile
-      default: "Dockerfile"
-    - name: registry-region
-      description: The IBM Cloud region for image registry
-    - name: registry-namespace
-      description: container registry namespace
-    - name: registry-create-namespace
-      description: create container registry namespace if it doesn't already exists
-      default: "true"
     - name: app-name
       description: application name
-    - name: image-name
-      description: image name
-    - name: region
-      description: region of application deployment
-    - name: resource-group
-      description: resource group for the application deployment
-    - name: code-engine-project
-      description: Code Engine project for the application deployment
-    - name: service-bindings
-      description: service binding JSON for the application deployment
-      default: "{}"
-    - name: port
-      description: port where the application is listening
-      default: "http1:8080"
-    - name: health-endpoint
-      description: application health endpoint, e.g. /health
-      default: ""
     - name: pipeline-debug
       description: Pipeline debug mode. Value can be 0 or 1. Default to 0
       default: "0"
@@ -281,38 +179,8 @@ spec:
             value: $(params.branch)
           - name: revision
             value: $(params.revision)
-          - name: fail-on-lint-errors
-            value: $(params.fail-on-lint-errors)
-          - name: fail-on-scanned-issues
-            value: $(params.fail-on-scanned-issues)
-          - name: path-to-context
-            value: $(params.path-to-context)
-          - name: path-to-dockerfile
-            value: $(params.path-to-dockerfile)
-          - name: dockerfile
-            value: $(params.dockerfile)
-          - name: registry-region
-            value: $(params.registry-region)
-          - name: registry-namespace
-            value: $(params.registry-namespace)
-          - name: registry-create-namespace
-            value: $(params.registry-create-namespace)
           - name: app-name
             value: $(params.app-name)
-          - name: image-name
-            value: $(params.image-name)
-          - name: region
-            value: $(params.region)
-          - name: resource-group
-            value: $(params.resource-group)
-          - name: code-engine-project
-            value: $(params.code-engine-project)
-          - name: service-bindings
-            value: $(params.service-bindings)
-          - name: port
-            value: $(params.port)
-          - name: health-endpoint
-            value: $(params.health-endpoint)
           - name: pipeline-debug
             value: $(params.pipeline-debug)
         workspaces:
