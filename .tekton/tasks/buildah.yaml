@@ -55,8 +55,8 @@ spec:
     script: |
       buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
         $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
-        --tls-verify=$(params.TLSVERIFY) --no-cache \
-        -f $(params.DOCKERFILE) -t $(params.IMAGE) $(params.CONTEXT)
+        --tls-verify=$(params.tlsverify) --no-cache \
+        -f $(params.DOCKERFILE) -t $(params.image) $(params.context)
     volumeMounts:
     - name: varlibcontainers
       mountPath: /var/lib/containers
@@ -68,9 +68,9 @@ spec:
     workingDir: $(workspaces.workspace-backend.path)
     script: |
       buildah --storage-driver=$(params.STORAGE_DRIVER) push \
-        $(params.PUSH_EXTRA_ARGS) --tls-verify=$(params.TLSVERIFY) \
-        --digestfile $(workspaces.workspace-backend.path)/image-digest $(params.IMAGE) \
-        docker://$(params.IMAGE)
+        $(params.PUSH_EXTRA_ARGS) --tls-verify=$(params.tlsverify) \
+        --digestfile $(workspaces.workspace-backend.path)/image-digest $(params.image) \
+        docker://$(params.image)
     volumeMounts:
     - name: varlibcontainers
       mountPath: /var/lib/containers
