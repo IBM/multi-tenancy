@@ -79,7 +79,8 @@ spec:
         for file in $CONFIG_FILES
         do
           CONFIG_FILE=$file
-          TENANT_ID=$(echo $CONFIG_FILE | cut -d. -f1)
+          TENANT_ID_JSON=$(echo $CONFIG_FILE | cut -c23-)
+          TENANT_ID=$(echo $TENANT_ID_JSON | cut -d. -f1)
           ibmcloud dev tekton-trigger $OTHER_PIPELINE_ID --trigger-name $TENANT_ID
         done
         
