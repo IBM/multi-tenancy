@@ -67,6 +67,9 @@ spec:
         echo "FRONTEND_IMAGE: $FRONTEND_IMAGE"
         echo "BACKEND_IMAGE: $BACKEND_IMAGE"
 
+        ibmcloud cr login
+        ibmcloud cr namespace-add $REGISTRY_NAMESPACE
+
 
         TOOLCHAIN_ID=$(params.app-name)
         echo $TOOLCHAIN_ID        
