@@ -51,7 +51,7 @@ spec:
     workingDir: $(workspaces.workspace.path)
     script: |
       buildah bud \
-        $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
+        $(params.BUILD_EXTRA_ARGS) --isolation chroot --format=$(params.FORMAT) \
         --tls-verify=$(params.tlsverify) --no-cache \
         -f $(params.DOCKERFILE) -t $(params.image) $(params.context)
     volumeMounts:
