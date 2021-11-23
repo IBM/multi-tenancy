@@ -51,7 +51,7 @@ spec:
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
-        - name: workspace-backend
+        - name: workspace
           workspace: workspace-backend
     - name: read-global-config
       taskRef:
@@ -63,8 +63,6 @@ spec:
           value: "secure-properties"
         - name: ibmcloud-apikey-secret-key
           value: "toolchain-apikey"
-        - name: test-param
-          value: test-niklas
         - name: app-name
           value: $(params.app-name)
       workspaces:
@@ -81,8 +79,6 @@ spec:
           value: "secure-properties"
         - name: ibmcloud-apikey-secret-key
           value: "toolchain-apikey"
-        - name: test-param
-          value: test-niklas
         - name: app-name
           value: $(params.app-name)
       workspaces:
