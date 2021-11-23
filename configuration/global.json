@@ -1,0 +1,15 @@
+{
+  "IBM_CLOUD": {
+    "RESOURCE_GROUP": "resource-group-niklas-heidloff7",
+    "REGION": "eu-de"
+  },
+  "REGISTRY": {
+    "URL": "us.icr.io",
+    "NAMESPACE": "multi-tenancy-example",
+    "TAG": "v2"
+  },
+  "IMAGES": {
+    "NAME_BACKEND": "multi-tenancy-backend",
+    "NAME_FRONTEND": "multi-tenancy-frontend"
+  }
+}

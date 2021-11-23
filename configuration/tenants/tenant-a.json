@@ -1,0 +1,19 @@
+{
+  "APP_ID": {
+    "SERVICE_INSTANCE": "multi-tenancy-serverless-appid-a",
+    "SERVICE_KEY_NAME": "multi-tenancy-serverless-appid-key-a"
+  },
+  "POSTGRES": {
+    "SERVICE_INSTANCE": "multi-tenant-pg-a-working",
+    "SERVICE_KEY_NAME": "multi-tenant-pg-service-key-a-working",
+    "SQL_FILE": "create-populate-tenant-a.sql"
+  },
+  "APPLICATION": {
+    "CONTAINER_NAME_BACKEND": "service-catalog-movies",
+    "CONTAINER_NAME-FRONTEND": "frontend-movies",
+    "CATEGORY": "Movies"
+  },
+  "CODE_ENGINE": {
+    "PROJECT_NAME": "multi-tenancy-serverless-tmp-a"
+  }
+}
