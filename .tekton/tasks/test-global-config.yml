@@ -4,7 +4,7 @@ metadata:
   name: test-global-config
 spec:
   workspaces:
-    - name: output
+    - name: workspace-backend
       description: shared workspace
   stepTemplate:
     env:
@@ -37,7 +37,7 @@ spec:
         #!/bin/bash
         echo "test-config"        
         set -x
-        cd $(workspaces.output.path)
+        cd $(workspaces.workspace-backend.path)
         #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
         
         CONFIG_FILE_ENV="configuration/global.env"

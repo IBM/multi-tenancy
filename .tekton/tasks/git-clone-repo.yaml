@@ -78,7 +78,7 @@ spec:
     - name: git-user
       description: The auth user that cloned the repository
   workspaces:
-    - name: output
+    - name: workspace-backend
       description: The git repo will be cloned onto the volume backing this workspace
       mountPath: /artifacts
   stepTemplate:
@@ -235,7 +235,7 @@ spec:
         echo "Cloning $REPOSITORY"
         # Add the proper creds to the git repository
         GIT_URL=$(echo "$REPOSITORY" | sed -e "s/:\/\//:\/\/$GIT_AUTH_USER:$GIT_TOKEN@/g")
-        ARTIFACTS_PATH="$(workspaces.output.path)"
+        ARTIFACTS_PATH="$(workspaces.workspace-backend.path)"
         cd $ARTIFACTS_PATH
         if [ "$REVISION" ]; then
           # check if the branch exists (that may not be the case in case of a pipeline-run re-run)
