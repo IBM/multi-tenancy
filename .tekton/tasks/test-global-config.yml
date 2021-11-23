@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: test-global-config
+spec:
+  workspaces:
+    - name: output
+      description: shared workspace
+  stepTemplate:
+    env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: $(params.continuous-delivery-context-secret)
+            key: $(params.ibmcloud-apikey-secret-key)
+            optional: true
+      - name: TRIGGER_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
+  params:
+    - name: ibmcloud-api
+      description: the ibmcloud api
+    - name: test-param
+      description: test-param
+    - name: continuous-delivery-context-secret
+      description: name of the secret containing the continuous delivery pipeline context secrets
+      default: secure-properties
+    - name: ibmcloud-apikey-secret-key
+      description: field in the secret that contains the api key used to login to ibmcloud
+      default: apikey
+    - name: app-name
+  steps:
+    - name: test-global-config
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
+      script: |
+        #!/bin/bash
+        echo "test-config"        
+        set -x
+        cd $(workspaces.output.path)
+        #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
+        
+        CONFIG_FILE_ENV="configuration/global.env"
+
+        cat $CONFIG_FILE_ENV
+
+        source $CONFIG_FILE_ENV
+        env

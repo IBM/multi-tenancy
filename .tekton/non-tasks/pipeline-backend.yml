@@ -89,9 +89,9 @@ spec:
       workspaces:
         - name: output
           workspace: workspace-backend
-    - name: read-config
+    - name: read-global-config
       taskRef:
-        name: read-config
+        name: read-global-config
       params:
         - name: ibmcloud-api
           value: $(params.ibmcloud-api)
@@ -107,3 +107,21 @@ spec:
         - name: output
           workspace: workspace-backend
       runAfter: [git-clone-repo]
+    - name: test-global-config
+      taskRef:
+        name: test-global-config
+      params:
+        - name: ibmcloud-api
+          value: $(params.ibmcloud-api)
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
+        - name: ibmcloud-apikey-secret-key
+          value: "toolchain-apikey"
+        - name: test-param
+          value: test-niklas
+        - name: app-name
+          value: $(params.app-name)
+      workspaces:
+        - name: output
+          workspace: workspace-backend
+      runAfter: [read-global-config]

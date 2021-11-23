@@ -1,0 +1,79 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: read-global-config
+spec:
+  workspaces:
+    - name: output
+      description: shared workspace
+  stepTemplate:
+    env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: $(params.continuous-delivery-context-secret)
+            key: $(params.ibmcloud-apikey-secret-key)
+            optional: true
+      - name: TRIGGER_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
+  params:
+    - name: ibmcloud-api
+      description: the ibmcloud api
+    - name: test-param
+      description: test-param
+    - name: continuous-delivery-context-secret
+      description: name of the secret containing the continuous delivery pipeline context secrets
+      default: secure-properties
+    - name: ibmcloud-apikey-secret-key
+      description: field in the secret that contains the api key used to login to ibmcloud
+      default: apikey
+    - name: app-name
+  steps:
+    - name: read-global-config
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
+      script: |
+        #!/bin/bash
+        echo "read-config"        
+        set -x
+        cd $(workspaces.output.path)
+        #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
+
+        CONFIG_FILE="configuration/global.json"
+        CONFIG_FILE_ENV="configuration/global.env"
+        rm $CONFIG_FILE_ENV
+        touch $CONFIG_FILE_ENV
+
+        IBM_CLOUD_RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
+        printf "IBM_CLOUD_RESOURCE_GROUP=$IBM_CLOUD_RESOURCE_GROUP" >> $CONFIG_FILE_ENV
+        IBM_CLOUD_REGION=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
+        printf "\nIBM_CLOUD_REGION=$IBM_CLOUD_REGION" >> $CONFIG_FILE_ENV
+
+        REGISTRY_URL=$(cat ./$CONFIG_FILE | jq '.REGISTRY.URL' | sed 's/"//g')
+        printf "\nREGISTRY_URL=$REGISTRY_URL" >> $CONFIG_FILE_ENV
+        REGISTRY_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
+        printf "\nREGISTRY_NAMESPACE=$REGISTRY_NAMESPACE" >> $CONFIG_FILE_ENV
+        REGISTRY_TAG=$(cat ./$CONFIG_FILE | jq '.REGISTRY.TAG' | sed 's/"//g')
+        printf "\nREGISTRY_TAG=$REGISTRY_TAG" >> $CONFIG_FILE_ENV
+        
+        IMAGES_NAME_BACKEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
+        printf "\nIMAGES_NAME_BACKEND=$IMAGES_NAME_BACKEND" >> $CONFIG_FILE_ENV
+        IMAGES_NAME_FRONTEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
+        printf "\nIMAGES_NAME_FRONTEND=$IMAGES_NAME_FRONTEND" >> $CONFIG_FILE_ENV
+
+        IMAGES_NAME_BACKEND_FULL="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGES_NAME_BACKEND:$REGISTRY_TAG"
+        printf "\nIMAGES_NAME_BACKEND_FULL=$IMAGES_NAME_BACKEND_FULL" >> $CONFIG_FILE_ENV
+        IMAGES_NAME_FRONTEND_FULL="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGES_NAME_BACKEND:$REGISTRY_TAG"
+        printf "\nIMAGES_NAME_FRONTEND_FULL=$IMAGES_NAME_FRONTEND_FULL" >> $CONFIG_FILE_ENV
+
+        cat $CONFIG_FILE_ENV
+
+        # test login
+        ibmcloud config --check-version false
+        ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
+        ibmcloud target -g $IBM_CLOUD_RESOURCE_GROUP
+        ibmcloud target -r $IBM_CLOUD_REGION
+
+        ibmcloud cr login
+        ibmcloud cr namespace-add $REGISTRY_NAMESPACE

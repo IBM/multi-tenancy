@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: read-config
+  name: trigger-tenant-pipelines-backend
 spec:
   workspaces:
     - name: output
@@ -18,10 +18,6 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
-      - name: PIPELINE_ID
-        valueFrom:
-          fieldRef:
-            fieldPath: metadata.annotations['devops.cloud.ibm.com/pipeline-id']
   params:
     - name: ibmcloud-api
       description: the ibmcloud api
