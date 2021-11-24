@@ -78,5 +78,4 @@ spec:
         ibmcloud target -g $IBM_CLOUD_RESOURCE_GROUP
         ibmcloud target -r $IBM_CLOUD_REGION
 
-        ibmcloud cr login
-        ibmcloud cr namespace-add $REGISTRY_NAMESPACE
+        ibmcloud cr login        

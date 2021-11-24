@@ -93,7 +93,9 @@ spec:
         - name: registry-namespace
           value: $(tasks.read-global-config.results.REGISTRY_NAMESPACE)
         - name: image-name
-          value: $(tasks.read-global-config.results.IMAGES_NAME_BACKEND):$(tasks.read-global-config.results.REGISTRY_TAG)
+          value: $(tasks.read-global-config.results.IMAGES_NAME_BACKEND)
+        - name: additional-tags-script
+          value: "echo $(tasks.read-global-config.results.REGISTRY_TAG)"
         - name: path-to-context
           value: "code/service-catalog"
         - name: path-to-dockerfile
