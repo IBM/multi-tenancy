@@ -77,6 +77,41 @@ spec:
         - name: workspace-backend
           workspace: workspace-backend
       runAfter: [read-global-config]
+    - name: containerize
+      runAfter: [test-global-config]
+      taskRef:
+        name: icr-execute-in-dind
+      params:
+        - name: ibmcloud-api
+          value: $(params.ibmcloud-api)
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
+        - name: container-registry-apikey-secret-key
+          value: "apikey"
+        - name: registry-create-namespace
+          value: false
+        - name: registry-region
+          value: eu-de
+        - name: registry-namespace
+          value: multi-tenancy-example
+        - name: image-name
+          value: us.icr.io/multi-tenancy-example/multi-tenancy-backend:v2
+        - name: path-to-context
+          value: $(workspaces.workspace.path)/code/service-catalog
+        - name: path-to-dockerfile
+          value: ./
+        - name: dockerfile
+          value: Dockerfile
+        - name: docker-commands
+          value: |
+            docker build --tag $IMAGE_NAME --file $PATH_TO_DOCKERFILE/$DOCKERFILE $PATH_TO_CONTEXT
+            docker inspect $IMAGE_NAME
+            docker push $IMAGE_NAME
+        - name: pipeline-debug
+          value: true
+      workspaces:
+        - name: source
+          workspace: workspace-backend     
     - name: buildah
       taskRef:
         name: buildah
