@@ -33,7 +33,7 @@ spec:
     - name: REGISTRY_NAMESPACE
     - name: REGISTRY_TAG
     - name: IMAGES_NAME_BACKEND
-    - name: IMAGES_NAME_FRONTEND_FULL
+    - name: IMAGES_NAME_FRONTEND
   steps:
     - name: read-global-config
       image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
