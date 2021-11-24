@@ -108,7 +108,7 @@ spec:
             docker inspect $IMAGE_NAME
             docker push $IMAGE_NAME
         - name: pipeline-debug
-          value: true
+          value: "true"
       workspaces:
         - name: source
           workspace: workspace-backend     
