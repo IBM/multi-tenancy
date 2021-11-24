@@ -47,8 +47,6 @@ spec:
         IBM_CLOUD_REGION=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
         printf "\nIBM_CLOUD_REGION=$IBM_CLOUD_REGION" >> $CONFIG_FILE_ENV
 
-        REGISTRY_URL=$(cat ./$CONFIG_FILE | jq '.REGISTRY.URL' | sed 's/"//g')
-        printf "\nREGISTRY_URL=$REGISTRY_URL" >> $CONFIG_FILE_ENV
         REGISTRY_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
         printf "\nREGISTRY_NAMESPACE=$REGISTRY_NAMESPACE" >> $CONFIG_FILE_ENV
         REGISTRY_TAG=$(cat ./$CONFIG_FILE | jq '.REGISTRY.TAG' | sed 's/"//g')

@@ -98,8 +98,6 @@ spec:
           value: "code/service-catalog"
         - name: path-to-dockerfile
           value: "code/service-catalog"
-        - name: additional-tags
-          value: latest,1.0.0-$(tasks.pipeline-1-clone-task.results.git-branch)-$(tasks.pipeline-1-clone-task.results.git-commit)
         - name: additional-tags-script
           value: |
             # The script is providing tag(s) as output
