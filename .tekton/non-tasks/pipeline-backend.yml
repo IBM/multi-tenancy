@@ -79,6 +79,45 @@ spec:
         - name: workspace-backend
           workspace: workspace-backend
       runAfter: [read-global-config]
+    - name: icr-containerize
+      runAfter: [test-global-config]
+      taskRef:
+        name: icr-containerize
+      params:
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
+        - name: container-registry-apikey-secret-key
+          value: "apikey"
+        - name: registry-region
+          value: "eu-de"
+        - name: registry-namespace
+          value: "multi-tenancy-example"
+        - name: image-name
+          value: "multi-tenancy-backend"
+        - name: path-to-context
+          value: "code/service-catalog"
+        - name: path-to-dockerfile
+          value: "code/service-catalog"
+        - name: additional-tags
+          value: latest,1.0.0-$(tasks.pipeline-1-clone-task.results.git-branch)-$(tasks.pipeline-1-clone-task.results.git-commit)
+        - name: additional-tags-script
+          value: |
+            # The script is providing tag(s) as output
+            # But logs can be written as error stderr
+            echo "** Here is some Continuous Delivery Tekon Pipeline support configuration properties:" >&2
+            ls -l /cd-config >&2
+            ls -l /cd-config/environment-properties >&2
+            ls -l /cd-config/secure-properties >&2
+            echo "Providing an image tag with build number" >&2
+            # Add a specific tag with cd build number
+            echo "1.0.0-${BUILD_NUMBER}"
+        - name: properties-file
+          value: ""
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: source
+          workspace: workspace-backend
     - name: trigger-tenant-pipelines-backend
       taskRef:
         name: trigger-tenant-pipelines-backend
@@ -94,4 +133,4 @@ spec:
       workspaces:
         - name: workspace-backend
           workspace: workspace-backend
-      runAfter: [test-global-config]
+      runAfter: [icr-containerize]
