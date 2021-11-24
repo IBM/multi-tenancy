@@ -19,6 +19,8 @@ spec:
     - name: pipeline-debug
       description: Pipeline debug mode. Value can be 0 or 1. Default to 0
       default: "0"
+    - name: app-name
+      description: application name
   workspaces:
     - name: workspace-backend
   tasks:
@@ -116,6 +118,8 @@ spec:
       taskRef:
         name: trigger-tenant-pipelines-backend
       params:
+        - name: app-name
+          value: $(params.app-name)
         - name: ibmcloud-api
           value: $(params.ibmcloud-api)
         - name: continuous-delivery-context-secret

@@ -32,7 +32,7 @@ spec:
       image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
       script: |
         #!/bin/bash
-        echo "read-config"        
+        echo "read-global-config"        
         set -x
         cd $(workspaces.workspace-backend.path)
         #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
