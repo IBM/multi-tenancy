@@ -94,8 +94,6 @@ spec:
           value: $(tasks.read-global-config.results.REGISTRY_NAMESPACE)
         - name: image-name
           value: $(tasks.read-global-config.results.IMAGES_NAME_BACKEND)
-        - name: additional-tags-script
-          value: "echo $(tasks.read-global-config.results.REGISTRY_TAG)"
         - name: path-to-context
           value: "code/service-catalog"
         - name: path-to-dockerfile
@@ -110,7 +108,8 @@ spec:
             ls -l /cd-config/secure-properties >&2
             echo "Providing an image tag with build number" >&2
             # Add a specific tag with cd build number
-            echo "1.0.0-${BUILD_NUMBER}"
+            #echo "1.0.0-${BUILD_NUMBER}"
+            echo $(tasks.read-global-config.results.REGISTRY_TAG)
         - name: properties-file
           value: ""
         - name: pipeline-debug
