@@ -89,11 +89,11 @@ spec:
         - name: container-registry-apikey-secret-key
           value: "apikey"
         - name: registry-region
-          value: "eu-de"
+          value: $(tasks.read-global-config.results.IBM_CLOUD_REGION)
         - name: registry-namespace
-          value: "multi-tenancy-example"
+          value: $(tasks.read-global-config.results.REGISTRY_NAMESPACE)
         - name: image-name
-          value: "multi-tenancy-backend"
+          value: $(tasks.read-global-config.results.IMAGES_NAME_BACKEND):value: $(tasks.read-global-config.results.REGISTRY_TAG)
         - name: path-to-context
           value: "code/service-catalog"
         - name: path-to-dockerfile
