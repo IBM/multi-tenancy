@@ -93,7 +93,7 @@ spec:
         - name: registry-namespace
           value: "multi-tenancy-example"
         - name: image-name
-          value: $(tasks.read-global-config.results.IMAGES_NAME_BACKEND):$(tasks.read-global-config.results.REGISTRY_TAG)
+          value: "multi-tenancy-backend"
         - name: path-to-context
           value: "code/service-catalog"
         - name: path-to-dockerfile
