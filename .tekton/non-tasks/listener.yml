@@ -42,6 +42,8 @@ spec:
         pipelineRef:
           name: pipeline-backend
         params:
+          - name: app-name
+            value: $(params.app-name)
           - name: ibmcloud-api
             value: $(params.ibmcloud-api)
           - name: repository
