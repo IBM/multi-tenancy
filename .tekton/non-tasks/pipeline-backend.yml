@@ -77,7 +77,7 @@ spec:
         - name: workspace-backend
           workspace: workspace-backend
       runAfter: [read-global-config]
-    - name: containerize
+    - name: icr-execute-in-dind
       runAfter: [test-global-config]
       taskRef:
         name: icr-execute-in-dind
@@ -112,3 +112,17 @@ spec:
       workspaces:
         - name: source
           workspace: workspace-backend     
+    - name: trigger-tenant-pipelines-backend
+      taskRef:
+        name: trigger-tenant-pipelines-backend
+      params:
+        - name: ibmcloud-api
+          value: $(params.ibmcloud-api)
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
+        - name: ibmcloud-apikey-secret-key
+          value: "toolchain-apikey"
+      workspaces:
+        - name: workspace-backend
+          workspace: workspace-backend
+      runAfter: [icr-execute-in-dind]
