@@ -1,0 +1,112 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: check-registry-scripts
+data:
+  parse_image_url.sh: |
+    ##########################################################################
+    # Parse the image url to find information (region, namespace, image name and eventually tag)
+    # as url of Image PipelineResource is the complete path to the image, including the registry
+    # and the image tag - https://github.com/tektoncd/pipeline/blob/v0.10.1/docs/resources.md#image-resource
+    # Environment variables:
+    # - IMAGE_RESOURCE_URL (input) : can include a tag
+    # - IMAGE_URL (output)
+    # - REGISTRY_REGION (output)
+    # - REGISTRY_NAMESPACE (output)
+    # - IMAGE_NAME (output)
+    # - IMAGE_TAG (output)
+    ##########################################################################
+    IMAGE_URL=$(echo $IMAGE_RESOURCE_URL |  awk -F: '{print $1}')
+    IMAGE_TAG=$(echo $IMAGE_RESOURCE_URL |  awk -F: '{print $2}')
+    REGISTRY_URL=$(echo $IMAGE_RESOURCE_URL |  awk -F/ '{print $1}')
+    REGISTRY_NAMESPACE=$(echo $IMAGE_RESOURCE_URL |  awk -F/ '{print $2}')
+    # Image name is remaining part after the repository and namespace and can contains /
+    IMAGE_NAME=$(echo $IMAGE_URL |  awk -F/ '{a=match($0, $3); print substr($0,a)}')
+
+    # Find the ibmcloud container registry region
+    # https://cloud.ibm.com/docs/services/Registry?topic=registry-registry_overview#registry_regions_local
+    if [[ $REGISTRY_URL =~ ^registry\.[a-z]*.bluemix.net$ ]]; then
+      # deprecated domain name
+      REGISTRY_REGION=$(echo $REGISTRY_URL | awk -F. '{print $2}')
+      if [ "$REGISTRY_REGION" == "ng" ]; then
+        REGISTRY_REGION="us-south"
+      fi
+    else
+      export REGISTRY_REGION=$(echo $REGISTRY_URL | awk -F. '{print $1}')
+      if [ "$REGISTRY_REGION" == "jp" ]; then
+        REGISTRY_REGION="ap-north"
+      elif [ "$REGISTRY_REGION" == "au" ]; then
+        REGISTRY_REGION="ap-south"
+      elif [ "$REGISTRY_REGION" == "de" ]; then
+        REGISTRY_REGION="eu-central"
+      elif [ "$REGISTRY_REGION" == "uk" ]; then
+        REGISTRY_REGION="uk-south"
+      elif [ "$REGISTRY_REGION" == "us" ]; then
+        REGISTRY_REGION="us-south"
+      elif [ "$REGISTRY_REGION" == "jp2" ]; then
+        REGISTRY_REGION="jp-osa"
+      elif [ "$REGISTRY_REGION" == "stg" ]; then
+        REGISTRY_REGION="us-south"
+      elif [ "$REGISTRY_REGION" == "fr2" ]; then
+        REGISTRY_REGION="eu-fr2"
+      elif [ "$REGISTRY_REGION" == "ca" ]; then
+        REGISTRY_REGION="ca-tor"
+      elif [ "$REGISTRY_REGION" == "br" ]; then
+              REGISTRY_REGION="br-sao"
+      else
+        echo "No IBM Cloud Container Registry region found for the registry url $REGISTRY_URL"
+        exit 1
+      fi
+    fi
+  check_registry.sh: |
+    ##########################################################################
+    # Environment variables:
+    # - IBMCLOUD_API (input)
+    # - IBMCLOUD_RESOURCE_GROUP (input)
+    # - REGISTRY_REGION (input)
+    # - REGISTRY_NAMESPACE (input)
+    # - REGISTRY_CREATE_NAMESPACE (input)
+    ##########################################################################
+
+    TOOLCHAIN_ID=$(jq -r '.toolchain_guid' /cd-config/toolchain.json)
+
+    # ibmcloud login
+    ibmcloud config --check-version false
+    ibmcloud login -a $IBMCLOUD_API --no-region --apikey $API_KEY
+    if [ "$IBMCLOUD_RESOURCE_GROUP" ]; then
+      ibmcloud target -g "$IBMCLOUD_RESOURCE_GROUP"
+    fi
+
+    # Log container registry to the appropriate region
+    if ibmcloud cr region-set $REGISTRY_REGION > /dev/null 2>&1; then
+      echo "ibmcloud container registry region set to $REGISTRY_REGION"
+    else
+      # the registry region specified is not supported - fallback on
+      # using ibmcloud target -r command to rely on region affinity
+      # for container registry region - for instance us-east does not have
+      # a container-registry service, it is defered to us-south
+      ibmcloud target -r $REGISTRY_REGION
+    fi
+    ibmcloud cr info
+
+    # Check available quota on CR
+    if ibmcloud cr quota | grep 'Your account has exceeded its storage quota.'; then
+      echo "Your account has exceeded its storage quota. You can check your images at https://cloud.ibm.com/kubernetes/registry/main/images"
+      exit 1
+    fi
+
+    # Create the namespace if needed to ensure the push will be can be successfull
+    echo "Checking registry namespace: ${REGISTRY_NAMESPACE}"
+    NS=$( ibmcloud cr namespaces | grep ${REGISTRY_NAMESPACE} ||: )
+    if [ -z "${NS}" ]; then
+        echo "Registry namespace ${REGISTRY_NAMESPACE} not found"
+        if [ "$REGISTRY_CREATE_NAMESPACE" == "true" ] ; then
+          ibmcloud cr namespace-add ${REGISTRY_NAMESPACE}
+          echo "Registry namespace ${REGISTRY_NAMESPACE} created."
+        else
+          echo "Skipping creation of registry namespace ${REGISTRY_NAMESPACE}."
+        fi
+    else
+        echo "Registry namespace ${REGISTRY_NAMESPACE} found."
+    fi
