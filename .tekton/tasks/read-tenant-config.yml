@@ -26,6 +26,23 @@ spec:
     - name: ibmcloud-apikey-secret-key
       description: field in the secret that contains the api key used to login to ibmcloud
       default: apikey
+  results:
+    - name: IBM_CLOUD_RESOURCE_GROUP
+    - name: IBM_CLOUD_REGION
+    - name: REGISTRY_NAMESPACE
+    - name: REGISTRY_TAG
+    - name: IMAGES_NAME_BACKEND
+    - name: IMAGES_NAME_FRONTEND
+    - name: TENANT
+    - name: APPID_SERVICE_INSTANCE_NAME
+    - name: APPID_SERVICE_KEY_NAME
+    - name: POSTGRES_SERVICE_INSTANCE
+    - name: POSTGRES_SERVICE_KEY_NAME
+    - name: POSTGRES_SQL_FILE
+    - name: APPLICATION_CONTAINER_NAME_BACKEND
+    - name: APPLICATION_CONTAINER_NAME-FRONTEND
+    - name: APPLICATION_CATEGORY
+    - name: CODE_ENGINE_PROJECT_NAME
   steps:
     - name: read-tenant-config
       image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
@@ -62,7 +79,8 @@ spec:
         printf "\nIMAGES_NAME_FRONTEND=$IMAGES_NAME_FRONTEND" >> $CONFIG_FILE_ENV
         echo -n "$IMAGES_NAME_FRONTEND" > $(results.IMAGES_NAME_FRONTEND.path)
 
-        echo $TRIGGER_NAME
+        printf "\nTENANT=$TRIGGER_NAME" >> $CONFIG_FILE_ENV
+        echo -n "$TENANT" > $(results.TENANT.path)
         #example: https://github.com/IBM/multi-tenancy/blob/main/installapp/tenants-config/tenant-a-parameters.json
         CONFIG_FILE="installapp/tenants-config/${TRIGGER_NAME}-parameters.json"
 
@@ -103,4 +121,3 @@ spec:
         ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
         ibmcloud target -g $RESOURCE_GROUP
         ibmcloud target -r $REGION        
-
