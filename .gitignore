@@ -4,7 +4,10 @@ jitdump*
 certificates
 code/service-catalog/run-locally.sh
 local.env
-
+test.env
+test.sh
+cert.temp
+postgres-key-temp.json
 target/
 pom.xml.tag
 pom.xml.releaseBackup

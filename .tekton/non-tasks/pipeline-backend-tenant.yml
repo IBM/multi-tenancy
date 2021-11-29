@@ -51,9 +51,9 @@ spec:
       workspaces:
         - name: workspace
           workspace: workspace-backend-tenant
-    - name: read-tenant
+    - name: read-tenant-config
       taskRef:
-        name: read-tenant
+        name: read-tenant-config
       params:
         - name: ibmcloud-api
           value: $(params.ibmcloud-api)
