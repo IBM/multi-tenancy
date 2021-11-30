@@ -87,8 +87,4 @@ spec:
         ibmcloud target -r $IBM_CLOUD_REGION
 
         ibmcloud cr login       
-
-        echo $RESOURCE_GROUP
-        echo $REGION   
-        echo $IBM_CLOUD_RESOURCE_GROUP
-        echo $IBM_CLOUD_REGION    
+  
