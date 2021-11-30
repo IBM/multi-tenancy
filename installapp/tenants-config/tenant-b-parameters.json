@@ -5,15 +5,15 @@
       "APPID_SERVICE_KEY_NAME": "multi-tenancy-serverless-appid-key-b"
     },
     "postgres": {
-      "POSTGRES_SERVICE_INSTANCE": "multi-tenant-pg-b-working",
-      "POSTGRES_SERVICE_KEY_NAME": "multi-tenant-pg-service-key-b-working",
+      "POSTGRES_SERVICE_INSTANCE": "multi-tenancy-serverless-pg-ten-b",
+      "POSTGRES_SERVICE_KEY_NAME": "multi-tenancy-serverless-pg-ten-b-key",
       "POSTGRES_SQL_FILE": "create-populate-tenant-b.sql"
     },
     "container_images": {
-      "SERVICE_CATALOG_IMAGE": "us.icr.io/multi-tenancy-example/multi-tenancy-service-catalog:v2",
-      "FRONTEND_IMAGE": "us.icr.io/multi-tenancy-example/multi-tenancy-frontend:v2",
-      "SERVICE_CATALOG_NAME": "multi-tenancy-service-catalog",
-      "FRONTEND_NAME": "multi-tenancy-frontend"
+      "SERVICE_CATALOG_IMAGE": "de.icr.io/multi-tenancy-example/multi-tenancy-service-backend:v2",
+      "FRONTEND_IMAGE": "de.icr.io/multi-tenancy-example/multi-tenancy-service-frontend:v2",
+      "SERVICE_CATALOG_NAME": "multi-tenancy-service-backend",
+      "FRONTEND_NAME": "multi-tenancy-service-frontend"
     },
     "container_quayregistry": {
       "QUAY_CR_PROJECT": "tsuedbroecker",
@@ -22,19 +22,19 @@
     },
     "container_ibmregistry": {
       "IBMCLOUD_CR_NAMESPACE": "multi-tenancy-example",
-      "IBMCLOUD_CR_REGION_URL": "us.icr.io",
+      "IBMCLOUD_CR_REGION_URL": "de.icr.io",
       "IBMCLOUD_CR_TAG": "v2"
     },
     "applications": {
-      "SERVICE_CATALOG_NAME": "service-catalog-fantasy",
-      "FRONTEND_NAME": "frontend-fantasy",
+      "SERVICE_CATALOG_NAME": "multi-tenancy-service-backend-fantasy",
+      "FRONTEND_NAME": "multi-tenancy-service-frontend-fantasy",
       "FRONTEND_CATEGORY": "Fantasy"
     },
     "codeengine": {
-      "PROJECT_NAME": "multi-tenancy-serverless-tmp-b"
+      "PROJECT_NAME": "multi-tenancy-serverless-b"
     },
     "ibmcloud_target": {
-      "RESOURCE_GROUP": "resource-group-niklas-heidloff7",
+      "RESOURCE_GROUP": "default",
       "REGION": "eu-de"
     }
   }
