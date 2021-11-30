@@ -42,7 +42,7 @@ spec:
     - name: POSTGRES_SERVICE_KEY_NAME
     - name: POSTGRES_SQL_FILE
     - name: APPLICATION_CONTAINER_NAME_BACKEND
-    - name: APPLICATION_CONTAINER_NAME-FRONTEND
+    - name: APPLICATION_CONTAINER_NAME_FRONTEND
     - name: APPLICATION_CATEGORY
     - name: CODE_ENGINE_PROJECT_NAME
   steps:
@@ -147,9 +147,8 @@ spec:
         POSTGRES_PASSWORD=$(cat ./postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.password' | sed 's/"//g' )
         POSTGRES_HOST=$(cat ./postgres-key-temp.json | jq '.[].credentials.connection.postgres.hosts[].hostname' | sed 's/"//g' )
         POSTGRES_PORT=$(cat ./postgres-key-temp.json | jq '.[].credentials.connection.postgres.hosts[].port' | sed 's/"//g' )
-
-        echo "$POSTGRES_CERTIFICATE_CONTENT_ENCODED" | base64 -d -o ./cert.temp
-        POSTGRES_CERTIFICATE_DATA=$(<./cert.temp)
+      
+        POSTGRES_CERTIFICATE_DATA=$(echo "$POSTGRES_CERTIFICATE_CONTENT_ENCODED" | base64 -d)
 
         POSTGRES_CONNECTION_TYPE='jdbc:postgresql://'
         POSTGRES_CERTIFICATE_PATH='/cloud-postgres-cert'
