@@ -134,12 +134,6 @@ spec:
         
         #####################
 
-        ibmcloud ce registry update --name $REGISTRY_SECRET_NAME \
-                                  --server $REGISTRY_URL \
-                                  --username "iamapikey" \
-                                  --password $API_KEY \
-                                  --email "multi-tenancy@example.com"
-
         ibmcloud ce project get --name $CODE_ENGINE_PROJECT_NAME
         ibmcloud ce project select -n $CODE_ENGINE_PROJECT_NAME
       
