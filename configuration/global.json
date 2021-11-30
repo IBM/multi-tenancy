@@ -5,7 +5,9 @@
   },
   "REGISTRY": {
     "NAMESPACE": "multi-tenancy-example",
-    "TAG": "v2"
+    "TAG": "v2",
+    "URL": "de.icr.io",
+    "SECRET_NAME": "multi.tenancy.cr.sec"
   },
   "IMAGES": {
     "NAME_BACKEND": "multi-tenancy-backend",

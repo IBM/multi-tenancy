@@ -31,6 +31,8 @@ spec:
     - name: IBM_CLOUD_REGION
     - name: REGISTRY_NAMESPACE
     - name: REGISTRY_TAG
+    - name: REGISTRY_URL
+    - name: REGISTRY_SECRET_NAME
     - name: IMAGES_NAME_BACKEND
     - name: IMAGES_NAME_FRONTEND
     - name: TENANT
@@ -71,6 +73,12 @@ spec:
         REGISTRY_TAG=$(cat ./$CONFIG_FILE | jq '.REGISTRY.TAG' | sed 's/"//g')
         printf "\nREGISTRY_TAG=$REGISTRY_TAG" >> $CONFIG_FILE_ENV
         echo -n "$REGISTRY_TAG" > $(results.REGISTRY_TAG.path)
+        REGISTRY_URL=$(cat ./$CONFIG_FILE | jq '.REGISTRY.URL' | sed 's/"//g')
+        printf "\nREGISTRY_URL=$REGISTRY_URL" >> $CONFIG_FILE_ENV
+        echo -n "$REGISTRY_URL" > $(results.REGISTRY_URL.path)
+        REGISTRY_SECRET_NAME=$(cat ./$CONFIG_FILE | jq '.REGISTRY.SECRET_NAME' | sed 's/"//g')
+        printf "\nREGISTRY_SECRET_NAME=$REGISTRY_SECRET_NAME" >> $CONFIG_FILE_ENV
+        echo -n "$REGISTRY_SECRET_NAME" > $(results.REGISTRY_SECRET_NAME.path)
         
         IMAGES_NAME_BACKEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
         printf "\nIMAGES_NAME_BACKEND=$IMAGES_NAME_BACKEND" >> $CONFIG_FILE_ENV
