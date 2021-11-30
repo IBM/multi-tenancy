@@ -128,7 +128,9 @@ spec:
         ibmcloud config --check-version false
         ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
         ibmcloud target -g $RESOURCE_GROUP
-        ibmcloud target -r $REGION     
+        ibmcloud target -r $REGION   
+
+        ibmcloud plugin install code-engine  
         
         #####################
 
