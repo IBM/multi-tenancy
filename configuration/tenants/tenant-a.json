@@ -10,7 +10,7 @@
   },
   "APPLICATION": {
     "CONTAINER_NAME_BACKEND": "service-catalog-movies",
-    "CONTAINER_NAME-FRONTEND": "frontend-movies",
+    "CONTAINER_NAME_FRONTEND": "frontend-movies",
     "CATEGORY": "Movies"
   },
   "CODE_ENGINE": {

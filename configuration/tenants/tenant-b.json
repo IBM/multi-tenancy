@@ -10,7 +10,7 @@
   },
   "APPLICATION": {
     "CONTAINER_NAME_BACKEND": "service-catalog-fantasy",
-    "CONTAINER_NAME-FRONTEND": "frontend-fantasy",
+    "CONTAINER_NAME_FRONTEND": "frontend-fantasy",
     "CATEGORY": "Fantasy"
   },
   "CODE_ENGINE": {

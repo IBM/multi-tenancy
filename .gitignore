@@ -8,6 +8,7 @@ test.env
 test.sh
 cert.temp
 postgres-key-temp.json
+appid-key-temp.json
 target/
 pom.xml.tag
 pom.xml.releaseBackup
