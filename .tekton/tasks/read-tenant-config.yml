@@ -47,7 +47,7 @@ spec:
     - name: CODE_ENGINE_PROJECT_NAME
   steps:
     - name: read-tenant-config
-      image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.6
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
       script: |
         #!/bin/bash
         echo "read-tenant-config"        
