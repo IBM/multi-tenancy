@@ -134,10 +134,9 @@ spec:
         
         #####################
 
-        ibmcloud ce project get --name $CODE_ENGINE_PROJECT_NAME
         ibmcloud ce project select -n $CODE_ENGINE_PROJECT_NAME
-      
         ibmcloud ce project select -n $CODE_ENGINE_PROJECT_NAME --kubecfg
+        ibmcloud ce project get --name $CODE_ENGINE_PROJECT_NAME
 
         #####################
 
