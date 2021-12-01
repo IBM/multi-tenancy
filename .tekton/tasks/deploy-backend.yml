@@ -97,7 +97,7 @@ spec:
 
         IMAGE_NAME_BACKEND="$(params.REGISTRY_URL)"/"$(params.REGISTRY_NAMESPACE)"/"$(params.IMAGES_NAME_BACKEND)":"$(params.REGISTRY_TAG)"
         echo $IMAGE_NAME_BACKEND
-        ibmcloud ce application update --name $(params.APPLICATION_CONTAINER_NAME_BACKEND) \
+        ibmcloud ce application create --name $(params.APPLICATION_CONTAINER_NAME_BACKEND) \
                                       --image $IMAGE_NAME_BACKEND \
                                       --env-from-secret postgres.certificate-data \
                                       --env-from-secret postgres.username \
