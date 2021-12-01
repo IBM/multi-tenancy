@@ -95,9 +95,19 @@ spec:
 
         #####################
 
-        IMAGE_NAME_BACKEND="$(params.REGISTRY_URL)"/"$(params.REGISTRY_NAMESPACE)"/"$(params.IMAGES_NAME_BACKEND)":"$(params.REGISTRY_TAG)"
+        ACTION="create"
+        CHECK=$(ibmcloud ce application get --name $APPLICATION_CONTAINER_NAME_BACKEND | awk '/Name:/ {print $2}')
+        if [[ $CHECK == $APPLICATION_CONTAINER_NAME_BACKEND* ]]
+        then
+            echo "Application already exists"
+            ACTION="update"
+        else
+            echo "Application does not exist"
+        fi
+        
+        IMAGE_NAME_BACKEND="$REGISTRY_URL"/"$REGISTRY_NAMESPACE"/"$IMAGES_NAME_BACKEND":"$REGISTRY_TAG"
         echo $IMAGE_NAME_BACKEND
-        ibmcloud ce application create --name $(params.APPLICATION_CONTAINER_NAME_BACKEND) \
+        ibmcloud ce application $ACTION --name $APPLICATION_CONTAINER_NAME_BACKEND \
                                       --image $IMAGE_NAME_BACKEND \
                                       --env-from-secret postgres.certificate-data \
                                       --env-from-secret postgres.username \
@@ -105,13 +115,13 @@ spec:
                                       --env-from-secret postgres.url \
                                       --env-from-secret appid.oauthserverurl \
                                       --env-from-secret appid.client-id-catalog-service \
-                                      --cpu "1" \
+                                      --cpu "0.25" \
                                       --memory "1G" \
                                       --port 8081 \
-                                      --registry-secret "$(params.REGISTRY_SECRET_NAME)" \
+                                      --registry-secret "$REGISTRY_SECRET_NAME" \
                                       --max-scale 1 \
-                                      --min-scale 1 
+                                      --min-scale 0 
                                           
-        SERVICE_BACKEND_URL=$(ibmcloud ce application get --name "$(params.APPLICATION_CONTAINER_NAME_BACKEND)" -o url)
+        SERVICE_BACKEND_URL=$(ibmcloud ce application get --name "$APPLICATION_CONTAINER_NAME_BACKEND" -o url)
         echo "SERVICE_BACKEND_URL: $SERVICE_BACKEND_URL"
-        ibmcloud ce application events --application $(params.APPLICATION_CONTAINER_NAME_BACKEND)
+        ibmcloud ce application events --application $APPLICATION_CONTAINER_NAME_BACKEND

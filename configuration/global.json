@@ -4,7 +4,7 @@
     "REGION": "eu-de"
   },
   "REGISTRY": {
-    "URL": " de.icr.io",
+    "URL": "de.icr.io",
     "NAMESPACE": "multi-tenancy-example",
     "TAG": "v2",
     "SECRET_NAME": "multi.tenancy.cr.sec"

@@ -367,7 +367,7 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        name: pipelinerun-frontend-tenant-$(uid)
+        name: pipelinerun-front-tenant-$(uid)
       spec:
         pipelineRef:
           name: pipeline-frontend-tenant
