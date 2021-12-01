@@ -38,7 +38,7 @@ spec:
     - name: IMAGES_NAME_FRONTEND
     - name: APPLICATION_CONTAINER_NAME_FRONTEND
     - name: APPLICATION_CONTAINER_NAME_BACKEND
-    - name: FRONTEND_CATEGORY
+    - name: APPLICATION_CATEGORY
   steps:
     - name: deploy-frontend
       image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
@@ -97,7 +97,7 @@ spec:
                                    --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
                                    --env VUE_APP_API_URL_ORDERS="$SERVICE_CATALOG_URL/base/customer/Orders" \
                                    --env VUE_APP_API_URL_CATEGORIES="$SERVICE_CATALOG_URL/base/category" \
-                                   --env VUE_APP_CATEGORY_NAME="$(params.FRONTEND_CATEGORY)" \
+                                   --env VUE_APP_CATEGORY_NAME="$(params.APPLICATION_CATEGORY)" \
                                    --env VUE_APP_HEADLINE="$(params.APPLICATION_CONTAINER_NAME_FRONTEND)" \
                                    --env VUE_APP_ROOT="/" \
                                    --registry-secret "$(params.REGISTRY_SECRET_NAME)" \
