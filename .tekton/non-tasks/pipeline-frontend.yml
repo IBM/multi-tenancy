@@ -64,7 +64,7 @@ spec:
         - name: ibmcloud-apikey-secret-key
           value: "toolchain-apikey"
       workspaces:
-        - name: workspace-frontend
+        - name: workspace
           workspace: workspace-frontend
       runAfter: [git-clone-repo]
     - name: icr-containerize

@@ -4,7 +4,7 @@ metadata:
   name: read-global-config
 spec:
   workspaces:
-    - name: workspace-backend
+    - name: workspace
       description: shared workspace
   stepTemplate:
     env:
@@ -43,7 +43,7 @@ spec:
         #!/bin/bash
         echo "read-global-config"        
         set -x
-        cd $(workspaces.workspace-backend.path)
+        cd $(workspaces.workspace.path)
         #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
 
         CONFIG_FILE="configuration/global.json"
