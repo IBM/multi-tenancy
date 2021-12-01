@@ -1,0 +1,84 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: trigger-tenant-pipelines-frontend
+spec:
+  workspaces:
+    - name: workspace-frontend
+      description: shared workspace
+  stepTemplate:
+    env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: $(params.continuous-delivery-context-secret)
+            key: $(params.ibmcloud-apikey-secret-key)
+            optional: true
+      - name: TRIGGER_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
+  params:
+    - name: ibmcloud-api
+      description: the ibmcloud api
+    - name: continuous-delivery-context-secret
+      description: name of the secret containing the continuous delivery pipeline context secrets
+      default: secure-properties
+    - name: ibmcloud-apikey-secret-key
+      description: field in the secret that contains the api key used to login to ibmcloud
+      default: apikey
+    - name: app-name
+  steps:
+    - name: trigger-tenant-pipelines-frontend
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
+      script: |
+        #!/bin/bash
+        echo "trigger-tenant-pipelines-frontend"        
+        set -x
+        cd $(workspaces.workspace-frontend.path)
+        #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
+
+        export CONFIG_FILE="configuration/global.json"
+
+        export IBM_CLOUD_RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
+        export IBM_CLOUD_REGION=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
+
+        export REGISTRY_URL=$(cat ./$CONFIG_FILE | jq '.REGISTRY.URL' | sed 's/"//g')
+        export REGISTRY_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
+        export REGISTRY_TAG=$(cat ./$CONFIG_FILE | jq '.REGISTRY.TAG' | sed 's/"//g')
+        
+        export IMAGES_NAME_BACKEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
+        export IMAGES_NAME_FRONTEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
+        
+        ibmcloud config --check-version false
+        ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
+        ibmcloud target -g $IBM_CLOUD_RESOURCE_GROUP
+        ibmcloud target -r $IBM_CLOUD_REGION
+
+
+        FRONTEND_IMAGE="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGES_NAME_BACKEND:$REGISTRY_TAG"
+        BACKEND_IMAGE="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGES_NAME_BACKEND:$REGISTRY_TAG"
+        echo "FRONTEND_IMAGE: $FRONTEND_IMAGE"
+        echo "BACKEND_IMAGE: $BACKEND_IMAGE"
+
+        ibmcloud cr login
+        ibmcloud cr namespace-add $REGISTRY_NAMESPACE
+
+
+        TOOLCHAIN_ID=$(params.app-name)
+        echo $TOOLCHAIN_ID        
+
+        ALMOST_OTHER_PIPELINE_ID=$(ibmcloud dev toolchain-get $TOOLCHAIN_ID | grep "pipeline-frontend-tenant" -A 1 | grep -v "pipeline-frontend-tenant")
+        OTHER_PIPELINE_ID=$(echo $ALMOST_OTHER_PIPELINE_ID | cut -c5-40)
+        echo $OTHER_PIPELINE_ID
+
+        CONFIG_FILES="configuration/tenants/*"
+        for file in $CONFIG_FILES
+        do
+          CONFIG_FILE=$file
+          TENANT_ID_JSON=$(echo $CONFIG_FILE | cut -c23-)
+          TENANT_ID=$(echo $TENANT_ID_JSON | cut -d. -f1)
+          ibmcloud dev tekton-trigger $OTHER_PIPELINE_ID --trigger-name $TENANT_ID
+        done
+        
+        
