@@ -48,20 +48,20 @@ spec:
 
         ibmcloud config --check-version false
         ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
-        ibmcloud target -g $IBM_CLOUD_RESOURCE_GROUP
-        ibmcloud target -r $IBM_CLOUD_REGION   
+        ibmcloud target -g $(params.IBM_CLOUD_RESOURCE_GROUP)
+        ibmcloud target -r $(params.IBM_CLOUD_REGION)
 
         ibmcloud plugin install code-engine  
         
         #####################
 
-        ibmcloud ce project select -n $CODE_ENGINE_PROJECT_NAME
-        ibmcloud ce project select -n $CODE_ENGINE_PROJECT_NAME --kubecfg
-        ibmcloud ce project get --name $CODE_ENGINE_PROJECT_NAME
+        ibmcloud ce project select -n $(params.CODE_ENGINE_PROJECT_NAME)
+        ibmcloud ce project select -n $(params.CODE_ENGINE_PROJECT_NAME) --kubecfg
+        ibmcloud ce project get --name $(params.CODE_ENGINE_PROJECT_NAME)
 
         #####################
 
-        ibmcloud resource service-key $POSTGRES_SERVICE_KEY_NAME --output JSON > ./postgres-key-temp.json  
+        ibmcloud resource service-key $(params.POSTGRES_SERVICE_KEY_NAME) --output JSON > ./postgres-key-temp.json  
 
         POSTGRES_CERTIFICATE_CONTENT_ENCODED=$(cat ./postgres-key-temp.json | jq '.[].credentials.connection.cli.certificate.certificate_base64' | sed 's/"//g' ) 
         POSTGRES_USERNAME=$(cat ./postgres-key-temp.json | jq '.[].credentials.connection.postgres.authentication.username' | sed 's/"//g' )
@@ -78,7 +78,7 @@ spec:
 
         #####################
 
-        ibmcloud resource service-key $APPID_SERVICE_KEY_NAME --output JSON > ./appid-key-temp.json
+        ibmcloud resource service-key $(params.APPID_SERVICE_KEY_NAME) --output JSON > ./appid-key-temp.json
 
         APPID_OAUTHSERVERURL=$(cat ./appid-key-temp.json | jq '.[].credentials.oauthServerUrl' | sed 's/"//g' ) 
         APPID_CLIENT_ID=$(cat ./appid-key-temp.json | jq '.[].credentials.clientId' | sed 's/"//g' )
@@ -95,9 +95,9 @@ spec:
 
         #####################
 
-        IMAGE_NAME_BACKEND="$REGISTRY_URL"/"$REGISTRY_NAMESPACE"/"$IMAGES_NAME_BACKEND":"$REGISTRY_TAG"
+        IMAGE_NAME_BACKEND="$(params.REGISTRY_URL)"/"$(params.REGISTRY_NAMESPACE)"/"$(params.IMAGES_NAME_BACKEND)":"$(params.REGISTRY_TAG)"
         echo $IMAGE_NAME_BACKEND
-        ibmcloud ce application update --name $APPLICATION_CONTAINER_NAME_BACKEND \
+        ibmcloud ce application update --name $(params.APPLICATION_CONTAINER_NAME_BACKEND) \
                                       --image $IMAGE_NAME_BACKEND \
                                       --env-from-secret postgres.certificate-data \
                                       --env-from-secret postgres.username \
@@ -108,10 +108,10 @@ spec:
                                       --cpu "1" \
                                       --memory "2G" \
                                       --port 8081 \
-                                      --registry-secret "$REGISTRY_SECRET_NAME" \
+                                      --registry-secret "$(params.REGISTRY_SECRET_NAME)" \
                                       --max-scale 1 \
                                       --min-scale 0 
                                           
-        SERVICE_BACKEND_URL=$(ibmcloud ce application get --name "$APPLICATION_CONTAINER_NAME_BACKEND" -o url)
+        SERVICE_BACKEND_URL=$(ibmcloud ce application get --name "$(params.APPLICATION_CONTAINER_NAME_BACKEND)" -o url)
         echo "SERVICE_BACKEND_URL: $SERVICE_BACKEND_URL"
-        ibmcloud ce application events --application $APPLICATION_CONTAINER_NAME_BACKEND
+        ibmcloud ce application events --application $(params.APPLICATION_CONTAINER_NAME_BACKEND)
