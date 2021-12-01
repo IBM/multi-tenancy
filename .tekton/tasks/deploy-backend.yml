@@ -106,11 +106,11 @@ spec:
                                       --env-from-secret appid.oauthserverurl \
                                       --env-from-secret appid.client-id-catalog-service \
                                       --cpu "1" \
-                                      --memory "2G" \
+                                      --memory "1G" \
                                       --port 8081 \
                                       --registry-secret "$(params.REGISTRY_SECRET_NAME)" \
                                       --max-scale 1 \
-                                      --min-scale 0 
+                                      --min-scale 1 
                                           
         SERVICE_BACKEND_URL=$(ibmcloud ce application get --name "$(params.APPLICATION_CONTAINER_NAME_BACKEND)" -o url)
         echo "SERVICE_BACKEND_URL: $SERVICE_BACKEND_URL"

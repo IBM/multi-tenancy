@@ -1,0 +1,74 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-frontend
+spec:
+  workspaces:
+    - name: workspace-frontend-tenant 
+  stepTemplate:
+    env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: $(params.continuous-delivery-context-secret)
+            key: $(params.ibmcloud-apikey-secret-key)
+            optional: true
+      - name: TRIGGER_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['devops.cloud.ibm.com/trigger-name']
+  params:
+    - name: ibmcloud-api
+      description: the ibmcloud api
+    - name: continuous-delivery-context-secret
+      description: name of the secret containing the continuous delivery pipeline context secrets
+      default: secure-properties
+    - name: ibmcloud-apikey-secret-key
+      description: field in the secret that contains the api key used to login to ibmcloud
+      default: apikey
+    - name: IBM_CLOUD_RESOURCE_GROUP
+    - name: IBM_CLOUD_REGION
+    - name: CODE_ENGINE_PROJECT_NAME
+    - name: APPID_SERVICE_KEY_NAME
+    - name: POSTGRES_SERVICE_KEY_NAME
+    - name: REGISTRY_URL
+    - name: REGISTRY_NAMESPACE
+    - name: REGISTRY_TAG
+    - name: REGISTRY_SECRET_NAME
+    - name: IMAGES_NAME_BACKEND
+    - name: APPLICATION_CONTAINER_NAME_BACKEND
+  steps:
+    - name: deploy-frontend
+      image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.3
+      script: |
+        #!/bin/bash
+        echo "deploy-frontend"        
+        set -x
+        cd $(workspaces.workspace-frontend-tenant.path)
+
+        ibmcloud config --check-version false
+        ibmcloud login -a $(params.ibmcloud-api) --no-region --apikey $API_KEY
+        ibmcloud target -g $(params.IBM_CLOUD_RESOURCE_GROUP)
+        ibmcloud target -r $(params.IBM_CLOUD_REGION)
+
+        ibmcloud plugin install code-engine  
+        
+        #####################
+
+        ibmcloud ce project select -n $(params.CODE_ENGINE_PROJECT_NAME)
+        ibmcloud ce project select -n $(params.CODE_ENGINE_PROJECT_NAME) --kubecfg
+        ibmcloud ce project get --name $(params.CODE_ENGINE_PROJECT_NAME)
+
+        #####################
+
+        ibmcloud resource service-key $(params.APPID_SERVICE_KEY_NAME) --output JSON > ./appid-key-temp.json
+
+        APPID_OAUTHSERVERURL=$(cat ./appid-key-temp.json | jq '.[].credentials.oauthServerUrl' | sed 's/"//g' ) 
+        APPID_CLIENT_ID=$(cat ./appid-key-temp.json | jq '.[].credentials.clientId' | sed 's/"//g' )
+
+        #####################
+   
+        #ibmcloud ce secret update --name appid.oauthserverurl --from-literal "APPID_AUTH_SERVER_URL=$APPID_OAUTHSERVERURL"
+        #ibmcloud ce secret update --name appid.client-id-catalog-service  --from-literal "APPID_CLIENT_ID=$APPID_CLIENT_ID"
+
+        #####################

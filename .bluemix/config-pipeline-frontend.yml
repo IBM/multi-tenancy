@@ -1,0 +1,66 @@
+inputs:
+  - type: git
+    branch: ${PIPELINE_REPO_BRANCH}
+    service: ${PIPELINE_REPO}
+    path: .tekton/non-tasks
+  - type: git
+    branch: ${PIPELINE_REPO_BRANCH}
+    service: ${PIPELINE_REPO}
+    path: .tekton/tasks
+triggers:
+  - type: git
+    name: commit-push
+    eventListener: ${GIT_COMMIT_EVENT_LISTENER_NAME}
+    service: ${APP_REPO}
+    branch: ${APP_REPO_BRANCH}
+    events: { "push": true }
+  - type: manual
+    name: manual-run-frontend
+    eventListener: manual-run-frontend
+    properties: []
+properties:
+  - name: ibmcloud-api
+    type: text
+    value: ${IBMCLOUD_API}
+  - name: toolchain-apikey
+    type: secure
+    value: ${API_KEY}
+  - name: apikey
+    type: secure
+    value: ${API_KEY}
+  - name: registry-region
+    type: text
+    value: ${REGISTRY_REGION_ID}
+  - name: registry-namespace
+    type: text
+    value: ${REGISTRY_NAMESPACE}
+  - name: image-name
+    type: text
+    value: ${APP_NAME}
+  - name: app-name
+    type: text
+    value: ${APP_NAME}
+  - name: region
+    type: text
+    value: ${CODE_ENGINE_REGION}
+  - name: resource-group
+    type: text
+    value: ${CODE_ENGINE_RESOURCE_GROUP}
+  - name: code-engine-project
+    type: text
+    value: ${CODE_ENGINE_PROJECT}
+  - name: service-bindings
+    type: text
+    value: ${SERVICE_BINDINGS}
+  - name: port
+    type: text
+    value: "http1:8080"
+  - name: health-endpoint
+    type: text
+    value: "/health"
+  - name: pipeline-debug
+    type: text
+    value: "0"
+  - name: branch
+    type: text
+    value: ${APP_REPO_BRANCH}
