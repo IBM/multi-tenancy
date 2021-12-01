@@ -93,10 +93,14 @@ spec:
           value: $(tasks.read-tenant-config.results.REGISTRY_TAG)
         - name: REGISTRY_SECRET_NAME
           value: $(tasks.read-tenant-config.results.REGISTRY_SECRET_NAME)
-        - name: IMAGES_NAME_BACKEND
-          value: $(tasks.read-tenant-config.results.IMAGES_NAME_BACKEND)
+        - name: IMAGES_NAME_FRONTEND
+          value: $(tasks.read-tenant-config.results.IMAGES_NAME_FRONTEND)
+        - name: APPLICATION_CONTAINER_NAME_FRONTEND
+          value: $(tasks.read-tenant-config.results.APPLICATION_CONTAINER_NAME_FRONTEND)
         - name: APPLICATION_CONTAINER_NAME_BACKEND
           value: $(tasks.read-tenant-config.results.APPLICATION_CONTAINER_NAME_BACKEND)
+        - name: APPLICATION_CATEGORY
+          value: $(tasks.read-tenant-config.results.APPLICATION_CATEGORY)
       workspaces:
         - name: workspace-frontend-tenant
           workspace: workspace-frontend-tenant
