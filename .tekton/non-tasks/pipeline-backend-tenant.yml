@@ -65,3 +65,39 @@ spec:
         - name: workspace-backend-tenant
           workspace: workspace-backend-tenant
       runAfter: [git-clone-repo]
+    - name: deploy-backend
+      taskRef:
+        name: deploy-backend
+      params:
+        - name: ibmcloud-api
+          value: $(params.ibmcloud-api)
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
+        - name: ibmcloud-apikey-secret-key
+          value: "toolchain-apikey"
+        - name: IBM_CLOUD_RESOURCE_GROUP
+          value: $(tasks.read-tenant-config.results.IBM_CLOUD_RESOURCE_GROUP)
+        - name: IBM_CLOUD_REGION
+          value: $(tasks.read-tenant-config.results.IBM_CLOUD_REGION)
+        - name: CODE_ENGINE_PROJECT_NAME
+          value: $(tasks.read-tenant-config.results.CODE_ENGINE_PROJECT_NAME)
+        - name: APPID_SERVICE_KEY_NAME
+          value: $(tasks.read-tenant-config.results.APPID_SERVICE_KEY_NAME)
+        - name: POSTGRES_SERVICE_KEY_NAME
+          value: $(tasks.read-tenant-config.results.POSTGRES_SERVICE_KEY_NAME)
+        - name: REGISTRY_URL
+          value: $(tasks.read-tenant-config.results.REGISTRY_URL)
+        - name: REGISTRY_NAMESPACE
+          value: $(tasks.read-tenant-config.results.REGISTRY_NAMESPACE)
+        - name: REGISTRY_TAG
+          value: $(tasks.read-tenant-config.results.REGISTRY_TAG)
+        - name: REGISTRY_SECRET_NAME
+          value: $(tasks.read-tenant-config.results.REGISTRY_SECRET_NAME)
+        - name: IMAGES_NAME_BACKEND
+          value: $(tasks.read-tenant-config.results.IMAGES_NAME_BACKEND)
+        - name: APPLICATION_CONTAINER_NAME_BACKEND
+          value: $(tasks.read-tenant-config.results.APPLICATION_CONTAINER_NAME_BACKEND)
+      workspaces:
+        - name: workspace-backend-tenant
+          workspace: workspace-backend-tenant
+      runAfter: [read-tenant-config]
