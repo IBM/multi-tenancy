@@ -62,7 +62,7 @@ spec:
         - name: ibmcloud-apikey-secret-key
           value: "toolchain-apikey"
       workspaces:
-        - name: workspace-frontend-tenant
+        - name: workspace-tenant
           workspace: workspace-frontend-tenant
       runAfter: [git-clone-repo]
     - name: deploy-frontend

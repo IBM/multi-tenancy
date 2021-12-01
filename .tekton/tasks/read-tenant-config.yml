@@ -4,7 +4,7 @@ metadata:
   name: read-tenant-config
 spec:
   workspaces:
-    - name: workspace-backend-tenant 
+    - name: workspace-tenant 
   stepTemplate:
     env:
       - name: API_KEY
@@ -52,7 +52,7 @@ spec:
         #!/bin/bash
         echo "read-tenant-config"        
         set -x
-        cd $(workspaces.workspace-backend-tenant.path)
+        cd $(workspaces.workspace-tenant.path)
         #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
 
         CONFIG_FILE="configuration/global.json"
