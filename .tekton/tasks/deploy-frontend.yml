@@ -102,7 +102,7 @@ spec:
                                    --env VUE_APP_ROOT="/" \
                                    --registry-secret "$(params.REGISTRY_SECRET_NAME)" \
                                    --max-scale 1 \
-                                   --min-scale 0 \
+                                   --min-scale 1 \
                                    --port 8080 
 
         SERVICE_FRONTEND_URL=$(ibmcloud ce application get --name "$(params.APPLICATION_CONTAINER_NAME_FRONTEND)" -o url)
