@@ -90,8 +90,8 @@ spec:
         SERVICE_CATALOG_URL=$(ibmcloud ce application get --name "$(params.APPLICATION_CONTAINER_NAME_BACKEND)" -o url)
         ibmcloud ce application $ACTION --name $(params.APPLICATION_CONTAINER_NAME_FRONTEND) \
                                    --image $IMAGE_NAME_FRONTEND \
-                                   --cpu "0.25" \
-                                   --memory "1G" \
+                                   --cpu "1" \
+                                   --memory "2G" \
                                    --env-from-secret appid.client-id-fronted \
                                    --env-from-secret appid.discovery-endpoint \
                                    --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
