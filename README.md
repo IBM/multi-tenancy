@@ -1,10 +1,42 @@
-# multi-tenancy
+# Multi-tenancy Assets for IBM Partners to build SaaS
 
-**UNDER CONSTRUCTION***
+This repo contains multi-tenancy assets for IBM partners to build SaaS.
 
-Multi-tenancy samples for IBM partners who want to build SaaS software.
 
-## Run Pipeline to deploy Catalog Service
+### Project Structure
+
+* [Project Overview](#project-overview)
+* [Serverless Architecture](#serverless-architecture)
+
+
+## Project Overview
+
+The project aims to support partners to build SaaS for different platforms including Serverless, OpenShift and Satellite. As first step the repo contains an example how to run SaaS via Serverless capabilities on the IBM Cloud (lower left corner).
+
+![](documentation/SaaS-Options.png)
+
+The project comes with a simple e-commerce example application. A SaaS provide might have one client selling books, another one selling shoes.
+
+![](documentation/example-app.png)
+
+
+## Serverless Architecture
+
+Isolated Compute:
+* One frontend container per tenant
+* One backend container per tenant
+* One App ID instance per tenant
+* One Postgres instance (with one database) per tenant
+
+Shared CI/CD:
+* One code base for frontend and backend services
+* One image for frontend and backend services
+* One toolchain (with four pipelines) for all tenants
+
+![](documentation/diagrams/multi-tenant-app-architecture.png)
+
+
+## Create Toolchain and run Pipelines
 
 [Create Catalog Service on Code Engine](https://cloud.ibm.com/devops/setup/deploy?repository=https://github.com/ibm/multi-tenancy)
 
@@ -58,7 +90,7 @@ This project is documented **[here](https://ibm.github.io/multi-tenancy/)**.
 
 * Just a single tenant. This is a simplified diagram containing the used elements and dependencies.
 
-![](documentation/images/Multi-tenancy-serverless.png)
+
 
 ## Technology Used
 
