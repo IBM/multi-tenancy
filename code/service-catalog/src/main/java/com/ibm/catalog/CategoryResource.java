@@ -24,7 +24,7 @@ import io.quarkus.oidc.IdToken;
 import io.quarkus.oidc.RefreshToken;
 
 @ApplicationScoped
-@RolesAllowed("**")
+//@RolesAllowed("**")
 @Produces("application/json")
 @Consumes("application/json")
 @Path("/")
