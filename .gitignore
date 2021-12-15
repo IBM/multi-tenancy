@@ -18,7 +18,7 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-
+code/frontend/package-lock.json
 #various files
 temp_information.txt
 
