@@ -68,7 +68,7 @@ export FRONTEND_CATEGORY=$(cat ./$2 | jq '.APPLICATION.CATEGORY' | sed 's/"//g')
 # App ID
 export APPID_SERVICE_INSTANCE_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_INSTANCE' | sed 's/"//g')
 export APPID_SERVICE_KEY_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_KEY_NAME' | sed 's/"//g')
-
+export IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
