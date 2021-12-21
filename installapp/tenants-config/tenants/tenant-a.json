@@ -1,0 +1,19 @@
+{
+  "APP_ID": {
+    "SERVICE_INSTANCE": "multi-tenancy-serverless-appid-a",
+    "SERVICE_KEY_NAME": "multi-tenancy-serverless-appid-key-a"
+  },
+  "POSTGRES": {
+    "SERVICE_INSTANCE": "multi-tenancy-serverless-pg-ten-a",
+    "SERVICE_KEY_NAME": "multi-tenancy-serverless-pg-ten-a-key",
+    "SQL_FILE": "create-populate-tenant-a.sql"
+  },
+  "APPLICATION": {
+    "CONTAINER_NAME_BACKEND": "multi-tenancy-service-backend-movies",
+    "CONTAINER_NAME_FRONTEND": "multi-tenancy-service-frontend-movies",
+    "CATEGORY": "Movies"
+  },
+  "CODE_ENGINE": {
+    "PROJECT_NAME": "multi-tenancy-serverless-a-tsuedbro"
+  }
+}

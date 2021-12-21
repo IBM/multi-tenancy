@@ -16,11 +16,6 @@ echo ""
 export SERVICE_CATALOG_IMAGE=$1
 export FRONTEND_IMAGE=$2
 
-# Verification
-# In case the script doesn't use the parameters
-#export FRONTEND_IMAGE='us.icr.io/multi-tenancy-example/multi-tenancy-frontend:v1'
-#export SERVICE_CATALOG_IMAGE='us.icr.io/multi-tenancy-example/multi-tenancy-service-catalog:v1'
-
 # **********************************************************************************
 # Functions
 # **********************************************************************************
