@@ -70,7 +70,7 @@ echo "************************************"
 echo " Create and push container image to IBM Container Registry"
 echo "************************************"
 
-# createAndPushIBMContainer
+createAndPushIBMContainer
 
 echo "************************************"
 echo " Tenant A"
@@ -82,4 +82,4 @@ echo "************************************"
 echo " Tenant B"
 echo "************************************"
 
-# bash ./ce-install-application.sh $GLOBAL $TENANT_B
+bash ./ce-install-application.sh $GLOBAL $TENANT_B
