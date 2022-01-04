@@ -6,6 +6,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS.
 ### Project Structure
 
 * [Project Overview](#project-overview)
+* [Repositories](#repositories)
 * [Serverless Architecture](#serverless-architecture)
 * [Initial Setup](#initial-setup)
 * [Toolchain to update Application](#toolchain)
@@ -22,6 +23,26 @@ The project aims to support partners to build SaaS for different platforms inclu
 The project comes with a simple e-commerce example application. A SaaS provider might have one client selling books, another one selling shoes.
 
 <kbd><img src="documentation/example-app.png" /></kbd>
+
+## Repositories
+
+This repo is the 'parent repo' including documentation and global configuration.
+
+* [multi-tenancy](https://github.com/IBM/multi-tenancy) - parent repo
+1) Documentation
+2) Global configuration
+3) CD pipeline
+4) Scripts
+
+* [multi-tenancy-backend](https://github.com/IBM/multi-tenancy-backend) - backend microservice
+1) Code
+2) CI pipeline
+
+* [multi-tenancy-frontend](https://github.com/IBM/multi-tenancy-frontend) - frontend microservice
+1) Code
+2) CI pipeline
+
+* [multi-tenancy-serverless-ci-cd](https://github.com/IBM/multi-tenancy-serverless-ci-cd) - CI and CD pipelines for serverless
 
 
 ## Serverless Architecture
