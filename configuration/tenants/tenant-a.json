@@ -17,7 +17,7 @@
     "PROJECT_NAME": "multi-tenancy-serverless-a"
   },
   "IBM_KUBERNETES_SERVICE": {
-    "NAME": "niklas-heidloff-fra04-b3c.4x16",
+    "NAME": "niklas-heidloff2-fra04-b3c.4x16",
     "NAMESPACE": "tenant-a"
   }
 }
