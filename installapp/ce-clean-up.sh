@@ -27,32 +27,48 @@ echo ""
 echo "Parameter count : $@"
 echo "Parameter zero 'name of the script': $0"
 echo "---------------------------------"
-echo "Tenant configuration         : $1"
+echo "Global configuration         : $1"
+echo "Tenant configuration         : $2"
 echo "---------------------------------"
 
 # **************** Global variables set by parameters
 
-# Code Engine
-export PROJECT_NAME=$(cat ./$1 | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
-# postgres
-export POSTGRES_SERVICE_INSTANCE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
-export POSTGRES_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
-export POSTGRES_SQL_FILE=$(cat ./$1 | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
-# ecommerce application container registry
-export FRONTEND_IMAGE=$(cat ./$1 | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
-export SERVICE_CATALOG_IMAGE=$(cat ./$1 | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
-# ecommerce application names
-export SERVICE_CATALOG_NAME=$(cat ./$1 | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
-export FRONTEND_NAME=$(cat ./$1 | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
-export FRONTEND_CATEGORY=$(cat ./$1 | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
-# App ID
-export APPID_SERVICE_INSTANCE_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
-export APPID_SERVICE_KEY_NAME=$(cat ./$1 | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+# Globale config
+# --------------
 # IBM Cloud Container Registry
-export IBM_CR_SERVER=$(cat ./$1 | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
+export IBM_CR_SERVER=$(cat ./$1 | jq '.REGISTRY.URL' | sed 's/"//g')
+# CE for IBM Cloud Container Registry access
+export SECRET_NAME=$(cat ./$1 | jq '.REGISTRY.SECRET_NAME' | sed 's/"//g')
+export IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
+export REGISTRY_URL=$(cat ./$1 | jq '.REGISTRY.URL' | sed 's/"//g')
+export IBM_CR_SERVER=$REGISTRY_URL
+export IMAGE_TAG=$(cat ./$1 | jq '.REGISTRY.TAG' | sed 's/"//g')
+export NAMESPACE=$(cat ./$1 | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
 # IBM Cloud target
-export RESOURCE_GROUP=$(cat ./$1 | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
-export REGION=$(cat ./$1 | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
+export RESOURCE_GROUP=$(cat ./$1 | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
+export REGION=$(cat ./$1 | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
+# ecommerce application container registry
+export FRONTEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
+export BACKEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
+export FRONTEND_IMAGE="$REGISTRY_URL/$NAMESPACE/$FRONTEND_IMAGE_NAME:$IMAGE_TAG"
+export SERVICE_CATALOG_IMAGE="$REGISTRY_URL/$NAMESPACE/$BACKEND_IMAGE_NAME:$IMAGE_TAG"
+
+# Tenant config
+# --------------
+# Code Engine
+export PROJECT_NAME=$(cat ./$2 | jq '.CODE_ENGINE.PROJECT_NAME' | sed 's/"//g') 
+# postgres
+export POSTGRES_SERVICE_INSTANCE=$(cat ./$2 | jq '.POSTGRES.SERVICE_INSTANCE' | sed 's/"//g') 
+export POSTGRES_SERVICE_KEY_NAME=$(cat ./$2 | jq '.POSTGRES.SERVICE_KEY_NAME' | sed 's/"//g')
+export POSTGRES_SQL_FILE=$(cat ./$2 | jq '.POSTGRES.SQL_FILE' | sed 's/"//g')
+# ecommerce application names
+export SERVICE_CATALOG_NAME=$(cat ./$2 | jq '.APPLICATION.CONTAINER_NAME_BACKEND' | sed 's/"//g')
+export FRONTEND_NAME=$(cat ./$2 | jq '.APPLICATION.CONTAINER_NAME_FRONTEND' | sed 's/"//g')
+export FRONTEND_CATEGORY=$(cat ./$2 | jq '.APPLICATION.CATEGORY' | sed 's/"//g')
+# App ID
+export APPID_SERVICE_INSTANCE_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_INSTANCE' | sed 's/"//g')
+export APPID_SERVICE_KEY_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_KEY_NAME' | sed 's/"//g')
+export IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
@@ -76,16 +92,7 @@ echo "IBM Cloud REGION                 : $REGION"
 echo "---------------------------------"
 echo ""
 echo "Verify parameters and press return"
-
 read input
-
-# **************** Global variables
-
-export NAMESPACE=""
-
-# CE for IBM Cloud Container Registry access
-export SECRET_NAME="multi.tenancy.cr.sec"
-export IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
 
 # **********************************************************************************
 # Functions definition

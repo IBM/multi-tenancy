@@ -23,10 +23,11 @@
 # brew install jq
 
 # **************** Global variables
-
+pwd
 # Tenancies
-export TENANT_A="tenants-config/tenant-a-parameters.json"
-export TENANT_B="tenants-config/tenant-b-parameters.json"
+export TENANT_A="tenants-config/tenants/tenant-a.json"
+export TENANT_B="tenants-config/tenants/tenant-b.json"
+export GLOBAL="tenants-config/global/global.json"
 
 # **********************************************************************************
 # Functions definition
@@ -42,6 +43,6 @@ echo "************************************"
 echo " Clean Tenant A"
 echo "************************************"
 
-bash ./ce-clean-up.sh $TENANT_A
+bash ./ce-clean-up.sh $GLOBAL $TENANT_A
 
-bash ./ce-clean-up.sh $TENANT_B
+bash ./ce-clean-up.sh $GLOBAL $TENANT_B

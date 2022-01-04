@@ -31,45 +31,59 @@ echo ""
 echo "Parameter count : $@"
 echo "Parameter zero 'name of the script': $0"
 echo "---------------------------------"
-echo "Tenant configuration         : $1"
+echo "Global configuration         : $1"
+echo "Tenant configuration         : $2"
 echo "---------------------------------"
 
 # **************** Global variables set by parameters
 
-export CONFIG_FILE=$1
-
-# Code Engine
-export PROJECT_NAME=$(cat ./$CONFIG_FILE | jq '.[].codeengine.PROJECT_NAME' | sed 's/"//g') 
-# postgres
-export POSTGRES_SERVICE_INSTANCE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_INSTANCE' | sed 's/"//g') 
-export POSTGRES_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SERVICE_KEY_NAME' | sed 's/"//g')
-export POSTGRES_SQL_FILE=$(cat ./$CONFIG_FILE | jq '.[].postgres.POSTGRES_SQL_FILE' | sed 's/"//g')
-# ecommerce application container registry
-export FRONTEND_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
-export SERVICE_CATALOG_IMAGE=$(cat ./$CONFIG_FILE | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
-# ecommerce application names
-export SERVICE_CATALOG_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.SERVICE_CATALOG_NAME' | sed 's/"//g')
-export FRONTEND_NAME=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_NAME' | sed 's/"//g')
-export FRONTEND_CATEGORY=$(cat ./$CONFIG_FILE | jq '.[].applications.FRONTEND_CATEGORY' | sed 's/"//g')
-# App ID
-export YOUR_SERVICE_FOR_APPID=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_INSTANCE_NAME' | sed 's/"//g')
-export APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.[].appid.APPID_SERVICE_KEY_NAME' | sed 's/"//g')
+# Globale config
+# --------------
 # IBM Cloud Container Registry
-export IBM_CR_SERVER=$(cat ./$CONFIG_FILE | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
+export IBM_CR_SERVER=$(cat ./$1 | jq '.REGISTRY.URL' | sed 's/"//g')
+# CE for IBM Cloud Container Registry access
+export SECRET_NAME=$(cat ./$1 | jq '.REGISTRY.SECRET_NAME' | sed 's/"//g')
+export IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
+export REGISTRY_URL=$(cat ./$1 | jq '.REGISTRY.URL' | sed 's/"//g')
+export IBM_CR_SERVER=$REGISTRY_URL
+export IMAGE_TAG=$(cat ./$1 | jq '.REGISTRY.TAG' | sed 's/"//g')
+export NAMESPACE=$(cat ./$1 | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
 # IBM Cloud target
-export RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
-export REGION=$(cat ./$CONFIG_FILE | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
+export RESOURCE_GROUP=$(cat ./$1 | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
+export REGION=$(cat ./$1 | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
+# ecommerce application container registry
+export FRONTEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
+export BACKEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
+export FRONTEND_IMAGE="$REGISTRY_URL/$NAMESPACE/$FRONTEND_IMAGE_NAME:$IMAGE_TAG"
+export SERVICE_CATALOG_IMAGE="$REGISTRY_URL/$NAMESPACE/$BACKEND_IMAGE_NAME:$IMAGE_TAG"
+
+# Tenant config
+# --------------
+# Code Engine
+export PROJECT_NAME=$(cat ./$2 | jq '.CODE_ENGINE.PROJECT_NAME' | sed 's/"//g') 
+# postgres
+export POSTGRES_SERVICE_INSTANCE=$(cat ./$2 | jq '.POSTGRES.SERVICE_INSTANCE' | sed 's/"//g') 
+export POSTGRES_SERVICE_KEY_NAME=$(cat ./$2 | jq '.POSTGRES.SERVICE_KEY_NAME' | sed 's/"//g')
+export POSTGRES_SQL_FILE=$(cat ./$2 | jq '.POSTGRES.SQL_FILE' | sed 's/"//g')
+# ecommerce application names
+export SERVICE_CATALOG_NAME=$(cat ./$2 | jq '.APPLICATION.CONTAINER_NAME_BACKEND' | sed 's/"//g')
+export FRONTEND_NAME=$(cat ./$2 | jq '.APPLICATION.CONTAINER_NAME_FRONTEND' | sed 's/"//g')
+export FRONTEND_CATEGORY=$(cat ./$2 | jq '.APPLICATION.CATEGORY' | sed 's/"//g')
+# App ID
+export APPID_SERVICE_INSTANCE_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_INSTANCE' | sed 's/"//g')
+export APPID_SERVICE_KEY_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_KEY_NAME' | sed 's/"//g')
+
 
 echo "Code Engine project              : $PROJECT_NAME"
 echo "---------------------------------"
-echo "App ID service instance name     : $YOUR_SERVICE_FOR_APPID"
+echo "App ID service instance name     : $APPID_SERVICE_INSTANCE_NAME"
 echo "App ID service key name          : $APPID_SERVICE_KEY_NAME"
 echo "---------------------------------"
 echo "Application Service Catalog name : $SERVICE_CATALOG_NAME"
 echo "Application Frontend name        : $FRONTEND_NAME"
 echo "Application Frontend category    : $FRONTEND_CATEGORY"
-echo "Application Service Catalog image: [$SERVICE_CATALOG_IMAGE]"
-echo "Application Frontend image       : [$FRONTEND_IMAGE]"
+echo "Application Service Catalog image: $SERVICE_CATALOG_IMAGE"
+echo "Application Frontend image       : $FRONTEND_IMAGE"
 echo "---------------------------------"
 echo "Postgres instance name           : $POSTGRES_SERVICE_INSTANCE"
 echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
@@ -82,7 +96,6 @@ echo "IBM Cloud REGION                 : $REGION"
 echo "---------------------------------"
 echo ""
 echo "Verify parameters and press return"
-
 read input
 
 # **************** Global variables set as default values
@@ -378,14 +391,14 @@ function createAppIDService() {
     ibmcloud target -g $RESOURCE_GROUP
     ibmcloud target -r $REGION
     # Create AppID service
-    ibmcloud resource service-instance-create $YOUR_SERVICE_FOR_APPID $APPID_SERVICE_NAME $SERVICE_PLAN $REGION
+    ibmcloud resource service-instance-create $APPID_SERVICE_INSTANCE_NAME $APPID_SERVICE_NAME $SERVICE_PLAN $REGION
     # Create a service key for the service
-    ibmcloud resource service-key-create $APPID_SERVICE_KEY_NAME $APPID_SERVICE_KEY_ROLE --instance-name $YOUR_SERVICE_FOR_APPID
+    ibmcloud resource service-key-create $APPID_SERVICE_KEY_NAME $APPID_SERVICE_KEY_ROLE --instance-name $APPID_SERVICE_INSTANCE_NAME
     # Get the tenantId of the AppID service key
-    TENANTID=$(ibmcloud resource service-keys --instance-name $YOUR_SERVICE_FOR_APPID --output json | grep "tenantId" | awk '{print $2;}' | sed 's/"//g')
+    TENANTID=$(ibmcloud resource service-keys --instance-name $APPID_SERVICE_INSTANCE_NAME --output json | grep "tenantId" | awk '{print $2;}' | sed 's/"//g')
     echo "Tenant ID: $TENANTID"
     # Get the managementUrl of the AppID from service key
-    MANAGEMENTURL=$(ibmcloud resource service-keys --instance-name $YOUR_SERVICE_FOR_APPID --output json | grep "managementUrl" | awk '{print $2;}' | sed 's/"//g' | sed 's/,//g')
+    MANAGEMENTURL=$(ibmcloud resource service-keys --instance-name $APPID_SERVICE_INSTANCE_NAME --output json | grep "managementUrl" | awk '{print $2;}' | sed 's/"//g' | sed 's/,//g')
     echo "Management URL: $MANAGEMENTURL"
 }
 

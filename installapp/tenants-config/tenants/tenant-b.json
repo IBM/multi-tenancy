@@ -14,10 +14,6 @@
     "CATEGORY": "Fantasy"
   },
   "CODE_ENGINE": {
-    "PROJECT_NAME": "multi-tenancy-serverless-b"
-  },
-  "IBM_KUBERNETES_SERVICE": {
-    "NAME": "niklas-heidloff2-fra04-b3c.4x16",
-    "NAMESPACE": "tenant-b"
+    "PROJECT_NAME": "multi-tenancy-serverless-b-tsuedbro"
   }
 }

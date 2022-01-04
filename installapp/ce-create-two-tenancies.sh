@@ -10,64 +10,33 @@
 
 # **************** Global variables
 
-# Tenancies
-export TENANT_A="tenants-config/tenant-a-parameters.json"
-export TENANT_B="tenants-config/tenant-b-parameters.json"
+# Configurations
+export GLOBAL="tenants-config/global/global.json"
+export TENANT_A="tenants-config/tenants/tenant-a.json"
+export TENANT_B="tenants-config/tenants/tenant-b.json"
 
-# Using tenant a to define:
-# ecommerce application name
-export FRONTEND_NAME=$(cat ./$TENANT_A | jq '.[].container_images.FRONTEND_NAME' | sed 's/"//g')
-export SERVICE_CATALOG_NAME=$(cat ./$TENANT_A | jq '.[].container_images.SERVICE_CATALOG_NAME' | sed 's/"//g')
-# ecommerce application container name
-export FRONTEND_IMAGE=$(cat ./$TENANT_A | jq '.[].container_images.FRONTEND_IMAGE' | sed 's/"//g')
-export SERVICE_CATALOG_IMAGE=$(cat ./$TENANT_A | jq '.[].container_images.SERVICE_CATALOG_IMAGE' | sed 's/"//g')
+# ecommerce application container image names
+export REGISTRY_URL=$(cat ./$GLOBAL | jq '.REGISTRY.URL' | sed 's/"//g')
+export IMAGE_TAG=$(cat ./$GLOBAL | jq '.REGISTRY.TAG' | sed 's/"//g')
+export NAMESPACE=$(cat ./$GLOBAL | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
+export FRONTEND_IMAGE_NAME=$(cat ./$GLOBAL | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
+export BACKEND_IMAGE_NAME=$(cat ./$GLOBAL | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
+export FRONTEND_IMAGE="$REGISTRY_URL/$NAMESPACE/$FRONTEND_IMAGE_NAME:$IMAGE_TAG"
+export SERVICE_CATALOG_IMAGE="$REGISTRY_URL/$NAMESPACE/$BACKEND_IMAGE_NAME:$IMAGE_TAG"
 
 # Registry settings
 # ibm cloud  container registry settings
-export IBMCLOUD_CR_NAMESPACE=$(cat ./$TENANT_A | jq '.[].container_ibmregistry.IBMCLOUD_CR_NAMESPACE' | sed 's/"//g')
-export IBMCLOUD_CR_REGION_URL=$(cat ./$TENANT_A | jq '.[].container_ibmregistry.IBMCLOUD_CR_REGION_URL' | sed 's/"//g')
-export IBMCLOUD_CR_TAG=$(cat ./$TENANT_A | jq '.[].container_ibmregistry.IBMCLOUD_CR_TAG' | sed 's/"//g')
-
-# quay container registry settings
-export QUAY_CR_PROJECT=$(cat ./$TENANT_A | jq '.[].container_quayregistry.QUAY_CR_PROJECT' | sed 's/"//g')
-export QUAY_URL=$(cat ./$TENANT_A | jq '.[].container_quayregistry.QUAY_URL' | sed 's/"//g')
-export QUAY_CR_TAG=$(cat ./$TENANT_A | jq '.[].container_quayregistry.QUAY_CR_TAG' | sed 's/"//g')
+export IBMCLOUD_CR_NAMESPACE=$(cat ./$GLOBAL | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
+export IBMCLOUD_CR_REGION_URL=$(cat ./$GLOBAL | jq '.REGISTRY.URL' | sed 's/"//g')
+export IBMCLOUD_CR_TAG=$(cat ./$GLOBAL | jq '.REGISTRY.TAG' | sed 's/"//g')
 
 # IBM Cloud target
-export RESOURCE_GROUP=$(cat ./$TENANT_A | jq '.[].ibmcloud_target.RESOURCE_GROUP' | sed 's/"//g')
-export REGION=$(cat ./$TENANT_A | jq '.[].ibmcloud_target.REGION' | sed 's/"//g')
-
+export RESOURCE_GROUP=$(cat ./$GLOBAL | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
+export REGION=$(cat ./$GLOBAL | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
 
 # **********************************************************************************
 # Functions definition
 # **********************************************************************************
-
-function createAndPushQuayContainer () {
-    
-    echo "Build image names"
-    FRONTEND_IMAGE="$QUAY_URL/$IQUAY_CR_PROJECT/$FRONTEND_NAME:$QUAY_CR_TAG"
-    SERVICE_CATALOG_IMAGE="$QUAY_URL/$QUAY_CR_PROJECT/$SERVICE_CATALOG_NAME:$QUAY_CR_TAG"
-    
-    echo "FRONTEND_IMAGE: $FRONTEND_IMAGE"
-    echo "SERVICE_CATALOG_IMAGE: $SERVICE_CATALOG_IMAGE"
-    
-    echo "Update configuration file ./$TENANT_A "
-    RESULT=$(cat ./$TENANT_A | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
-    echo "$RESULT" > ./$TENANT_A 
-    RESULT=$(cat ./$TENANT_A | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
-    echo "$RESULT" > ./$TENANT_A
-
-    echo "Update configuration file ./$TENANT_B "
-    RESULT=""
-    RESULT=$(cat ./$TENANT_B | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
-    echo "$RESULT" > ./$TENANT_B 
-    RESULT=$(cat ./$TENANT_B | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
-    echo "$RESULT" > ./$TENANT_B
-
-    bash ./ce-build-images-quay-docker.sh $SERVICE_CATALOG_IMAGE \
-                                          $FRONTEND_IMAGE
-
-}
 
 function createNamespace(){
      
@@ -83,29 +52,9 @@ function createNamespace(){
 }
 
 function createAndPushIBMContainer () {
-
-    echo "Build image names" 
-    FRONTEND_IMAGE="$IBMCLOUD_CR_REGION_URL/$IBMCLOUD_CR_NAMESPACE/$FRONTEND_NAME:$IBMCLOUD_CR_TAG"
-    SERVICE_CATALOG_IMAGE="$IBMCLOUD_CR_REGION_URL/$IBMCLOUD_CR_NAMESPACE/$SERVICE_CATALOG_NAME:$IBMCLOUD_CR_TAG"
-    
+ 
     echo "FRONTEND_IMAGE: $FRONTEND_IMAGE"
     echo "SERVICE_CATALOG_IMAGE: $SERVICE_CATALOG_IMAGE"
-
-    echo "Update configuration files ./$TENANT_A and ./$TENANT_B "
-    
-    RESULT=""
-    cat ./$TENANT_A
-    RESULT=$(cat ./$TENANT_A | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
-    echo "$RESULT" > ./$TENANT_A 
-    RESULT=$(cat ./$TENANT_A | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
-    echo "$RESULT" > ./$TENANT_A
-    
-    RESULT=""
-    cat ./$TENANT_B
-    RESULT=$(cat ./$TENANT_B | jq --arg service_catalog "$SERVICE_CATALOG_IMAGE" '.[].container_images.SERVICE_CATALOG_IMAGE |= $service_catalog')
-    echo "$RESULT" > ./$TENANT_B 
-    RESULT=$(cat ./$TENANT_B | jq --arg frontend "$FRONTEND_IMAGE" '.[].container_images.FRONTEND_IMAGE |= $frontend')
-    echo "$RESULT" > ./$TENANT_B
 
     createNamespace
     
@@ -118,25 +67,19 @@ function createAndPushIBMContainer () {
 # **********************************************************************************
 
 echo "************************************"
-echo " Create and push container image to Quay registry"
-echo "************************************"
-
-# createAndPushQuayContainer
-
-echo "************************************"
 echo " Create and push container image to IBM Container Registry"
 echo "************************************"
 
 createAndPushIBMContainer
 
-#echo "************************************"
-#echo " Tenant A"
-#echo "************************************"
+echo "************************************"
+echo " Tenant A"
+echo "************************************"
 
-bash ./ce-install-application.sh $TENANT_A
+bash ./ce-install-application.sh $GLOBAL $TENANT_A
 
 echo "************************************"
 echo " Tenant B"
 echo "************************************"
 
-bash ./ce-install-application.sh $TENANT_B
+bash ./ce-install-application.sh $GLOBAL $TENANT_B
