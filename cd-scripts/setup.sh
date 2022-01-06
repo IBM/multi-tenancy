@@ -12,7 +12,12 @@ echo $BACKEND
 git clone $BACKEND
 save_repo multi-tenancy-backend "url=${BACKEND}"
 
-export PARENT=$(get_env "multi-tenancy-parent")
-echo $PARENT
-git clone $PARENT
-save_repo multi-tenancy "url=${PARENT}"
+export FRONTEND=$(get_env "multi-tenancy-frontend")
+echo $FRONTEND
+git clone $FRONTEND
+save_repo multi-tenancy-frontend "url=${FRONTEND}"
+
+#export PARENT=$(get_env "multi-tenancy")
+#echo $PARENT
+#git clone $PARENT
+#save_repo multi-tenancy "url=${PARENT}"
