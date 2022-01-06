@@ -19,5 +19,12 @@
   "IBM_KUBERNETES_SERVICE": {
     "NAME": "niklas-heidloff2-fra04-b3c.4x16",
     "NAMESPACE": "tenant-b"
+  },
+  "IBM_OPENSHIFT_SERVICE": {
+    "NAME": "roks-gen2-suedbro",
+    "NAMESPACE": "tenant-b"
+  },
+  "PLATFORM": {
+    "NAME": "IBM_KUBERNETES_SERVICE"
   }
 }
