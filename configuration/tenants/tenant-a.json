@@ -25,6 +25,6 @@
     "NAMESPACE": "tenant-a"
   },
   "PLATFORM": {
-    "NAME": "IBM_KUBERNETES_SERVICE"
+    "NAME": "IBM_OPENSHIFT_SERVICE"
   }
 }
