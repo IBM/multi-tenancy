@@ -70,6 +70,16 @@ else
   fi
 fi
 
+pwd
+ls -la
+cd ..
+pwd
+ls -la
+cd ..
+pwd
+ls -la
+
+
 #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
 CONFIG_FILE="../multi-tenancy/configuration/global.json"
 IBM_CLOUD_RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
