@@ -1,0 +1,35 @@
+# Documentation on available configuration
+# https://pages.github.ibm.com/one-pipeline/docs/custom-scripts.html
+
+version: '1'
+
+setup:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.12@sha256:ff4053b0bca784d6d105fee1d008cfb20db206011453071e86b69ca3fde706a4
+  script: |
+    #!/usr/bin/env bash
+
+    source cd-scripts/setup.sh
+
+deploy:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.12@sha256:ff4053b0bca784d6d105fee1d008cfb20db206011453071e86b69ca3fde706a4
+  script: |
+    #!/usr/bin/env bash
+
+    if [[ "$PIPELINE_DEBUG" == 1 ]]; then
+      trap env EXIT
+      env
+      set -x
+    fi
+
+    source cd-scripts/deploy_setup.sh
+    source cd-scripts/deploy.sh
+    export DEPLOY_EXIT=$?
+    source cd-scripts/doi-publish-deploy.sh
+
+acceptance-test:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.12@sha256:ff4053b0bca784d6d105fee1d008cfb20db206011453071e86b69ca3fde706a4
+  script: |
+    #!/usr/bin/env bash
+
+    #source scripts/acceptance-test.sh
+    exit 0
