@@ -15,13 +15,14 @@ function triggerScript() {
   echo ""
   echo "2. Have you created a Postgres instance?"
   echo "Copy the credentials in local.env: POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_URL, POSTGRES_CERTIFICATE_FILE_NAME"
-  echo "Copy the Postgres certificate in code/service-catalog/src/main/resources/certificates"
-  echo "Starting catalog service locally ..."
+  echo "Copy the Postgres certificate in multi-tenancy-backend/src/main/resources/certificates"
+  echo "Starting backend service locally ..."
   echo curl  \"http://localhost:8081/category\"
   echo curl  \"http://localhost:8081/category/2/products\"
   echo "/category will return a response code '401' not authorized!"
   echo "/category/2/products will return data from Postgres"
 
+  cd ${root_folder}
   CFG_FILE=${root_folder}/local.env
   if [ ! -f $CFG_FILE ]; then
     _out Config file local.env is missing!
