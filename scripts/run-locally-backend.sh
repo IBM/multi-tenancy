@@ -15,12 +15,14 @@ function triggerScript() {
   echo ""
   echo "2. Have you created a Postgres instance?"
   echo "Copy the credentials in local.env: POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_URL, POSTGRES_CERTIFICATE_FILE_NAME"
-  echo "Copy the Postgres certificate in code/service-catalog/src/main/resources/certificates"
-  echo "Starting catalog service locally ..."
+  echo "Copy the Postgres certificate in multi-tenancy-backend/src/main/resources/certificates"
+  echo "Starting backend service locally ..."
   echo curl  \"http://localhost:8081/category\"
   echo curl  \"http://localhost:8081/category/2/products\"
-  echo "... both curl's will return with response code '401' not authorized!"
+  echo "/category will return a response code '401' not authorized!"
+  echo "/category/2/products will return data from Postgres"
 
+  cd ${root_folder}
   CFG_FILE=${root_folder}/local.env
   if [ ! -f $CFG_FILE ]; then
     _out Config file local.env is missing!
@@ -34,11 +36,11 @@ function triggerScript() {
   APPID_CLIENT_ID=${APPID_CLIENT_ID}
 
   POSTGRES_URL=$(echo $POSTGRES_URL| cut -d'?' -f 1)
-  CERTIFICATE_PATH=${root_folder}/code/service-catalog/src/main/resources/certificates/cloud-postgres-cert
-  cp ${root_folder}/code/service-catalog/src/main/resources/certificates/$POSTGRES_CERTIFICATE_FILE_NAME $CERTIFICATE_PATH
+  CERTIFICATE_PATH=${root_folder}/../multi-tenancy-backend/src/main/resources/certificates/cloud-postgres-cert
+  cp ${root_folder}/../multi-tenancy-backend/src/main/resources/certificates/$POSTGRES_CERTIFICATE_FILE_NAME $CERTIFICATE_PATH
   POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
 
-  cd ${root_folder}/code/service-catalog
+  cd ${root_folder}/../multi-tenancy-backend
   mvn clean package
   mvn quarkus:dev
 }

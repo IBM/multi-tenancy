@@ -10,7 +10,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS.
 * [Serverless Architecture](#serverless-architecture)
 * [Initial Setup](#initial-setup)
 * [Toolchain to update Application](#toolchain)
-* [Develop Services locally](#develop-services-locally)
+* [Develop Services locally](#develop-backend-service-locally)
 * [Draft Documentation](https://ibm.github.io/multi-tenancy/)
 
 
@@ -113,9 +113,9 @@ https://cloud.ibm.com/devops/setup/deploy?repository=https://github.com/[your-gi
 The pipelines can be triggered manually and they are triggered automatically when code changes occur in the Git repo.
 
 
-## Develop Services locally
+## Develop Backend Service locally
 
-To run the catalog service locally, a [managed Postgres](https://cloud.ibm.com/databases/databases-for-postgresql/create) instance needs to be created first. After this you need to define four variables in local.env. See local.env.template for more:
+To run the backend service locally, a [managed Postgres](https://cloud.ibm.com/databases/databases-for-postgresql/create) instance needs to be created first. After this you need to define four variables in local.env. See local.env.template for more:
 - POSTGRES_USERNAME
 - POSTGRES_PASSWORD
 - POSTGRES_URL
@@ -124,13 +124,14 @@ To run the catalog service locally, a [managed Postgres](https://cloud.ibm.com/d
 Additionally you need to copy the certificate file in code/service-catalog/src/main/resources/certificates. As file name use the Postgres username.
 
 For the authentication a [App ID](https://www.ibm.com/cloud/app-id) instance is required. Copy the two settings in local.env:
-- APPID_CLIENT_ID
+- APPID_CLIENT_ID (note: this is not the client id in the secrets, but in the application settings)
 - APPID_DISCOVERYENDPOINT
 
 For IBMers only: You can re-use existing services by using these [configuration](https://github.ibm.com/niklas-heidloff/multi-tenancy-credentials) files.
 
 ```
 $ git clone https://github.com/IBM/multi-tenancy.git
+$ git clone https://github.com/IBM/multi-tenancy-backend.git
 $ cd multi-tenancy
 $ ROOT_FOLDER=$(pwd)
 $ cp certificate ${root_folder}/code/service-catalog/src/main/resources/certificates/
@@ -138,20 +139,18 @@ $ cp template.local.env local.env
 $ vi local.env
 ```
 
-Run the catalog service and frontend locally via Maven and Webpack:
+Run the backend service locally via Maven:
 
 ```
-$ sh scripts/run-locally-service-catalog.sh
-$ sh scripts/run-locally-frontend.sh
+$ sh scripts/run-locally-backend.sh
 ```
 
-Or run the catalog service locally via container (podman):
+Or run the backend service locally via container (podman):
 
 ```
-$ sh scripts/run-locally-container-service-catalog.sh
-$ sh scripts/run-locally-container-frontend.sh
+$ sh scripts/run-locally-container-backend.sh
 ```
 
-Open http://localhost:8080 or invoke http://localhost:8081/category and http://localhost:8081/category/2/products.
+Invoke http://localhost:8081/category/2/products.
 
-User: thomas@example.com. Password: thomas4appid
+(User: thomas@example.com. Password: thomas4appid)

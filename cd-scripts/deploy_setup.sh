@@ -71,7 +71,7 @@ else
 fi
 
 #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
-CONFIG_FILE="../multi-tenancy/configuration/global.json"
+CONFIG_FILE="configuration/global.json"
 IBM_CLOUD_RESOURCE_GROUP=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
 IBM_CLOUD_REGION=$(cat ./$CONFIG_FILE | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
 REGISTRY_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
@@ -83,7 +83,7 @@ IMAGES_NAME_FRONTEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_FRONTEND' | sed 's/
 
 #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/tenants/tenant-a.json
 TENANT=$(get_env tenant '')
-CONFIG_FILE="../multi-tenancy/configuration/tenants/${TENANT}.json"
+CONFIG_FILE="configuration/tenants/${TENANT}.json"
 APPID_SERVICE_INSTANCE_NAME=$(cat ./$CONFIG_FILE | jq '.APP_ID.SERVICE_INSTANCE' | sed 's/"//g')
 APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.APP_ID.SERVICE_KEY_NAME' | sed 's/"//g')
 POSTGRES_SERVICE_INSTANCE=$(cat ./$CONFIG_FILE | jq '.POSTGRES.SERVICE_INSTANCE' | sed 's/"//g') 
