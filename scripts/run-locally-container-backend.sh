@@ -46,13 +46,13 @@ function triggerScript() {
   echo "/category will return a response code '401' not authorized!"
   echo "/category/2/products will return data from Postgres"
 
-  cd ${ROOT_PATH}/$BACKEND_SOURCEFOLDER
   CFG_FILE=${ROOT_PATH}/$ROOT_PROJECT/local.env
   if [ ! -f $CFG_FILE ]; then
     _out Config file local.env is missing!
     exit 1
   fi
 
+  cd ${ROOT_PATH}/$BACKEND_SOURCEFOLDER
   set -o allexport
   source $CFG_FILE
 
