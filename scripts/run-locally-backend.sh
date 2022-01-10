@@ -64,7 +64,7 @@ function triggerScript() {
   cp $ROOT_PATH/$BACKEND_SOURCEFOLDER/src/main/resources/certificates/$POSTGRES_CERTIFICATE_FILE_NAME $CERTIFICATE_PATH
   POSTGRES_URL="$POSTGRES_URL?sslmode=verify-full&sslrootcert=$CERTIFICATE_PATH"
 
-  cd ${root_folder}/../multi-tenancy-backend
+  cd $ROOT_PATH/$BACKEND_SOURCEFOLDER
   mvn clean package
   mvn quarkus:dev
 }
