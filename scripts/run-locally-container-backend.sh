@@ -64,7 +64,7 @@ function triggerScript() {
 
   POSTGRES_CERTIFICATE_DATA=$(<$ROOT_PATH/$BACKEND_SOURCEFOLDER/src/main/resources/certificates/${POSTGRES_CERTIFICATE_FILE_NAME})
 
-  cd ${root_folder}/../multi-tenancy-backend
+  cd ${ROOT_PATH}/$BACKEND_SOURCEFOLDER
   podman container stop service-catalog --ignore
   podman container rm -f service-catalog --ignore
   podman build --file Dockerfile --tag service-catalog
