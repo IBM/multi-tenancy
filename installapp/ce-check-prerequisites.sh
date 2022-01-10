@@ -7,6 +7,7 @@ export CHECK_JQ="jq-"
 export CHECK_SED="sed"
 export CHECK_AWK="awk"
 export CHECK_CURL="curl"
+export CHECK_DOCKER="Docker"
 export CHECK_PLUGIN_CLOUDDATABASES="cloud-databases"
 export CHECK_PLUGIN_CODEENGINE="code-engine"
 export CHECK_PLUGIN_CONTAINERREGISTERY="container-registry"
@@ -28,7 +29,7 @@ function verifyLibpq() {
     else 
     echo "*** libpq (psql) is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -40,7 +41,7 @@ function verifyGrep() {
     else 
     echo "*** Grep is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -52,7 +53,7 @@ function verifyCURL() {
     else 
     echo "*** cURL is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -64,7 +65,7 @@ function verifyAWK() {
     else 
     echo "*** AWK is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -76,7 +77,7 @@ function verifySed() {
     else 
     echo "*** Sed is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -88,7 +89,7 @@ function verifyIBMCloudCLI() {
     else 
     echo "*** IBM Cloud CLI is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -100,7 +101,7 @@ function verifyJQ() {
     else 
     echo "*** JQ is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -112,7 +113,7 @@ function verifyIBMCloudPluginCloudDatabases() {
     else 
     echo "IBM Cloud Plugin 'cloud-databases' is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -124,7 +125,7 @@ function verifyIBMCloudPluginCodeEngine() {
     else 
     echo "IBM Cloud Plugin 'code-engine' is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
     fi
 }
 
@@ -136,7 +137,19 @@ function verifyIBMCloudPluginContainerRegistry() {
     else 
     echo "IBM Cloud Plugin 'container-registry' is NOT installed !"
     echo "*** The scripts ends here!"
-    exit 0
+    exit 1
+    fi
+}
+
+function verifyDocker() {  
+    VERICATION=$(docker --version)
+
+    if [[ $VERICATION =~ $CHECK_DOCKER ]]; then
+    echo "- Docker is installed: $VERICATION !"
+    else 
+    echo "*** Docker is NOT installed !"
+    echo "*** The scripts ends here!"
+    exit 1
     fi
 }
 
@@ -156,13 +169,15 @@ echo "4. Verify jq"
 verifyJQ
 echo "5. Verify libpq (psql)"
 verifyLibpq
-echo "6. Verify ibmcloud cli"
+echo "6. Verify Docker"
+verifyDocker
+echo "7. Verify ibmcloud cli"
 verifyIBMCloudCLI
-echo "7. Verify ibmcloud plugin cloud-databases"
+echo "8. Verify ibmcloud plugin cloud-databases"
 verifyIBMCloudPluginCloudDatabases
-echo "8. Verify ibmcloud plugin code-engine"
+echo "9. Verify ibmcloud plugin code-engine"
 verifyIBMCloudPluginCodeEngine
-echo "9. Verify ibmcloud plugin container-registry"
+echo "10. Verify ibmcloud plugin container-registry"
 verifyIBMCloudPluginContainerRegistry
 
-echo "All prerequisites verified!"
+echo "Success! All prerequisites verified!"

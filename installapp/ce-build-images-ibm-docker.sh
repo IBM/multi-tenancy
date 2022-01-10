@@ -60,12 +60,32 @@ function buildAndPushFrontend() {
     echo "************************************"
     cd $ROOT_PATH/$FRONTEND_SOURCEFOLDER
 
-    docker build -t "$FRONTEND_IMAGE" -f Dockerfile.os4-webapp .
+    docker build -t "$FRONTEND_IMAGE" -f Dockerfile .
     docker push "$FRONTEND_IMAGE"
     echo ""
 }
 
+function checkDocker () {
+    echo "************************************"
+    echo " Check Docker is running"
+    echo "************************************"
+    RESULT=$(docker ps)
+
+    if [[ $RESULT =~ "Cannot connect to the Docker daemon"  ]]; then
+        echo "*** Docker is NOT running !"
+        echo "*** The script 'ce-build-images-ibm-docker.sh' ends here!"
+        exit 1
+    else 
+        echo "- Docker is running!"
+    fi
+}
+
+
+
 function resetPath() {
+   echo "************************************"
+   echo " Reset path"
+   echo "************************************"
    cd $ROOT_PATH/$ROOT_PROJECT
    echo ""
 }
@@ -76,6 +96,8 @@ function resetPath() {
 # **********************************************************************************
 
 setROOT_PATH
+checkDocker
 cleanUpLocalImages
 buildAndPushBackend
 buildAndPushFrontend
+resetPath

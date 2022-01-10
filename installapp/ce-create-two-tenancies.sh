@@ -48,15 +48,14 @@ function createNamespace(){
     ibmcloud target -r $REGION
     ibmcloud cr login
     RESULT=$(ibmcloud cr namespace-add $IBMCLOUD_CR_NAMESPACE | grep "FAILED")
-    VERICATION=$(jq --version)
 
     if [[ $RESULT =~ "FAILED"  ]]; then
-        echo "- Namespace $IBMCLOUD_CR_NAMESPACE in IBM Cloud Container Registry created !"
-    else 
        echo "*** Namespace $IBMCLOUD_CR_NAMESPACE in IBM Cloud Container Registry NOT created !"
        echo "*** The scripts ends here!"
        echo "*** Please define a different namespace name in the 'configuration/global.json' file."
-       exit 0
+       exit 1
+    else 
+       echo "- Namespace $IBMCLOUD_CR_NAMESPACE in IBM Cloud Container Registry created !"
     fi
 
 }
@@ -68,8 +67,13 @@ function createAndPushIBMContainer () {
 
     createNamespace
     
-    bash ./ce-build-images-ibm-docker.sh $SERVICE_CATALOG_IMAGE \
-                                         $FRONTEND_IMAGE
+    bash ./ce-build-images-ibm-docker.sh $SERVICE_CATALOG_IMAGE $FRONTEND_IMAGE
+    
+    if [ $? == "1" ]; then
+      echo "*** Creation of the container images failed !"
+      echo "*** The script 'ce-create-two-tenancies.sh' ends here!"
+      exit 1
+    fi
 }
 
 # **********************************************************************************
@@ -88,8 +92,20 @@ echo "************************************"
 
 bash ./ce-install-application.sh $GLOBAL $TENANT_A
 
+if [ $? == "1" ]; then
+  echo "*** The installation for '$GLOBAL' '$TENANT_A' configuation failed !"
+  echo "*** The script 'ce-create-two-tenancies.sh' ends here!"
+  exit 1
+fi
+
 echo "************************************"
 echo " Tenant B"
 echo "************************************"
 
 bash ./ce-install-application.sh $GLOBAL $TENANT_B
+
+if [ $? == "1" ]; then
+  echo "*** The installation for '$GLOBAL' '$TENANT_B' configuation failed !"
+  echo "*** The script 'ce-create-two-tenancies.sh' ends here!"
+  exit 1
+fi
