@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # **************** Global variables set by parameters
-root_folder=$(cd $(dirname $0); cd ..; pwd)
-cd "$root_folder"
+ROOT_PROJECT=multi-tenancy
+FRONTEND_SOURCEFOLDER=multi-tenancy-frontend
+BACKEND_SOURCEFOLDER=multi-tenancy-backend
+
 vue_env_config=./code/frontend/public/env-config.js
 vue_env_config_template=./scripts/env-config-template.js
 service_catalog_categories_endpoint="http://localhost:8081/category"
@@ -15,6 +17,23 @@ exec 3>&1
 # Functions definition
 # **********************************************************************************
 
+function setROOT_PATH() {
+   echo "************************************"
+   echo " Set ROOT_PATH"
+   echo "************************************"
+   cd ../../
+   export ROOT_PATH=$(PWD)
+   echo "Path: $ROOT_PATH"
+}
+
+function resetPath() {
+   echo "************************************"
+   echo " Reset path"
+   echo "************************************"
+   cd $ROOT_PATH/$ROOT_PROJECT/scripts
+   echo ""
+}
+
 function _out() {
   echo "$(date +'%F %H:%M:%S') $@"
 }
@@ -25,14 +44,14 @@ function triggerScript() {
   echo "Have you created an App ID instance?"
   echo "Copy the credentials in local.env: APPID_CLIENT_ID, APPID_DISCOVERYENDPOINT"
  
-  CFG_FILE=${root_folder}/local.env
+  CFG_FILE=${ROOT_PATH}/$ROOT_PROJECT/local.env
   if [ ! -f $CFG_FILE ]; then
     _out Config file local.env is missing!
     exit 1
   fi
   source $CFG_FILE
 
-  cd ${root_folder}/code/frontend
+  cd ${ROOT_PATH}/$FRONTEND_SOURCEFOLDER
   echo "********************"
   echo "Clean-up container and image"
   podman container stop frontend-container --ignore
@@ -41,7 +60,7 @@ function triggerScript() {
   
   echo "********************"
   echo "Build container"
-  podman build --file Dockerfile.os4-webapp --tag 'frontend:v1'
+  podman build --file Dockerfile --tag 'frontend:v1'
   
   echo "********************"
   echo "Starting container with App ID configuration"
@@ -64,4 +83,6 @@ function triggerScript() {
 # Execution
 # **********************************************************************************
 
+setROOT_PATH
 triggerScript
+resetPath
