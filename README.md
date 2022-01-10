@@ -90,14 +90,15 @@ $ sh ./ce-create-two-tenancies.sh
 You need the following tools installed locally to run the script above:
 
 * ibmcloud
-* ibmcloud ce
-* ibmcloud cdb
+* ibmcloud plugin code-engine
+* ibmcloud plugin cloud-databases
+* ibmcloud plugin container-registry
 * Docker 
-* sed
-* jq
-* grep
-* libpq
-* cURL
+* [sed](https://en.wikipedia.org/wiki/Sed)
+* [jq](https://lzone.de/cheat-sheet/jq)
+* [grep](https://en.wikipedia.org/wiki/Grep)
+* [libpq (psql)](https://www.postgresql.org/docs/9.5/libpq.html) 
+* [cURL](https://curl.se/)
 
 The script takes roughly 30 minutes. After this the URL of the frontend applications will be displayed. For both tenants the following test user can be used to log in:
 
