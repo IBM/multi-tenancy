@@ -47,7 +47,17 @@ function createNamespace(){
     ibmcloud target -g $RESOURCE_GROUP
     ibmcloud target -r $REGION
     ibmcloud cr login
-    ibmcloud cr namespace-add $IBMCLOUD_CR_NAMESPACE
+    RESULT=$(ibmcloud cr namespace-add $IBMCLOUD_CR_NAMESPACE | grep "FAILED")
+    VERICATION=$(jq --version)
+
+    if [[ $RESULT =~ "FAILED"  ]]; then
+        echo "- Namespace $IBMCLOUD_CR_NAMESPACE in IBM Cloud Container Registry created !"
+    else 
+       echo "*** Namespace $IBMCLOUD_CR_NAMESPACE in IBM Cloud Container Registry NOT created !"
+       echo "*** The scripts ends here!"
+       echo "*** Please define a different namespace name in the 'configuration/global.json' file."
+       exit 0
+    fi
 
 }
 

@@ -16,40 +16,66 @@ echo ""
 export SERVICE_CATALOG_IMAGE=$1
 export FRONTEND_IMAGE=$2
 
+export ROOT_PROJECT=multi-tenancy
+export FRONTEND_SOURCEFOLDER=multi-tenancy-frontend
+export BACKEND_SOURCEFOLDER=multi-tenancy-backend
+
 # **********************************************************************************
 # Functions
 # **********************************************************************************
+
+function cleanUpLocalImages() {
+   
+    echo "************************************"
+    echo " Clean up local images, if needed"
+    echo "************************************"
+
+    docker image rm -f "$SERVICE_CATALOG_IMAGE"
+    docker image rm -f "$FRONTEND_IMAGE"
+}
+
+function setROOT_PATH() {
+   echo "************************************"
+   echo " Set ROOT_PATH"
+   echo "************************************"
+   cd ../../
+   export ROOT_PATH=$(PWD)
+   echo "Path: $ROOT_PATH"
+}
+
+function buildAndPushBackend() {
+    echo "************************************"
+    echo " Backend $SERVICE_CATALOG_IMAGE"
+    echo "************************************"
+    cd $ROOT_PATH/$BACKEND_SOURCEFOLDER
+    pwd
+    docker build -t "$SERVICE_CATALOG_IMAGE" -f Dockerfile .
+    docker push "$SERVICE_CATALOG_IMAGE"
+    echo ""
+}
+
+function buildAndPushFrontend() {
+    echo "************************************"
+    echo " Frontend $FRONTEND_IMAGE"
+    echo "************************************"
+    cd $ROOT_PATH/$FRONTEND_SOURCEFOLDER
+
+    docker build -t "$FRONTEND_IMAGE" -f Dockerfile.os4-webapp .
+    docker push "$FRONTEND_IMAGE"
+    echo ""
+}
+
+function resetPath() {
+   cd $ROOT_PATH/$ROOT_PROJECT
+   echo ""
+}
 
 
 # **********************************************************************************
 # Execution
 # **********************************************************************************
 
-cd ..
-export ROOT_PATH=$(PWD)
-echo "Path: $ROOT_PATH"
-
-echo "************************************"
-echo " Clean up container if needed"
-echo "************************************"
-
-docker image rm -f "$SERVICE_CATALOG_IMAGE"
-docker image rm -f "$FRONTEND_IMAGE"
-
-echo "************************************"
-echo " Service catalog $SERVICE_CATALOG_IMAGE"
-echo "************************************"
-cd $ROOT_PATH/code/service-catalog
-pwd
-docker build -t "$SERVICE_CATALOG_IMAGE" -f Dockerfile .
-docker push "$SERVICE_CATALOG_IMAGE"
-
-echo ""
-
-echo "************************************"
-echo " Frontend $FRONTEND_IMAGE"
-echo "************************************"
-cd $ROOT_PATH/code/frontend
-
-docker build -t "$FRONTEND_IMAGE" -f Dockerfile.os4-webapp .
-docker push "$FRONTEND_IMAGE"
+setROOT_PATH
+cleanUpLocalImages
+buildAndPushBackend
+buildAndPushFrontend

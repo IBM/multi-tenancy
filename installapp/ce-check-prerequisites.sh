@@ -164,3 +164,5 @@ echo "8. Verify ibmcloud plugin code-engine"
 verifyIBMCloudPluginCodeEngine
 echo "9. Verify ibmcloud plugin container-registry"
 verifyIBMCloudPluginContainerRegistry
+
+echo "All prerequisites verified!"
