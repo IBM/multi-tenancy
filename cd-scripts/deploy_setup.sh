@@ -39,36 +39,8 @@ ls -la ${INVENTORY_PATH}
 BREAK_GLASS=$(cat /config/break_glass || echo "")
 IBMCLOUD_TOOLCHAIN_ID="$(jq -r .toolchain_guid /toolchain/toolchain.json)"
 IBMCLOUD_IKS_REGION="$(cat /config/dev-region | awk -F ":" '{print $NF}')"
-IBMCLOUD_IKS_CLUSTER_NAMESPACE="$(cat /config/dev-cluster-namespace)"
-IBMCLOUD_IKS_CLUSTER_NAME="$(cat /config/cluster-name)"
-
-if [[ -n "$BREAK_GLASS" ]]; then
-  export KUBECONFIG
-  KUBECONFIG=/config/cluster-cert
-else
-  IBMCLOUD_IKS_REGION=$(echo "${IBMCLOUD_IKS_REGION}" | awk -F ":" '{print $NF}')
-  ibmcloud login -r "$IBMCLOUD_IKS_REGION"
-  ibmcloud ks cluster config --cluster "$IBMCLOUD_IKS_CLUSTER_NAME"
-
-  ibmcloud ks cluster get --cluster "${IBMCLOUD_IKS_CLUSTER_NAME}" --json > "${IBMCLOUD_IKS_CLUSTER_NAME}.json"
-  # If the target cluster is openshift then make the appropriate additional login with oc tool
-  if which oc > /dev/null && jq -e '.type=="openshift"' "${IBMCLOUD_IKS_CLUSTER_NAME}.json" > /dev/null; then
-    echo "${IBMCLOUD_IKS_CLUSTER_NAME} is an openshift cluster. Doing the appropriate oc login to target it"
-    oc login -u apikey -p "${IBMCLOUD_API_KEY}"
-  fi
-  #
-  # check pull traffic & storage quota in container registry
-  #
-  if ibmcloud cr quota | grep 'Your account has exceeded its pull traffic quota'; then
-    echo "Your account has exceeded its pull traffic quota for the current month. Review your pull traffic quota in the preceding table."
-    exit 1
-  fi
-
-  if ibmcloud cr quota | grep 'Your account has exceeded its storage quota'; then
-    echo "Your account has exceeded its storage quota. You can check your images at https://cloud.ibm.com/kubernetes/registry/main/images"
-    exit 1
-  fi
-fi
+#IBMCLOUD_IKS_CLUSTER_NAMESPACE="$(cat /config/dev-cluster-namespace)"
+#IBMCLOUD_IKS_CLUSTER_NAME="$(cat /config/cluster-name)"
 
 #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/global.json
 CONFIG_FILE="configuration/global.json"
@@ -113,6 +85,36 @@ fi
 IBMCLOUD_IKS_REGION=${IBM_CLOUD_REGION}
 #IBMCLOUD_IKS_CLUSTER_NAMESPACE=${IBM_KUBERNETES_SERVICE_NAMESPACE}
 #IBMCLOUD_IKS_CLUSTER_NAME=${IBM_KUBERNETES_SERVICE_NAME}
+
+if [[ -n "$BREAK_GLASS" ]]; then
+  export KUBECONFIG
+  KUBECONFIG=/config/cluster-cert
+else
+  IBMCLOUD_IKS_REGION=$(echo "${IBMCLOUD_IKS_REGION}" | awk -F ":" '{print $NF}')
+  ibmcloud login -r "$IBMCLOUD_IKS_REGION"
+  ibmcloud ks cluster config --cluster "$IBMCLOUD_IKS_CLUSTER_NAME"
+
+  ibmcloud ks cluster get --cluster "${IBMCLOUD_IKS_CLUSTER_NAME}" --json > "${IBMCLOUD_IKS_CLUSTER_NAME}.json"
+  # If the target cluster is openshift then make the appropriate additional login with oc tool
+  if which oc > /dev/null && jq -e '.type=="openshift"' "${IBMCLOUD_IKS_CLUSTER_NAME}.json" > /dev/null; then
+    echo "${IBMCLOUD_IKS_CLUSTER_NAME} is an openshift cluster. Doing the appropriate oc login to target it"
+    oc login -u apikey -p "${IBMCLOUD_API_KEY}"
+  fi
+  #
+  # check pull traffic & storage quota in container registry
+  #
+  if ibmcloud cr quota | grep 'Your account has exceeded its pull traffic quota'; then
+    echo "Your account has exceeded its pull traffic quota for the current month. Review your pull traffic quota in the preceding table."
+    exit 1
+  fi
+
+  if ibmcloud cr quota | grep 'Your account has exceeded its storage quota'; then
+    echo "Your account has exceeded its storage quota. You can check your images at https://cloud.ibm.com/kubernetes/registry/main/images"
+    exit 1
+  fi
+fi
+
+
 IMAGE="$(cat /config/image)"
 IMAGE_PULL_SECRET_NAME="ibmcloud-toolchain-${IBMCLOUD_TOOLCHAIN_ID}-${REGISTRY_URL}"
 
