@@ -193,7 +193,7 @@ Open following URL <https://cloud.ibm.com/resources>
 
 ### Step 10: Click on URL and logon to the frontend application using **username** `thomas@example.com` and **password** `thomas4appid`
 
-![](images/Mulit-Tenancy-automatic-running-example-02.gif)
+![](documentation/images/Mulit-Tenancy-automatic-running-example-02.gif)
 
 ### Step 11: Clean-up
 
