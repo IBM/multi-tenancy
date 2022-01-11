@@ -209,6 +209,8 @@ done
 
 ############## backend
 
+echo "backend"
+
 INVENTORY_ENTRY="multi-tenancy-backend_deployment"
 
 APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
@@ -359,6 +361,8 @@ fi
 
 ################### frontend
 
+echo "frontend"
+
 INVENTORY_ENTRY="multi-tenancy-frontend_deployment"
 
 APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
@@ -414,30 +418,30 @@ sed -i "s~^\([[:blank:]]*\)image:.*$~\1image: ${IMAGE}~" $DEPLOYMENT_FILE
 
 #YAML_FILE="deployments/kubernetes.yml"
 
-#cp ${YAML_FILE} "${YAML_FILE}tmp"
-#rm ${YAML_FILE}
-#sed "s#VUE_APP_API_URL_CATEGORIES_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${YAML_FILE}tmp" > ${YAML_FILE}
-#rm "${YAML_FILE}tmp"
+cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
+rm ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_API_URL_CATEGORIES_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+rm "${DEPLOYMENT_FILE}tmp"
 
-#cp ${YAML_FILE} "${YAML_FILE}tmp"
-#rm ${YAML_FILE}
-#sed "s#VUE_APP_API_URL_PRODUCTS_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${YAML_FILE}tmp" > ${YAML_FILE}
-#rm "${YAML_FILE}tmp"
+cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
+rm ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_API_URL_PRODUCTS_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+rm "${DEPLOYMENT_FILE}tmp"
 
-#cp ${YAML_FILE} "${YAML_FILE}tmp"
-#rm ${YAML_FILE}
-#sed "s#VUE_APP_API_URL_ORDERS_VALUE#${SERVICE_CATALOG_URL}/base/customer/Orders#g" "${YAML_FILE}tmp" > ${YAML_FILE}
-#rm "${YAML_FILE}tmp"
+cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
+rm ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_API_URL_ORDERS_VALUE#${SERVICE_CATALOG_URL}/base/customer/Orders#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+rm "${DEPLOYMENT_FILE}tmp"
 
-#cp ${YAML_FILE} "${YAML_FILE}tmp"
-#rm ${YAML_FILE}
-#sed "s#VUE_APP_CATEGORY_NAME_VALUE#${APPLICATION_CATEGORY_TEMP}#g" "${YAML_FILE}tmp" > ${YAML_FILE}
-#rm "${YAML_FILE}tmp"
+cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
+rm ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_CATEGORY_NAME_VALUE#${APPLICATION_CATEGORY_TEMP}#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+rm "${DEPLOYMENT_FILE}tmp"
 
-#cp ${YAML_FILE} "${YAML_FILE}tmp"
-#rm ${YAML_FILE}
-#sed "s#VUE_APP_HEADLINE_VALUE#${APPLICATION_CONTAINER_NAME_FRONTEND_TEMP}#g" "${YAML_FILE}tmp" > ${YAML_FILE}
-#rm "${YAML_FILE}tmp"
+cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
+rm ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_HEADLINE_VALUE#${APPLICATION_CONTAINER_NAME_FRONTEND_TEMP}#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+rm "${DEPLOYMENT_FILE}tmp"
 
 
 
@@ -521,7 +525,7 @@ if [ ! -z "${CLUSTER_INGRESS_SUBDOMAIN}" ] && [ "${KEEP_INGRESS_CUSTOM_DOMAIN}" 
   else
     service_name=$(yq r --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE metadata.name)  
     APPURL=$(kubectl get ing ${service_name} --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" -o json | jq -r  .spec.rules[0].host)
-    echo "Application URL: https://${APPURL}/category/2/products"
+    echo "Application URL: https://${APPURL}"
     APP_URL_PATH="$(echo "${INVENTORY_ENTRY}" | sed 's/\//_/g')_app-url.json"
     echo -n https://${APPURL} > ../app-url
   fi
@@ -531,7 +535,7 @@ else
   IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
   PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
 
-  echo "Application URL: http://${IP_ADDRESS}:${PORT}/category/2/products"
+  echo "Application URL: http://${IP_ADDRESS}:${PORT}"
 
   APP_URL_PATH="$(echo "${INVENTORY_ENTRY}" | sed 's/\//_/g')_app-url.json"
 
