@@ -81,11 +81,11 @@ $ sh ./ce-check-prerequisites.sh
 ```
 You need the following tools installed locally to run the script above:
 
-* ibmcloud
-* ibmcloud plugin code-engine
-* ibmcloud plugin cloud-databases
-* ibmcloud plugin container-registry
-* Docker
+* [ibmcloud cli](https://cloud.ibm.com/docs/cli?topic=cli-install-ibmcloud-cli)
+* [ibmcloud plugin code-engine](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli)
+* [ibmcloud plugin cloud-databases](https://cloud.ibm.com/docs/databases-cli-plugin?topic=databases-cli-plugin-cdb-reference)
+* [ibmcloud plugin container-registry](https://cloud.ibm.com/docs/Registry?topic=container-registry-cli-plugin-containerregcli)
+* [Docker](https://docs.docker.com/get-docker/)
 * [sed](https://en.wikipedia.org/wiki/Sed)
 * [jq](https://lzone.de/cheat-sheet/jq)
 * [grep](https://en.wikipedia.org/wiki/Grep)
