@@ -96,10 +96,12 @@ POSTGRES_URL="$POSTGRES_CONNECTION_TYPE$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_D
 
 ibmcloud resource service-key ${APPID_SERVICE_KEY_NAME} --output JSON > ./appid-key-temp.json
 APPID_OAUTHSERVERURL=$(cat ./appid-key-temp.json | jq '.[].credentials.oauthServerUrl' | sed 's/"//g' ) 
+APPID_APPLICATION_DISCOVERYENDPOINT=$(cat ./appid-key-temp.json | jq '.[].credentials.discoveryEndpoint' | sed 's/"//g' )
+APPID_TENANT_ID=$(cat ./appid-key-temp.json | jq '.[].credentials.tenantId' | sed 's/"//g' )
 APPID_MANAGEMENT_URL=$(cat ./appid-key-temp.json | jq '.[].credentials.managementUrl' | sed 's/"//g' )
 
 OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-echo $OAUTHTOKEN
+#echo $OAUTHTOKEN
 APPID_MANAGEMENT_URL_ALL_APPLICATIONS=${APPID_MANAGEMENT_URL}/applications
 echo $APPID_MANAGEMENT_URL_ALL_APPLICATIONS
 result=$(curl -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $APPID_MANAGEMENT_URL_ALL_APPLICATIONS)
@@ -129,6 +131,13 @@ kubectl create secret generic appid.client-id-catalog-service \
       --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" \
       --from-literal "APPID_CLIENT_ID=$APPID_CLIENT_ID"
 
+kubectl create secret generic appid.discovery-endpoint \
+      --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" \
+      --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPID_APPLICATION_DISCOVERYENDPOINT"
+kubectl create secret generic appid.client-id-fronted \
+      --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" \
+      --from-literal "VUE_APPID_CLIENT_ID=$APPID_CLIENT_ID"
+
 #####################
 
 
@@ -148,8 +157,10 @@ for INVENTORY_ENTRY in $(echo "${DEPLOYMENT_DELTA}" | jq -r '.[] '); do
   if [ -z "$(echo "${APP}" | jq -r '.name' 2> /dev/null)" ]; then continue ; fi # skip non artifact file
 
   APP_NAME=$(echo "${APP}" | jq -r '.name')
+  
+  if [[ $APP_NAME =~ _deployment$ ]]; then continue ; fi
 
-  if [[ $APP_NAME =~ _deployment$ ]]; then continue ; fi # skip deployment yamls
+  if [[ $APP_NAME =~ backend$ ]]; then continue ; fi
 
   ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
   REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
@@ -235,7 +246,7 @@ EOF
   echo ${ARTIFACT_URL}
 
   if [[ "${ARTIFACT_URL}" == *"github"* ]]; then
-    http_response=$(curl -H "Authorization: token ${GIT_TOKEN}" -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)
+    http_response=$(curl -H "Authorization: token ${GIT_TOKEN}" -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)    
   else
     http_response=$(curl -H "PRIVATE-TOKEN: ${GIT_TOKEN}" -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)
   fi
