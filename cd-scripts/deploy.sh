@@ -410,6 +410,39 @@ fi
 #sed -i "s#hello-service#${NORMALIZED_APP_NAME}-service#g" $DEPLOYMENT_FILE
 sed -i "s~^\([[:blank:]]*\)image:.*$~\1image: ${IMAGE}~" $DEPLOYMENT_FILE
 
+
+
+#YAML_FILE="deployments/kubernetes.yml"
+
+#cp ${YAML_FILE} "${YAML_FILE}tmp"
+#rm ${YAML_FILE}
+#sed "s#VUE_APP_API_URL_CATEGORIES_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${YAML_FILE}tmp" > ${YAML_FILE}
+#rm "${YAML_FILE}tmp"
+
+#cp ${YAML_FILE} "${YAML_FILE}tmp"
+#rm ${YAML_FILE}
+#sed "s#VUE_APP_API_URL_PRODUCTS_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${YAML_FILE}tmp" > ${YAML_FILE}
+#rm "${YAML_FILE}tmp"
+
+#cp ${YAML_FILE} "${YAML_FILE}tmp"
+#rm ${YAML_FILE}
+#sed "s#VUE_APP_API_URL_ORDERS_VALUE#${SERVICE_CATALOG_URL}/base/customer/Orders#g" "${YAML_FILE}tmp" > ${YAML_FILE}
+#rm "${YAML_FILE}tmp"
+
+#cp ${YAML_FILE} "${YAML_FILE}tmp"
+#rm ${YAML_FILE}
+#sed "s#VUE_APP_CATEGORY_NAME_VALUE#${APPLICATION_CATEGORY_TEMP}#g" "${YAML_FILE}tmp" > ${YAML_FILE}
+#rm "${YAML_FILE}tmp"
+
+#cp ${YAML_FILE} "${YAML_FILE}tmp"
+#rm ${YAML_FILE}
+#sed "s#VUE_APP_HEADLINE_VALUE#${APPLICATION_CONTAINER_NAME_FRONTEND_TEMP}#g" "${YAML_FILE}tmp" > ${YAML_FILE}
+#rm "${YAML_FILE}tmp"
+
+
+
+
+
 CLUSTER_INGRESS_SUBDOMAIN=$( ibmcloud ks cluster get --cluster ${IBMCLOUD_IKS_CLUSTER_NAME} --json | jq -r '.ingressHostname // .ingress.hostname' | cut -d, -f1 )
 CLUSTER_INGRESS_SECRET=$( ibmcloud ks cluster get --cluster ${IBMCLOUD_IKS_CLUSTER_NAME} --json | jq -r '.ingressSecretName // .ingress.secretName' | cut -d, -f1 )
 if [ ! -z "${CLUSTER_INGRESS_SUBDOMAIN}" ] && [ "${KEEP_INGRESS_CUSTOM_DOMAIN}" != true ]; then
