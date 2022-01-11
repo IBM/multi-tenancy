@@ -149,7 +149,10 @@ $ sh ./ce-create-two-tenancies.sh
 
 ![](documentation/images/Mulit-Tenancy-automatic-running-example-04.gif)
 
-The script takes roughly 30 minutes. After this the URL of the frontend applications will be displayed. For both tenants the following test user can be used to log in:
+The script takes roughly 30 minutes. You will be asked to review some configurations and press enter to move forward in some steps.
+The script will stop in some situations when it discovers a problem during the setup.
+
+After this the URL of the frontend applications will be displayed. For both tenants the following test user can be used to log in:
 
 User: thomas@example.com. Password: thomas4appid
 
@@ -173,7 +176,7 @@ The table contains the script and the responsibility of the scripts.
 | [`ce-build-images-ibm-docker.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-build-images-ibm-docker.sh) | Creates two container images based on the given parameters for the backend and frontend image names. |
 | [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` therefor it also creates a `IBM Cloud API` and it creates the `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates an `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database. |
 
-### Step 6: Verify the setup following url [`https://cloud.ibm.com/resources`](https://cloud.ibm.com/resources)
+### Step 6: Verify the setup by using following url [`https://cloud.ibm.com/resources`](https://cloud.ibm.com/resources)
 
 In resource list of the IBM Cloud UI, insert as filter for **name** the value `multi`. Now you should see following in your resource list:
 
