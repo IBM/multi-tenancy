@@ -160,7 +160,7 @@ for INVENTORY_ENTRY in $(echo "${DEPLOYMENT_DELTA}" | jq -r '.[] '); do
   
   if [[ $APP_NAME =~ _deployment$ ]]; then continue ; fi
 
-  if [[ $APP_NAME =~ backend$ ]]; then continue ; fi
+  if [[ $APP_NAME =~ frontend$ ]]; then continue ; fi
 
   ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
   REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
