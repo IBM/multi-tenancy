@@ -63,7 +63,7 @@ Shared CI/CD:
 
 ## Initial Setup
 
-The initial setup is only for the serverless part in Code Engine, with the objective to provide you an initial understanding of the application and providing an working environment with the example application and it components.
+The initial setup is only for the serverless part in Code Engine, with the objective to provide you an initial understanding of the application and providing a working environment with the example application and it components.
 ### Step 1: Clone the repositories
 
 
