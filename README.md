@@ -64,7 +64,6 @@ Shared CI/CD:
 
 ## Initial Setup
 
-
 ### Step 1: Clone the repositories:
 
 ```sh
@@ -115,6 +114,28 @@ $ sh ./ce-create-two-tenancies.sh
 The script takes roughly 30 minutes. After this the URL of the frontend applications will be displayed. For both tenants the following test user can be used to log in:
 
 User: thomas@example.com. Password: thomas4appid
+
+
+### Details initial installation bash scripts
+
+There are three bash script used for the initial installation. The following diagram shows the simplified dependencies of the bash scripts use to create two tenants on an application on IBM Cloud in Code Engine.
+
+![](documentation/images/simplified-overview-bash-scripts-installation.png)
+
+The scripts creating two tenants:
+
+* Two Code Engine projects with two applications one frontend and one backend.
+* Two App ID instance to provide a basic authentication and authorization for the two tenants.
+* Two Postgres databases for the two tenants.
+
+The table contains the script and the responsibility of the scripts.
+
+| Script | Responsibility |
+|---|---|
+| `ce-create-two-tenancies.sh` | Build the container images therefor it invokes the bash script `ce-build-images-ibm-docker.sh` and uploads the images to the IBM Cloud container registry. It also starts the creation of the tenant application instance, therefor it invokes the bash script `ce-install-application.sh` twice. |
+| `ce-build-images-ibm-docker.sh` | Creates two container images based on the given parameters for the backend and frontend image names. |
+| `ce-install-application.sh` | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` and `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates and `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database.|
+
 
 ## Toolchain
 
