@@ -96,7 +96,16 @@ POSTGRES_URL="$POSTGRES_CONNECTION_TYPE$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_D
 
 ibmcloud resource service-key ${APPID_SERVICE_KEY_NAME} --output JSON > ./appid-key-temp.json
 APPID_OAUTHSERVERURL=$(cat ./appid-key-temp.json | jq '.[].credentials.oauthServerUrl' | sed 's/"//g' ) 
-APPID_CLIENT_ID=$(cat ./appid-key-temp.json | jq '.[].credentials.clientId' | sed 's/"//g' )
+APPID_MANAGEMENT_URL=$(cat ./appid-key-temp.json | jq '.[].credentials.managementUrl' | sed 's/"//g' )
+
+OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+echo $OAUTHTOKEN
+APPID_MANAGEMENT_URL_ALL_APPLICATIONS=${APPID_MANAGEMENT_URL}/applications
+echo $APPID_MANAGEMENT_URL_ALL_APPLICATIONS
+result=$(curl -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $APPID_MANAGEMENT_URL_ALL_APPLICATIONS)
+echo $result
+APPID_CLIENT_ID=$(echo $result | sed -n 's|.*"clientId":"\([^"]*\)".*|\1|p')
+echo $APPID_CLIENT_ID
 
 #####################
 
@@ -220,6 +229,10 @@ EOF
   DEPLOYMENT_FILE="${NORMALIZED_APP_NAME}-deployment.yaml"
   echo "niklas DEPLOYMENT_FILE"
   echo ${DEPLOYMENT_FILE}
+  echo "${GIT_TOKEN}"
+  echo ${GIT_TOKEN}
+  echo "${ARTIFACT_URL}"
+  echo ${ARTIFACT_URL}
 
   if [[ "${ARTIFACT_URL}" == *"github"* ]]; then
     http_response=$(curl -H "Authorization: token ${GIT_TOKEN}" -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)
