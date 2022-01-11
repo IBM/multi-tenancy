@@ -1,7 +1,6 @@
 # Multi-tenancy Assets for IBM Partners to build SaaS
 
 This repo contains multi-tenancy assets for IBM partners to build SaaS.
-.
 
 ### Project Structure
 
