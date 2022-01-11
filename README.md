@@ -64,12 +64,36 @@ Shared CI/CD:
 
 ## Initial Setup
 
-Clone the repo:
 
-```
-$ git clone https://github.com/IBM/multi-tenancy && cd multi-tenancy
+### Step 1: Clone the repositories:
+
+```sh
+$ git clone https://github.com/IBM/multi-tenancy 
+$ git clone https://github.com/IBM/multi-tenancy-backend
+$ git clone https://github.com/IBM/multi-tenancy-frontend && cd multi-tenancy
 $ ROOT_FOLDER=$(pwd)
 ```
+
+### Step 2 : Verify the prerequisites for running the installation
+
+```sh
+$ cd $ROOT_FOLDER/installapp
+$ sh ./ce-check-prerequisites.sh
+```
+You need the following tools installed locally to run the script above:
+
+* ibmcloud
+* ibmcloud plugin code-engine
+* ibmcloud plugin cloud-databases
+* ibmcloud plugin container-registry
+* Docker
+* [sed](https://en.wikipedia.org/wiki/Sed)
+* [jq](https://lzone.de/cheat-sheet/jq)
+* [grep](https://en.wikipedia.org/wiki/Grep)
+* [libpq (psql)](https://www.postgresql.org/docs/9.5/libpq.html) 
+* [cURL](https://curl.se/)
+
+### Step 3: Define the configuration for the tenants you want to install
 
 Define the global configuration in [global.json](configuration/global.json).
 
@@ -79,31 +103,18 @@ For each tenant define tenant-specific configuration in the folder 'configuratio
 
 Additionally define the same configuration in [tenants-config](installapp/tenants-config). Note that this step will not be necessary sometime soon.
 
-To create all components for the two sample tenants, run the following commands:
+### Step 5 : Start the installation
 
-```
-$ cd $ROOT_FOLDER/installapp
+To create all components for the two sample tenants configurations, run the following commands:
+
+```sh
 $ ibmcloud login --sso
 $ sh ./ce-create-two-tenancies.sh
 ```
 
-You need the following tools installed locally to run the script above:
-
-* ibmcloud
-* ibmcloud plugin code-engine
-* ibmcloud plugin cloud-databases
-* ibmcloud plugin container-registry
-* Docker 
-* [sed](https://en.wikipedia.org/wiki/Sed)
-* [jq](https://lzone.de/cheat-sheet/jq)
-* [grep](https://en.wikipedia.org/wiki/Grep)
-* [libpq (psql)](https://www.postgresql.org/docs/9.5/libpq.html) 
-* [cURL](https://curl.se/)
-
 The script takes roughly 30 minutes. After this the URL of the frontend applications will be displayed. For both tenants the following test user can be used to log in:
 
 User: thomas@example.com. Password: thomas4appid
-
 
 ## Toolchain
 
