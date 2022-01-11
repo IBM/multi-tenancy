@@ -63,7 +63,9 @@ Shared CI/CD:
 
 ## Initial Setup
 
-### Step 1: Clone the repositories:
+The initial setup is only for the serverless part in Code Engine, with the objective to provide you an initial understanding of the application and providing an working environment with the example application and it components.
+### Step 1: Clone the repositories
+
 
 ```sh
 $ git clone https://github.com/IBM/multi-tenancy 
@@ -78,6 +80,39 @@ $ ROOT_FOLDER=$(pwd)
 $ cd $ROOT_FOLDER/installapp
 $ sh ./ce-check-prerequisites.sh
 ```
+
+The script stops when it notices any prerequisite is missing.
+
+Example output:
+
+```sh
+Check prereqisites
+1. Verify grep
+- Grep is installed: grep (BSD grep, GNU compatible) 2.6.0-FreeBSD !
+2. Verify awk
+- AWK is installed: awk version 20200816 !
+3. Verify cURL
+- cURL is installed: curl 7.77.0 (x86_64-apple-darwin21.0) libcurl/7.77.0 (SecureTransport) LibreSSL/2.8.3 zlib/1.2.11 nghttp2/1.42.0
+Release-Date: 2021-05-26
+Protocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtsp smb smbs smtp smtps telnet tftp 
+Features: alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IPv6 Kerberos Largefile libz MultiSSL NTLM NTLM_WB SPNEGO SSL UnixSockets !
+4. Verify jq
+- JQ is installed: jq-1.6 !
+5. Verify libpq (psql)
+- libpq (psql) is installed: psql (PostgreSQL) 14.0 !
+6. Verify Docker
+- Docker is installed: Docker version 20.10.11, build dea9396 !
+7. Verify ibmcloud cli
+- IBM Cloud CLI is installed: ibmcloud version 2.3.0+26fbf88-2021-12-09T18:02:50+00:00 !
+8. Verify ibmcloud plugin cloud-databases
+- IBM Cloud Plugin 'cloud-databases' is installed: cloud-databases !
+9. Verify ibmcloud plugin code-engine
+- IBM Cloud Plugin 'code-engine' is installed: code-engine[ce] !
+10. Verify ibmcloud plugin container-registry
+- IBM Cloud Plugin 'container-registry' is installed: container-registry !
+Success! All prerequisites verified!
+```
+
 You need the following tools installed locally to run the script above:
 
 * [ibmcloud cli](https://cloud.ibm.com/docs/cli?topic=cli-install-ibmcloud-cli)
