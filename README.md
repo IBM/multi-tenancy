@@ -125,6 +125,7 @@ You need the following tools installed locally to run the script above:
 * [grep](https://en.wikipedia.org/wiki/Grep)
 * [libpq (psql)](https://www.postgresql.org/docs/9.5/libpq.html) 
 * [cURL](https://curl.se/)
+* [AWK](https://en.wikipedia.org/wiki/AWK)
 
 ### Step 3: Define the configuration for the tenants you want to install
 
