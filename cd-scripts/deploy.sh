@@ -218,7 +218,7 @@ APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
 #
 # get the deployment yaml for the app from inventory
 #
-DEPLOYMENT_INVENTORY=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}_deployment")
+DEPLOYMENT_INVENTORY=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
 NORMALIZED_APP_NAME=$(echo "${APP_NAME}" | sed 's/\//--/g')
 
 # we're in the deploy script folder, the GIT token is one folder up
@@ -370,7 +370,7 @@ APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
 #
 # get the deployment yaml for the app from inventory
 #
-DEPLOYMENT_INVENTORY=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}_deployment")
+DEPLOYMENT_INVENTORY=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
 NORMALIZED_APP_NAME=$(echo "${APP_NAME}" | sed 's/\//--/g')
 
 # we're in the deploy script folder, the GIT token is one folder up
