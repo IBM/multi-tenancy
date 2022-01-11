@@ -118,7 +118,7 @@ User: thomas@example.com. Password: thomas4appid
 
 ### Details initial installation bash scripts
 
-There are three bash script used for the initial installation. The following diagram shows the simplified dependencies of the bash scripts use to create two tenants on an application on IBM Cloud in Code Engine.
+We use three bash scripts for the initial installation. The following diagram shows the simplified dependencies of these bash scripts used to create two tenants of the example application on IBM Cloud in Code Engine.
 
 ![](documentation/images/simplified-overview-bash-scripts-installation.png)
 
