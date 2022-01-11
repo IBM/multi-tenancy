@@ -212,10 +212,11 @@ done
 echo "backend"
 
 INVENTORY_ENTRY="multi-tenancy-backend_deployment"
-
 APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
-
 APP_NAME=$(echo "${APP}" | jq -r '.name')
+ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
+REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
+IMAGE="${ARTIFACT}"
 
 #
 # get the deployment yaml for the app from inventory
@@ -366,10 +367,11 @@ fi
 echo "frontend"
 
 INVENTORY_ENTRY="multi-tenancy-frontend_deployment"
-
 APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
-
 APP_NAME=$(echo "${APP}" | jq -r '.name')
+ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
+REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
+IMAGE="${ARTIFACT}"
 
 #
 # get the deployment yaml for the app from inventory
