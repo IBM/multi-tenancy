@@ -214,9 +214,6 @@ echo "backend"
 INVENTORY_ENTRY="multi-tenancy-backend_deployment"
 APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
 APP_NAME=$(echo "${APP}" | jq -r '.name')
-ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
-REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
-IMAGE="${ARTIFACT}"
 
 #
 # get the deployment yaml for the app from inventory
@@ -258,8 +255,11 @@ if [ "$http_response" != "200" ]; then
   echo "Failed to download the artifact. Please provide the correct token as the env property 'artifact-token'."
 fi
 
-
-
+INVENTORY_ENTRY="multi-tenancy-backend"
+APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
+ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
+REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
+IMAGE="${ARTIFACT}"
 
 #sed -i "s#hello-compliance-app#${NORMALIZED_APP_NAME}#g" $DEPLOYMENT_FILE
 #sed -i "s#hello-service#${NORMALIZED_APP_NAME}-service#g" $DEPLOYMENT_FILE
@@ -369,9 +369,6 @@ echo "frontend"
 INVENTORY_ENTRY="multi-tenancy-frontend_deployment"
 APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
 APP_NAME=$(echo "${APP}" | jq -r '.name')
-ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
-REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
-IMAGE="${ARTIFACT}"
 
 #
 # get the deployment yaml for the app from inventory
@@ -414,7 +411,11 @@ if [ "$http_response" != "200" ]; then
 fi
 
 
-
+INVENTORY_ENTRY="multi-tenancy-frontend"
+APP=$(cat "${INVENTORY_PATH}/${INVENTORY_ENTRY}")
+ARTIFACT=$(echo "${APP}" | jq -r '.artifact')
+REGISTRY_URL="$(echo "${ARTIFACT}" | awk -F/ '{print $1}')"
+IMAGE="${ARTIFACT}"
 
 #sed -i "s#hello-compliance-app#${NORMALIZED_APP_NAME}#g" $DEPLOYMENT_FILE
 #sed -i "s#hello-service#${NORMALIZED_APP_NAME}-service#g" $DEPLOYMENT_FILE
