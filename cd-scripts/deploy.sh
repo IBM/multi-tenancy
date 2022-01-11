@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
 echo "niklas deploy.sh"
+
+PLATFORM_NAME="$(get_env PLATFORM_NAME)"
+if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
+  echo "Target platform is IBM Kubernetes Service"
+else
+  echo "Target platform is IBM OpenShift Service"
+fi
+
 IBM_KUBERNETES_SERVICE_NAMESPACE=$(get_env "IBM_KUBERNETES_SERVICE_NAMESPACE")-prod
 IBMCLOUD_IKS_CLUSTER_NAMESPACE=${IBM_KUBERNETES_SERVICE_NAMESPACE}
 
