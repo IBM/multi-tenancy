@@ -141,6 +141,7 @@ Additionally define the same configuration in [tenants-config](installapp/tenant
 To create all components for the two sample tenants configurations, run the following commands:
 
 ```sh
+$ cd $ROOT_FOLDER/installapp
 $ ibmcloud login --sso
 $ sh ./ce-create-two-tenancies.sh
 ```
@@ -150,7 +151,7 @@ The script takes roughly 30 minutes. After this the URL of the frontend applicat
 User: thomas@example.com. Password: thomas4appid
 
 
-### Details initial installation bash scripts
+### Step 6: Understand the details of the initial installation bash scripts
 
 We use three bash scripts for the initial installation. The following diagram shows the simplified dependencies of these bash scripts used to create two tenants of the example application on IBM Cloud in Code Engine.
 
@@ -168,8 +169,26 @@ The table contains the script and the responsibility of the scripts.
 |---|---|
 | [`ce-create-two-tenancies.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-create-two-tenancies.sh) | Build the container images therefor it invokes the bash script [`ce-build-images-ibm-docker.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-build-images-ibm-docker.sh) and uploads the images to the IBM Cloud container registry. It also starts the creation of the tenant application instance, therefor it invokes the bash script [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) twice. |
 | [`ce-build-images-ibm-docker.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-build-images-ibm-docker.sh) | Creates two container images based on the given parameters for the backend and frontend image names. |
-| [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` and `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates an `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database.|
+| [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` therefor it also creates a `IBM Cloud API` and it creates the `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates an `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database. |
 
+### Step 7: Clean-up
+
+The clean-up reuses the configuration json files you defined for the setup/installatation.
+
+To delete all created resource you execute following commands:
+
+```sh
+$ cd $ROOT_FOLDER/installapp
+$ ibmcloud login --sso
+$ sh ./ce-clean-up-two-tenancies.sh
+```
+
+The table contains the script and the responsibility of the scripts.
+
+| Script | Responsibility |
+|---|---|
+| [`ce-clean-up-two-tenancies.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-clean-up-two-tenancies.sh) | It starts the clean-up for the tenant application instances, therefor it invokes the bash script [`ce-clean-up.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-clean-up.sh) twice with the json configuration files as parameters. |
+| [`ce-clean-up.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-clean-up.sh) | Deletes all created resouce for the two tenants. |
 
 ## Toolchain
 
