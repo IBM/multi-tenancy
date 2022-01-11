@@ -94,11 +94,11 @@ You need the following tools installed locally to run the script above:
 
 ### Step 3: Define the configuration for the tenants you want to install
 
-Define the global configuration in [global.json](configuration/global.json).
+Define the global configuration in [global.json](configuration/global.json). It includes `IBM Cloud settings` such as region and resource group, `container registry information` and `image information`.
 
 Additionally define the same global configuration in [tenants-config](installapp/tenants-config). Note that this step will not be necessary sometime soon.
 
-For each tenant define tenant-specific configuration in the folder 'configuration/tenants', for example in [tenant-a.json](configuration/tenant-a.json).
+For each tenant define tenant-specific configuration in the folder 'configuration/tenants'. That configuration contains for example `App ID information`. `Postgres database information`, `application instance information`, and `Code Engine information`. Here you find an example configuration [tenant-a.json](configuration/tenants/tenant-a.json).
 
 Additionally define the same configuration in [tenants-config](installapp/tenants-config). Note that this step will not be necessary sometime soon.
 
@@ -134,7 +134,7 @@ The table contains the script and the responsibility of the scripts.
 |---|---|
 | `ce-create-two-tenancies.sh` | Build the container images therefor it invokes the bash script `ce-build-images-ibm-docker.sh` and uploads the images to the IBM Cloud container registry. It also starts the creation of the tenant application instance, therefor it invokes the bash script `ce-install-application.sh` twice. |
 | `ce-build-images-ibm-docker.sh` | Creates two container images based on the given parameters for the backend and frontend image names. |
-| `ce-install-application.sh` | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` and `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates and `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database.|
+| `ce-install-application.sh` | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` and `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates an `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database.|
 
 
 ## Toolchain
