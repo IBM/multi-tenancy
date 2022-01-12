@@ -433,23 +433,27 @@ sed -i "s~^\([[:blank:]]*\)image:.*$~\1image: ${IMAGE}~" $DEPLOYMENT_FILE
 
 #YAML_FILE="deployments/kubernetes.yml"
 
-BACKEND_IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
-BACKEND_PORT=$(kubectl get service -n "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "service-backend" -o json | jq -r '.spec.ports[0].nodePort')
-SERVICE_CATALOG_URL="http://${BACKEND_IP_ADDRESS}:${BACKEND_PORT}"
+#BACKEND_IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
+#BACKEND_PORT=$(kubectl get service -n "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "service-backend" -o json | jq -r '.spec.ports[0].nodePort')
+#SERVICE_CATALOG_URL="http://${BACKEND_IP_ADDRESS}:${BACKEND_PORT}"
+
+APPURL=$(kubectl get ing service-backend --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" -o json | jq -r  .spec.rules[0].host)
+SERVICE_CATALOG_URL="https://${APPURL}"
+
 
 cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
 rm ${DEPLOYMENT_FILE}
-sed "s#VUE_APP_API_URL_CATEGORIES_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_API_URL_CATEGORIES_VALUE#${SERVICE_CATALOG_URL}/category#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
 rm "${DEPLOYMENT_FILE}tmp"
 
 cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
 rm ${DEPLOYMENT_FILE}
-sed "s#VUE_APP_API_URL_PRODUCTS_VALUE#${SERVICE_CATALOG_URL}/base/category#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_API_URL_PRODUCTS_VALUE#${SERVICE_CATALOG_URL}/category#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
 rm "${DEPLOYMENT_FILE}tmp"
 
 cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
 rm ${DEPLOYMENT_FILE}
-sed "s#VUE_APP_API_URL_ORDERS_VALUE#${SERVICE_CATALOG_URL}/base/customer/Orders#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
+sed "s#VUE_APP_API_URL_ORDERS_VALUE#${SERVICE_CATALOG_URL}/customer/Orders#g" "${DEPLOYMENT_FILE}tmp" > ${DEPLOYMENT_FILE}
 rm "${DEPLOYMENT_FILE}tmp"
 
 cp ${DEPLOYMENT_FILE} "${DEPLOYMENT_FILE}tmp"
