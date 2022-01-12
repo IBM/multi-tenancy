@@ -72,7 +72,6 @@ function checkDocker () {
     echo "************************************"
     docker ps 2> tmp.txt
     RESULT=$(cat tmp.txt)
-    echo "LOG **** [$RESULT] *****"
     rm tmp.txt
 
     if [[ $RESULT =~ "Cannot connect to the Docker daemon" ]]; then
