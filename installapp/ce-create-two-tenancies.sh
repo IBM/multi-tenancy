@@ -43,9 +43,14 @@ function createNamespace(){
     echo "IBMCLOUD_CR_NAMESPACE: $IBMCLOUD_CR_NAMESPACE"
     echo "RESOURCE_GROUP       : $RESOURCE_GROUP"
     echo "REGION               : $REGION"
+    echo "------------------------------"
+    echo "Verify the given entries and press return"
     
+    read input
+
     ibmcloud target -g $RESOURCE_GROUP
     ibmcloud target -r $REGION
+    ibmcloud target
     ibmcloud cr login
     RESULT=$(ibmcloud cr namespace-add $IBMCLOUD_CR_NAMESPACE | grep "FAILED")
 

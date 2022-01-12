@@ -66,12 +66,15 @@ function buildAndPushFrontend() {
 }
 
 function checkDocker () {
+    
     echo "************************************"
     echo " Check Docker is running"
     echo "************************************"
-    RESULT=$(docker ps)
+    docker ps 2> tmp.txt
+    RESULT=$(cat tmp.txt)
+    rm tmp.txt
 
-    if [[ $RESULT =~ "Cannot connect to the Docker daemon"  ]]; then
+    if [[ $RESULT =~ "Cannot connect to the Docker daemon" ]]; then
         echo "*** Docker is NOT running !"
         echo "*** The script 'ce-build-images-ibm-docker.sh' ends here!"
         exit 1
