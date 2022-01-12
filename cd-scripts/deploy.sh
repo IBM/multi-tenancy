@@ -563,6 +563,17 @@ else
 fi
 
 
+OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+#echo $OAUTHTOKEN
+APPID_MANAGEMENT_URL_ALL_REDIRECTS=${APPID_MANAGEMENT_URL}/config/redirect_uris
+#echo $APPID_MANAGEMENT_URL_ALL_REDIRECTS
+CURRENT_REDIRECT_URIS=$(curl -v -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $APPID_MANAGEMENT_URL_ALL_REDIRECTS)
+#echo $CURRENT_REDIRECT_URIS
+FRONTEND_URL="https://${APPURL}"
+echo $CURRENT_REDIRECT_URIS | jq -r '.redirectUris |= ['\"$FRONTEND_URL\"'] + .' > ./new-redirects.json
+result=$(curl -v -d @./new-redirects.json -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $APPID_MANAGEMENT_URL_ALL_REDIRECTS)
+
+
 
 
 echo "Deployed $deploy_count from $(echo "${DEPLOYMENT_DELTA}" | jq '. | length') entries"
