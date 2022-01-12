@@ -17,7 +17,7 @@
     "PROJECT_NAME": "multi-tenancy-serverless-a"
   },
   "IBM_KUBERNETES_SERVICE": {
-    "NAME": "niklas-heidloff2-fra04-b3c.4x16",
+    "NAME": "niklas-heidloff3-fra04-b3c.4x16",
     "NAMESPACE": "tenant-a"
   },
   "IBM_OPENSHIFT_SERVICE": {
@@ -25,6 +25,6 @@
     "NAMESPACE": "tenant-a"
   },
   "PLATFORM": {
-    "NAME": "IBM_OPENSHIFT_SERVICE"
+    "NAME": "IBM_KUBERNETES_SERVICE"
   }
 }
