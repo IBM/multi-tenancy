@@ -8,7 +8,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS.
 * [Repositories](#repositories)
 * [Serverless Architecture](#serverless-architecture)
 * [Initial Setup](#initial-setup)
-* [Toolchain to update Application](#toolchain)
+* [Simple Pipelines to update Serverless Application](#simple-pipelines-to-update-serverless-application)
 * [Develop Services locally](#develop-backend-service-locally)
 * [Draft Documentation](https://ibm.github.io/multi-tenancy/)
 
@@ -217,13 +217,26 @@ The table contains the script and the responsibility of the scripts.
 | [`ce-clean-up-two-tenancies.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-clean-up-two-tenancies.sh) | It starts the clean-up for the tenant application instances, therefor it invokes the bash script [`ce-clean-up.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-clean-up.sh) twice with the json configuration files as parameters. |
 | [`ce-clean-up.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-clean-up.sh) | Deletes all created resouce for the two tenants. |
 
-## Toolchain
+## Simple Pipelines to update Serverless Application
 
-After you have clone this repo and changed the configuration in the folder 'configuration/tenants', create the IBM Toolchain by invoking the URL:
+In order to update the backend and frontend containers on Code Engine, simple CI/CD pipelines are provided.
 
-https://cloud.ibm.com/devops/setup/deploy?repository=https://github.com/[your-github-name]/multi-tenancy).
+* pipeline-backend: Builds the backend image and triggers the  deployment pipelines for all tenants
+* pipeline-backend-tenant: Deploys the backend container for one tenant
+* pipeline-frontend: Builds the frontend image and triggers the  deployment pipelines for all tenants
+* pipeline-frontend-tenant: Deploys the frontend container for one tenant
 
-The pipelines can be triggered manually and they are triggered automatically when code changes occur in the Git repo.
+The pipelines will use the configuration from the [configuration](configuration) directory in which global and tenant specific settings need to be defined. When the IBM Toolchain with the four pipelines is created, the four github.com/IBM/multi-tenancy* repos are cloned to your GitLab user accounts on the IBM Cloud.
+
+The toolchain can be created simply by invoking this URL: https://cloud.ibm.com/devops/setup/deploy?repository=https://github.com/ibm/multi-tenancy-serverless-ci-cd
+
+Note that on the first page the region and the resource group need to be the same ones as defined in [configuration/global.json](configuration/global.json). Leave all other default values.
+
+On the second page you only need to create an API key. Leave all other default values.
+
+After you've created the toolchain, change your configuration in the 'configuration' directory of your GitLab repo. Then you can invoke the first pipeline "pipeline-backend" manually. Once the image has been built, it will trigger the deployment pipelines.
+
+The "pipeline-frontend" pipeline will only work after the backend has been deployed since the frontend containers need to know the endpoints of the backend containers.
 
 
 ## Develop Backend Service locally
