@@ -160,7 +160,7 @@ function setupCLIenvCE() {
   ibmcloud ce project create --name $PROJECT_NAME 
 
   RESULT=$(ibmcloud ce project get --name $PROJECT_NAME | grep "Status" |  awk '{print $2;}')
-  if [ $RESULT == "soft"  ]; then
+  if [[ $RESULT == "soft" ]]; then
         echo "*** The project $PROJECT_NAME was deleted."
         echo "*** The script 'ce-install-application.sh' ends here!"
         echo "*** Review your 'tenant-xx.json' configuration file."
@@ -196,7 +196,7 @@ function setupCRenvCE() {
    
    RESULT=$(ibmcloud iam api-keys | grep '$IBMCLOUDCLI_KEY_NAME' | awk '{print $1;}' | head -n 1)
    echo "API key: $RESULT"
-   if [ $RESULT == $IBMCLOUDCLI_KEY_NAME  ]; then
+   if [[ $RESULT == $IBMCLOUDCLI_KEY_NAME ]]; then
         echo "*** The Cloud API key '$IBMCLOUDCLI_KEY_NAME' already exists !"
         echo "*** The script 'ce-install-application.sh' ends here!"
         echo "*** Review your existing API keys 'https://cloud.ibm.com/iam/apikeys'."
@@ -231,7 +231,7 @@ function createPostgres () {
     echo "" 
     RESULT=$(ibmcloud resource service-instance $POSTGRES_SERVICE_INSTANCE --location $REGION -g $RESOURCE_GROUP | grep "OK")
     echo "Postgres: '$RESULT'"
-    if [ $RESULT == "OK"  ]; then
+    if [[ $RESULT == "OK" ]]; then
         echo "*** The postgres database '$POSTGRES_SERVICE_INSTANCE' already exists!"
         echo "*** The script 'ce-install-application.sh' ends here!"
         exit 1
@@ -417,7 +417,7 @@ function createAppIDService() {
     ibmcloud target -r $REGION
     # Create AppID service
     RESULT=$(ibmcloud resource service-instance $APPID_SERVICE_INSTANCE_NAME --location $REGION -g $RESOURCE_GROUP | grep "OK")
-    if [ $RESULT == "OK"  ]; then
+    if [[ $RESULT == "OK" ]]; then
         echo "*** The AppID service '$APPID_SERVICE_INSTANCE_NAME' already exists!"
         echo "*** The script 'ce-install-application.sh' ends here!"
         exit 1
