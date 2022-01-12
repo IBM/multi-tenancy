@@ -95,6 +95,7 @@ echo "IBM Cloud RESOURCE_GROUP         : $RESOURCE_GROUP"
 echo "IBM Cloud REGION                 : $REGION"
 echo "---------------------------------"
 echo ""
+echo "------------------------------"
 echo "Verify parameters and press return"
 read input
 
@@ -392,7 +393,10 @@ function createTablesPostgress () {
     echo "Create table in postgres using ($POSTGRES_SQL_FILE)"
     echo "-------------------------"
     echo ""
-    more insert.sh
+    cat insert.sh
+    echo "------------------------------"
+    echo "Verify the given entries and press return"
+    echo "------------------------------"
     bash insert.sh
     cd ..
     echo "-------------------------"
@@ -610,8 +614,6 @@ function createSecrets() {
 
 function deployServiceCatalog(){
     
-
-
     ibmcloud ce application create --name $SERVICE_CATALOG_NAME \
                                    --image $SERVICE_CATALOG_IMAGE \
                                    --env-from-secret postgres.certificate-data \
@@ -799,3 +801,6 @@ echo " - oAuthServerUrl   : $APPLICATION_OAUTHSERVERURL"
 echo " - discoveryEndpoint: $APPLICATION_DISCOVERYENDPOINT"
 echo " - Frontend         : $FRONTEND_URL"
 echo " - ServiceCatalog   : $SERVICE_CATALOG_URL"
+echo "------------------------------"
+echo "Verify the given entries and press return"
+echo "------------------------------"

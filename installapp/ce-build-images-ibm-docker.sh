@@ -71,7 +71,7 @@ function checkDocker () {
     echo "************************************"
     RESULT=$(docker ps)
 
-    if [[ $RESULT =~ "Cannot connect to the Docker daemon"  ]]; then
+    if [[ $RESULT =~ "Cannot connect to the Docker daemon" ]]; then
         echo "*** Docker is NOT running !"
         echo "*** The script 'ce-build-images-ibm-docker.sh' ends here!"
         exit 1
