@@ -66,10 +66,14 @@ function buildAndPushFrontend() {
 }
 
 function checkDocker () {
+    
     echo "************************************"
     echo " Check Docker is running"
     echo "************************************"
-    RESULT=$(docker ps)
+    docker ps 2> tmp.txt
+    RESULT=$(cat tmp.txt)
+    echo "LOG **** [$RESULT] *****"
+    rm tmp.txt
 
     if [[ $RESULT =~ "Cannot connect to the Docker daemon" ]]; then
         echo "*** Docker is NOT running !"
