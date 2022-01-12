@@ -1,0 +1,16 @@
+{
+  "IBM_CLOUD": {
+    "RESOURCE_GROUP": "default",
+    "REGION": "eu-de"
+  },
+  "REGISTRY": {
+    "URL": "de.icr.io",
+    "NAMESPACE": "multi-tenancy-example-[YOUR_POSTFIX]",
+    "TAG": "v2",
+    "SECRET_NAME": "multi.tenancy.cr.sec"
+  },
+  "IMAGES": {
+    "NAME_BACKEND": "multi-tenancy-service-backend",
+    "NAME_FRONTEND": "multi-tenancy-service-frontend"
+  }
+}
