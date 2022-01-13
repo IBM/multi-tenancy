@@ -75,6 +75,39 @@ For each tenant define tenant-specific configuration in the folder 'configuratio
 
 Additionally define the same configuration in [tenants-config](installapp/tenants-config). Note that this step will not be necessary sometime soon.
 
+1. Configure your `IBM Cloud Container Registry Namespace name`
+
+In the [global.json](configuration/global.json) file you need to change the value for the IBM Cloud Container Registry Namespace name to something like `multi-tenancy-example-mypostfix`.
+
+```json
+  "REGISTRY": {
+    "URL": "de.icr.io",
+    "NAMESPACE": "multi-tenancy-example-[YOUR_POSTFIX]",
+    "SECRET_NAME": "multi.tenancy.cr.sec",
+    "TAG": "v2"
+  },
+```
+
+2. Configure your `Code Engine project names` for the two tenants
+
+In the [tenant-a.json](configuration/tenants/tenant-a.json) files you need to change the value for the IBM Cloud Container Registry Namespace name to something like `multi-tenancy-example-mypostfix`.
+
+* `tenant-a.json`: `multi-tenancy-serverless-a-mypostfix`
+
+```json
+  "CODE_ENGINE": {
+    "PROJECT_NAME": "multi-tenancy-serverless-a-[YOUR_POSTFIX]"
+  }
+```
+
+* `tenant-b.json`: `multi-tenancy-serverless-a-mypostfix`
+
+```json
+  "CODE_ENGINE": {
+    "PROJECT_NAME": "multi-tenancy-serverless-b-[YOUR_POSTFIX]"
+  }
+```
+
 ### Step 4: Start the installation
 
 To create all components for the two sample tenants configurations, run the following commands:
