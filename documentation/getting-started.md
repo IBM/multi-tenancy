@@ -75,6 +75,10 @@ For each tenant define tenant-specific configuration in the folder 'configuratio
 
 Additionally define the same configuration in [tenants-config](installapp/tenants-config). Note that this step will not be necessary sometime soon.
 
+>The values for the names of the `IBM Cloud Container Registry Namespace` and the `IBM Cloud Code Engine` project must unique in IBM Cloud for a region! 
+
+To avoid problems during running the setup, please configure these name to your needs. 
+
 1. Configure your `IBM Cloud Container Registry Namespace name`
 
 In the [global.json](configuration/global.json) file you need to change the value for the IBM Cloud Container Registry Namespace name to something like `multi-tenancy-example-mypostfix`.
