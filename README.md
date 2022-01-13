@@ -1,6 +1,6 @@
 # Multi-tenancy Assets for IBM Partners to build SaaS
 
-This repo contains multi-tenancy assets for IBM partners to build SaaS.
+This repo contains multi-tenancy assets for IBM partners to build SaaS (Software as a Service).
 
 ### Project Structure
 
@@ -15,9 +15,24 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS.
 
 ## Project Overview
 
-The project aims to support partners to build SaaS for different platforms including Serverless, OpenShift and Satellite. As first step the repo contains an example how to run SaaS via serverless capabilities on the IBM Cloud (lower left corner).
+A key benefit of the cloud is the ability to deploy software for multiple consumers without having to install it redundantly on-premises. When software is provided as a managed service (SaaS), costs can be reduced for the deployments and the operations of applications. Additionally SaaS can be scaled and new consumers can be added easily.
+
+In order to leverage these advantages, applications need to be designed so that they can support multiple tenants. Often tenants are not single users, but clients of SaaS providers which their own authentication mechanisms. When running SaaS for multiple tenants it's often required to keep the workloads isolated from each other for security reasons. For example, typically different databases are used for tenants.
+
+At the same time common deployment and operation models are required, so that new SaaS versions can be deployed to different tenants in an unique way.
+
+This project aims to support IBM partners to build SaaS for different platforms including Serverless, OpenShift, Kubernetes and Satellite. The used sample application is the same one, the CI/CD mechanism slightly differentiates between the platforms.
+
+### Options
+
+The following diagram shows the different plaform options. This repo contains the IBM Cloud platforms so far (blue rectangle). More options are planned to be added.
+
+
+
 
 <kbd><img src="documentation/SaaS-Options.png" /></kbd>
+
+### Sample Application
 
 The project comes with a simple e-commerce example application. A SaaS provider might have one client selling books, another one selling shoes.
 
