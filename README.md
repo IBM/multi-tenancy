@@ -22,7 +22,7 @@ This project aims to support IBM partners to build SaaS for different platforms 
 
 ### Platform Options
 
-The following diagram shows the different plaform options. This repo contains the IBM Cloud platforms so far (blue rectangle). 
+The following diagram shows the different platform options. This repo contains the IBM Cloud platforms so far (blue rectangle). 
 
 More options are planned to be added. For example with Satellite the SaaS application can be deployed on-premises to client data centers, but managed centrally. Additionally the same SaaS application can be deployed on other managed OpenShift services like AWS ROSA and Azure ARO.
 
@@ -102,7 +102,7 @@ Scripts and provided to set up all services and the application automatically. F
 
 **Deployments of Updates via CI/CD**
 
-Additionally pipelines are provided to re-deploy the backend and frontend services when their implementations have changed. Follow this [step by step guid](documentation/serverless-cicd.md) to set up the pipelines.
+Additionally pipelines are provided to re-deploy the backend and frontend services when their implementations have changed. Follow this [step by step guide](documentation/serverless-cicd.md) to set up the pipelines.
 
 
 ## Local Development of Services
