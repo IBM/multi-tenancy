@@ -85,7 +85,7 @@ $ ibmcloud login --sso
 $ sh ./ce-create-two-tenancies.sh
 ```
 
-![](documentation/images/Mulit-Tenancy-automatic-running-example-04.gif)
+![](images/Mulit-Tenancy-automatic-running-example-04.gif)
 
 The script takes roughly 30 minutes. You will be asked to review some configurations and press enter to move forward in some steps.
 The script will stop in some situations when it discovers a problem during the setup.
@@ -98,7 +98,7 @@ User: thomas@example.com. Password: thomas4appid
 
 We use three bash scripts for the initial installation. The following diagram shows the simplified dependencies of these bash scripts used to create two tenants of the example application on IBM Cloud in Code Engine.
 
-![](documentation/images/simplified-overview-bash-scripts-installation.png)
+![](images/simplified-overview-bash-scripts-installation.png)
 
 The scripts creating two tenants:
 
@@ -118,23 +118,23 @@ The table contains the script and the responsibility of the scripts.
 
 In resource list of the IBM Cloud UI, insert as filter for **name** the value `multi`. Now you should see following in your resource list:
 
-![](documentation/images/Mulit-Tenancy-automatic-creation-02.png)
+![](images/Mulit-Tenancy-automatic-creation-02.png)
 
 ### Step 7: Open App ID instance for `tenant a` and inspect the configuration
 
 Open following URL <https://cloud.ibm.com/resources>
 
-![](documentation/images/Mulit-Tenancy-automatic-running-example-01.gif)
+![](images/Mulit-Tenancy-automatic-running-example-01.gif)
 
 ### Step 8: Open Code Engine project for `tenant a` and inspect the configuration
 
 ### Step 9: Open the frontend application for `tenant a` in the Code Engine project
 
-![](documentation/images/Mulit-Tenancy-automatic-running-example-03.gif)
+![](images/Mulit-Tenancy-automatic-running-example-03.gif)
 
 ### Step 10: Click on URL and logon to the frontend application using **username** `thomas@example.com` and **password** `thomas4appid`
 
-![](documentation/images/Mulit-Tenancy-automatic-running-example-02.gif)
+![](images/Mulit-Tenancy-automatic-running-example-02.gif)
 
 ### Step 11: Clean-up
 
