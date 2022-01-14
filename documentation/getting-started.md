@@ -75,6 +75,8 @@ For each tenant define tenant-specific configuration in the folder 'configuratio
 
 Additionally define the same configuration in [tenants-config](installapp/tenants-config). Note that this step will not be necessary sometime soon.
 
+### Step 4: Configure `IBM Cloud Container Registry Namespace` and `Code Engine project names`
+
 >The values for the names of the `IBM Cloud Container Registry Namespace` and the `IBM Cloud Code Engine` project must unique in IBM Cloud for a region! 
 
 To avoid problems during running the setup, please configure these name to your needs. 
@@ -112,7 +114,7 @@ In the [tenant-a.json](configuration/tenants/tenant-a.json) files you need to ch
   }
 ```
 
-### Step 4: Start the installation
+### Step 5: Start the installation
 
 To create all components for the two sample tenants configurations, run the following commands:
 
@@ -131,7 +133,7 @@ After this the URL of the frontend applications will be displayed. For both tena
 
 User: thomas@example.com. Password: thomas4appid
 
-### Step 5: Understand the details of the initial installation bash scripts
+### Step 6: Understand the details of the initial installation bash scripts
 
 We use three bash scripts for the initial installation. The following diagram shows the simplified dependencies of these bash scripts used to create two tenants of the example application on IBM Cloud in Code Engine.
 
@@ -151,29 +153,29 @@ The table contains the script and the responsibility of the scripts.
 | [`ce-build-images-ibm-docker.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-build-images-ibm-docker.sh) | Creates two container images based on the given parameters for the backend and frontend image names. |
 | [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` therefor it also creates a `IBM Cloud API` and it creates the `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates an `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database. |
 
-### Step 6: Verify the setup by using following url [`https://cloud.ibm.com/resources`](https://cloud.ibm.com/resources)
+### Step 7: Verify the setup by using following url [`https://cloud.ibm.com/resources`](https://cloud.ibm.com/resources)
 
 In resource list of the IBM Cloud UI, insert as filter for **name** the value `multi`. Now you should see following in your resource list:
 
 ![](images/Mulit-Tenancy-automatic-creation-02.png)
 
-### Step 7: Open App ID instance for `tenant a` and inspect the configuration
+### Step 8: Open App ID instance for `tenant a` and inspect the configuration
 
 Open following URL <https://cloud.ibm.com/resources>
 
 ![](images/Mulit-Tenancy-automatic-running-example-01.gif)
 
-### Step 8: Open Code Engine project for `tenant a` and inspect the configuration
+### Step 9: Open Code Engine project for `tenant a` and inspect the configuration
 
-### Step 9: Open the frontend application for `tenant a` in the Code Engine project
+### Step 10: Open the frontend application for `tenant a` in the Code Engine project
 
 ![](images/Mulit-Tenancy-automatic-running-example-03.gif)
 
-### Step 10: Click on URL and logon to the frontend application using **username** `thomas@example.com` and **password** `thomas4appid`
+### Step 11: Click on URL and logon to the frontend application using **username** `thomas@example.com` and **password** `thomas4appid`
 
 ![](images/Mulit-Tenancy-automatic-running-example-02.gif)
 
-### Step 11: Clean-up
+### Step 12: Clean-up
 
 The clean-up reuses the configuration json files you defined for the setup/installatation.
 
