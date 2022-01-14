@@ -149,7 +149,7 @@ The table contains the script and the responsibility of the scripts.
 
 | Script | Responsibility |
 |---|---|
-| [`ce-create-two-tenancies.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-create-two-tenancies.sh) | Build the container images therefor it invokes the bash script [`ce-build-images-ibm-docker.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-build-images-ibm-docker.sh) and uploads the images to the IBM Cloud container registry. It also starts the creation of the tenant application instance, therefor it invokes the bash script [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) twice. |
+| [`ce-create-two-tenancies.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-create-two-tenancies.sh) | Build the container images for the frontend and backend, therefor it invokes the bash script [`ce-build-images-ibm-docker.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-build-images-ibm-docker.sh) and uploads the images to the IBM Cloud container registry. It also starts the creation of the tenant application instance, therefor it invokes the bash script [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) twice. |
 | [`ce-build-images-ibm-docker.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-build-images-ibm-docker.sh) | Creates two container images based on the given parameters for the backend and frontend image names. |
 | [`ce-install-application.sh`](https://github.com/IBM/multi-tenancy/blob/main/installapp/ce-install-application.sh) | Creates and configures a `Code Engine project`. The configuration of the Code Engine project includes the `creation of the application`, the `IBM Cloud Container Registry access` therefor it also creates a `IBM Cloud API` and it creates the `secrets` for the needed parameter for the running applications. It creates an `IBM Cloud App ID instance` and configures this instance that includes the `application`, `redirects`, `login layout`, `scope`, `role` and `user`. It also creates an `IBM Cloud Postgres` database instance and creates the needed example data with tables inside the database. |
 
@@ -165,13 +165,18 @@ Open following URL <https://cloud.ibm.com/resources>
 
 ![](images/Mulit-Tenancy-automatic-running-example-01.gif)
 
-### Step 9: Open Code Engine project for `tenant a` and inspect the configuration
+### Step 9: Open Code Engine project for `tenant a` and inspect the project
 
+Open following link in a browser:
+
+```sh
+https://cloud.ibm.com/codeengine/projects
+```
 ### Step 10: Open the frontend application for `tenant a` in the Code Engine project
 
 ![](images/Mulit-Tenancy-automatic-running-example-03.gif)
 
-### Step 11: Click on URL and logon to the frontend application using **username** `thomas@example.com` and **password** `thomas4appid`
+### Step 11: Click on URL and log on to the frontend application using **username** `thomas@example.com` and **password** `thomas4appid`
 
 ![](images/Mulit-Tenancy-automatic-running-example-02.gif)
 
