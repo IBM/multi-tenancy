@@ -6,7 +6,7 @@ To run the backend service locally, a [managed Postgres](https://cloud.ibm.com/d
 - POSTGRES_URL
 - POSTGRES_CERTIFICATE_FILE_NAME
 
-Additionally you need to copy the certificate file in code/service-catalog/src/main/resources/certificates. As file name use the Postgres username.
+Additionally you need to copy the certificate file in ./src/main/resources/certificates. As file name use the Postgres username.
 
 For the authentication a [App ID](https://www.ibm.com/cloud/app-id) instance is required. Copy the two settings in local.env:
 - APPID_CLIENT_ID (note: this is not the client id in the secrets, but in the application settings)
@@ -19,7 +19,7 @@ $ git clone https://github.com/IBM/multi-tenancy.git
 $ git clone https://github.com/IBM/multi-tenancy-backend.git
 $ cd multi-tenancy
 $ ROOT_FOLDER=$(pwd)
-$ cp certificate ${root_folder}/code/service-catalog/src/main/resources/certificates/
+$ cp certificate ${root_folder}/src/main/resources/certificates/
 $ cp template.local.env local.env
 $ vi local.env
 ```
@@ -27,14 +27,12 @@ $ vi local.env
 Run the backend service locally via Maven:
 
 ```
-$ cd scripts
 $ sh ./run-locally-backend.sh
 ```
 
 Or run the backend service locally via container (podman):
 
 ```
-$ cd scripts
 $ sh ./run-locally-container-backend.sh
 ```
 
