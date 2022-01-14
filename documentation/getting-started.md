@@ -96,7 +96,7 @@ In the [global.json](configuration/global.json) file you need to change the valu
 
 2. Configure your `Code Engine project names` for the two tenants
 
-In the [tenant-a.json](configuration/tenants/tenant-a.json) files you need to change the value for the IBM Cloud Container Registry Namespace name to something like `multi-tenancy-example-mypostfix`.
+In the [tenant-a.json](configuration/tenants/tenant-a.json) files you need to change the value for the `Code Engine project` to something like `multi-tenancy-example-mypostfix`.
 
 * `tenant-a.json`: `multi-tenancy-serverless-a-mypostfix`
 
