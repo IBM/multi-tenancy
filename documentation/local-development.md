@@ -34,7 +34,7 @@ $ sh ./run-locally-backend.sh
 Or run the backend service locally via container (podman):
 
 ```
-$ cd scrips
+$ cd scripts
 $ sh ./run-locally-container-backend.sh
 ```
 
