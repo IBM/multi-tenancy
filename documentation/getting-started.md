@@ -5,7 +5,7 @@ The initial setup is only for the serverless part in Code Engine, with the objec
 
 The image shows simplified what we are doing during the `Getting Started`.
 
-![](imags/multi-Tenancy-installation.png)
+![](images/multi-Tenancy-installation.png)
 ### Step 1: Clone the repositories
 
 
