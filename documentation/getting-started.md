@@ -2,6 +2,10 @@
 
 
 The initial setup is only for the serverless part in Code Engine, with the objective to provide you an initial understanding of the application and providing a working environment with the example application and it components.
+
+The image shows simplified what we are doing during the `Getting Started`.
+
+![](imags/multi-Tenancy-installation.png)
 ### Step 1: Clone the repositories
 
 
