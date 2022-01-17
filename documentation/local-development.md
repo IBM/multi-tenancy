@@ -27,13 +27,13 @@ $ vi local.env
 Run the backend service locally via Maven:
 
 ```
-$ sh ./run-locally-backend.sh
+$ sh ./scripts/run-locally-backend.sh
 ```
 
 Or run the backend service locally via container (podman):
 
 ```
-$ sh ./run-locally-container-backend.sh
+$ sh ./scripts/run-locally-container-backend.sh
 ```
 
 Invoke http://localhost:8081/category/2/products.
