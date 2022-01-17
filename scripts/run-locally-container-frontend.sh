@@ -5,7 +5,7 @@ ROOT_PROJECT=multi-tenancy
 FRONTEND_SOURCEFOLDER=multi-tenancy-frontend
 BACKEND_SOURCEFOLDER=multi-tenancy-backend
 
-vue_env_config=./code/frontend/public/env-config.js
+vue_env_config=./public/env-config.js
 vue_env_config_template=./scripts/env-config-template.js
 service_catalog_categories_endpoint="http://localhost:8081/category"
 service_catalog_product_endpoint="http://localhost:8081/category"
@@ -20,8 +20,9 @@ exec 3>&1
 function setROOT_PATH() {
    echo "************************************"
    echo " Set ROOT_PATH"
+   echo " REMEMBER: You must start the script from the project root folder as written in the documentation!"
    echo "************************************"
-   cd ../../
+   cd ../
    export ROOT_PATH=$(PWD)
    echo "Path: $ROOT_PATH"
 }
@@ -30,7 +31,7 @@ function resetPath() {
    echo "************************************"
    echo " Reset path"
    echo "************************************"
-   cd $ROOT_PATH/$ROOT_PROJECT/scripts
+   cd $ROOT_PATH/$ROOT_PROJECT
    echo ""
 }
 
