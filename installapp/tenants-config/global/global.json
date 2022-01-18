@@ -5,7 +5,7 @@
   },
   "REGISTRY": {
     "URL": "de.icr.io",
-    "NAMESPACE": "multi-tenancy-example-tsuedbro",
+    "NAMESPACE": "multi-tenancy-example-aam",
     "SECRET_NAME": "multi.tenancy.cr.sec",
     "TAG": "v2"
   },
