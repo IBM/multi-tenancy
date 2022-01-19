@@ -453,6 +453,8 @@ sed -i "s~^\([[:blank:]]*\)image:.*$~\1image: ${IMAGE}~" $DEPLOYMENT_FILE
 #BACKEND_PORT=$(kubectl get service -n "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "service-backend" -o json | jq -r '.spec.ports[0].nodePort')
 #SERVICE_CATALOG_URL="http://${BACKEND_IP_ADDRESS}:${BACKEND_PORT}"
 
+echo "niklas IBMCLOUD_IKS_CLUSTER_NAMESPACE"
+echo $IBMCLOUD_IKS_CLUSTER_NAMESPACE
 APPURL=$(kubectl get ing service-backend --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" -o json | jq -r  .spec.rules[0].host)
 SERVICE_CATALOG_URL="https://${APPURL}"
 

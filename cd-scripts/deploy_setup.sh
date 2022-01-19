@@ -55,6 +55,8 @@ IMAGES_NAME_FRONTEND=$(cat ./$CONFIG_FILE | jq '.IMAGES.NAME_FRONTEND' | sed 's/
 
 #example: https://github.com/IBM/multi-tenancy/blob/main/configuration/tenants/tenant-a.json
 TENANT=$(get_env tenant '')
+echo "niklas tenant"
+echo ${TENANT}
 CONFIG_FILE="configuration/tenants/${TENANT}.json"
 APPID_SERVICE_INSTANCE_NAME=$(cat ./$CONFIG_FILE | jq '.APP_ID.SERVICE_INSTANCE' | sed 's/"//g')
 APPID_SERVICE_KEY_NAME=$(cat ./$CONFIG_FILE | jq '.APP_ID.SERVICE_KEY_NAME' | sed 's/"//g')
@@ -71,7 +73,6 @@ IBM_OPENSHIFT_SERVICE_NAME=$(cat ./$CONFIG_FILE | jq '.IBM_OPENSHIFT_SERVICE.NAM
 IBM_OPENSHIFT_SERVICE_NAMESPACE=$(cat ./$CONFIG_FILE | jq '.IBM_OPENSHIFT_SERVICE.NAMESPACE' | sed 's/"//g') 
 PLATFORM_NAME=$(cat ./$CONFIG_FILE | jq '.PLATFORM.NAME' | sed 's/"//g')
 
-#dev namespace for dummy tenant for CI pipeline
 IBM_KUBERNETES_SERVICE_NAMESPACE=${IBM_KUBERNETES_SERVICE_NAMESPACE}
 
 if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
@@ -113,7 +114,6 @@ else
     exit 1
   fi
 fi
-
 
 IMAGE="$(cat /config/image)"
 IMAGE_PULL_SECRET_NAME="ibmcloud-toolchain-${IBMCLOUD_TOOLCHAIN_ID}-${REGISTRY_URL}"
