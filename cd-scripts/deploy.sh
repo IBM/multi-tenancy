@@ -259,7 +259,8 @@ if [[ "${ARTIFACT_URL}" == *"github"* ]]; then
   #http_response=$(curl -H "Authorization: token ${GIT_TOKEN}" -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)    
   http_response=$(curl -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)    
 else
-  http_response=$(curl -H "PRIVATE-TOKEN: ${GIT_TOKEN}" -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)
+  #http_response=$(curl -H "PRIVATE-TOKEN: ${GIT_TOKEN}" -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)
+  http_response=$(curl -s -w "%{http_code}\n" ${ARTIFACT_URL} -o $DEPLOYMENT_FILE)
 fi
 if [ "$http_response" != "200" ]; then
   echo "Failed to download the artifact. Please provide the correct token as the env property 'artifact-token'."
