@@ -29,7 +29,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
         * Programmatic Configuration of AppID
 * Serverless via IBM Code Engine
     * Architecture
-    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning%20A%20Kubernetes%20Based%20Infrastructure.md)
+    * Initial Setup via Scripts
     * Onboarding
     * [CI/CD](documentation/serverless-cicd.md)
     * Observability (logging, monitoring, vulnerabilities)
@@ -37,7 +37,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
     * Clean up
 * Kubernetes via IBM Kubernetes Service and IBM OpenShift
     * Architecture
-    * Initial Setup via Terraform and Scripts
+    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning%20A%20Kubernetes%20Based%20Infrastructure.md)
     * Onboarding
     * CI/CD DevSecOps
         * Overview
