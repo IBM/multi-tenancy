@@ -7,7 +7,46 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
 * [Project Overview](#project-overview)
 * [Repositories](#repositories)
 * [Getting Started](#getting-started)
-* [Local Development of Services](#local-development-of-services)
+
+
+### Documentation
+
+* Development of Microservices
+    * TBD: Quarkus Backend Service Code
+    * TBD: Quarkus Backend Service Container
+    * TBD: Vue.js Frontend Service Code
+    * TBD: Vue.js Frontend Service Container
+    * TBD: Externalization of Variables in Backend Microservices
+    * TBD: Externalization of Variables in Frontend Microservices
+    * [Local Development of Services](documentation/local-development.md)
+    * TBD: Authentication Flow (AppID, backend, frontend)
+* Creation of managed IBM Cloud Services
+    * Database
+        * Programmatic Creation of Postgres
+        * Programmatic Configuration of Postgres including Schema
+    * Authentication
+        * Programmatic Creation of AppID
+        * Programmatic Configuration of AppID
+* Serverless via IBM Code Engine
+    * Architecture
+    * Initial Setup via Scripts
+    * Onboarding
+    * [CI/CD](documentation/serverless-cicd.md)
+    * Observability (logging, monitoring, vulnerabilities)
+    * Billing
+    * Clean up
+* Kubernetes via IBM Kubernetes Service and IBM OpenShift
+    * Architecture
+    * Initial Setup via Terraform and Scripts
+    * Onboarding
+    * CI/CD DevSecOps
+        * Overview
+        * CI for backend and frontend
+        * CD
+        * Security and Compliance
+        * Initial Setup
+    * Observability (logging, monitoring, vulnerabilities)
+    * Billing
 
 
 ## Project Overview
