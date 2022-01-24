@@ -24,6 +24,8 @@ $ cp template.local.env local.env
 $ vi local.env
 ```
 
+*Backend*
+
 Run the backend service locally via Maven:
 
 ```
@@ -36,6 +38,22 @@ Or run the backend service locally via container (podman):
 $ sh ./scripts/run-locally-container-backend.sh
 ```
 
-Invoke http://localhost:8081/category/2/products.
+Invoke http://localhost:8081/category/2/products
 
-(User: thomas@example.com. Password: thomas4appid)
+*Frontend*
+
+Run the frontend service locally:
+
+```
+$ sh ./scripts/run-locally-frontend.sh
+```
+
+Or run the frontend service locally via container (podman):
+
+```
+$ sh ./scripts/run-locally-container-frontend.sh
+```
+
+Invoke http://localhost:8080
+
+User: thomas@example.com. Password: thomas4appid
