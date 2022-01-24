@@ -17,6 +17,7 @@ For IBMers only: You can re-use existing services by using these [configuration]
 ```
 $ git clone https://github.com/IBM/multi-tenancy.git
 $ git clone https://github.com/IBM/multi-tenancy-backend.git
+$ git clone https://github.com/IBM/multi-tenancy-frontend.git
 $ cd multi-tenancy
 $ ROOT_FOLDER=$(pwd)
 $ cp certificate ${root_folder}/src/main/resources/certificates/
