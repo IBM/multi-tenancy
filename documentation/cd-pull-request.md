@@ -1,6 +1,6 @@
 ## IBM DevSecOps Reference Implementation - CD Pull Request
 
-In order to deploy a new version for a specific tenant, a pull request has to be created and merged. The pull request merges the latest version in the main branch of the inventory to the tenant specific branches in the inventory.
+In order to deploy a new version for a specific tenant, a pull request (which is the same as a merge request in GitLab) has to be created and merged. The pull request merges the latest version in the main branch of the inventory to the tenant specific branches in the inventory.
 
 *Step 1* 
 

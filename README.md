@@ -50,7 +50,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
             * [CD pull request](documentation/cd-pull-request.md)
             * [CD pipeline](documentation/cd-pipeline.md)
         * Security and Compliance
-        * Initial Setup
+        * Setup of the Toolchains
             * [CI Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_ci.md)
             * CD Toolchain
     * Onboarding
