@@ -19,10 +19,10 @@ There are six steps to deploy the SaaS sample application.
 
 Check out the following documents for details:
 
-* [CI pull request](ci-pull-request.md)
-* [CI pipeline ](ci-pipeline.md)
-* [CD pull request](cd-pull-request.md)
-* [CD pipeline](cd-pipeline.md)
+* [CI pull request](ci-pull-request.md) related to (1) and (3)
+* [CI pipeline ](ci-pipeline.md) related to (2) and (4)
+* [CD pull request](cd-pull-request.md) related to (5)
+* [CD pipeline](cd-pipeline.md) related to (6)
 
 
 
