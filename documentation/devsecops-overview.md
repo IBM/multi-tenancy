@@ -24,6 +24,31 @@ Check out the following documents for details:
 * [CD pull request](cd-pull-request.md) related to (5)
 * [CD pipeline](cd-pipeline.md) related to (6)
 
+### Toolchains
 
+There are three toolchains:
 
+* CI for backend
+* CI for frontend
+* CD
 
+<kbd><img src="https://raw.githubusercontent.com/IBM/multi-tenancy-documentation/main/documentation/images/cicd-devsecops/cicd-3-cd-promotion/001.png" /></kbd>
+
+### Repos
+
+These three repos contain the code of the microservices and the toolchains (on github.com):
+
+* multi-tenancy
+* multi-tenancy-backend
+* multi-tenancy-frontend
+
+The following repos contain state information and are shared by the three toolchains (on IBM Cloud GitLab):
+
+* inventory
+* complicance change management
+* compliance issues
+* evidence
+
+The following repo contains the code for the 'out-of-the-box' security checks (on IBM Cloud GitLab):
+
+* compliance pipelines
