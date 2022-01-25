@@ -41,8 +41,8 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
     * Onboarding
     * CI/CD DevSecOps
         * [Overview](documentation/devsecops-overview.md)
-        * CI for backend and frontend
-        * CD
+        * [CI for backend and frontend](documentation/ci-pull-request.md)
+        * [CD](documentation/cd-pull-request.md)
         * Security and Compliance
         * Initial Setup
     * Observability (logging, monitoring, vulnerabilities)
