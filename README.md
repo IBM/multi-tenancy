@@ -30,9 +30,9 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
 * Serverless via IBM Code Engine
     * Architecture
     * Initial Setup via Scripts
-        * Initial Setup
-        * OnBoarding
-        * Clean Up
+        * [Initial Setup](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_initial_setup.md)
+        * [OnBoarding](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_onboarding.md)
+        * [Clean Up](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_clean_up.md)
     * [CI/CD](documentation/serverless-cicd.md)
     * Onboarding
     * Observability (logging, monitoring, vulnerabilities)
