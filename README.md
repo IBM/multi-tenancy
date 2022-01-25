@@ -101,9 +101,10 @@ This repo is the 'parent repo' including documentation and global configuration.
 
 * [multi-tenancy](https://github.com/IBM/multi-tenancy) - this repo (parent repo)
     * Documentation
-    * Global configuration
+    * Global application configuration
+    * Tenant specific application configuration
     * CD pipeline
-    * Scripts
+    * Scripts to deploy cloud services/infrastructure
 
 * [multi-tenancy-backend](https://github.com/IBM/multi-tenancy-backend) - backend microservice
     * Code
