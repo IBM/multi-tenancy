@@ -42,7 +42,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
     * Clean up
 * Kubernetes via IBM Kubernetes Service and IBM OpenShift
     * Architecture
-    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning-A-Kubernetes-Based-Infrastructure.md)
+    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning%20A%20Kubernetes%20Based%20Infrastructure.md)
     * CI/CD DevSecOps
         * [Overview](documentation/devsecops-overview.md)
         * CI
