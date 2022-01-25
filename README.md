@@ -30,6 +30,9 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
 * Serverless via IBM Code Engine
     * Architecture
     * Initial Setup via Scripts
+        * [Initial Setup](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_initial_setup.md)
+        * [OnBoarding](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_onboarding.md)
+        * [Clean Up](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_clean_up.md)
     * [CI/CD](documentation/serverless-cicd.md)
     * Onboarding
     * Observability (logging, monitoring, vulnerabilities)
@@ -37,7 +40,7 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
     * Clean up
 * Kubernetes via IBM Kubernetes Service and IBM OpenShift
     * Architecture
-    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning%20A%20Kubernetes%20Based%20Infrastructure.md)
+    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/1-Provisionning-The-Infrastructure.md)
     * CI/CD DevSecOps
         * [Overview](documentation/devsecops-overview.md)
         * CI
