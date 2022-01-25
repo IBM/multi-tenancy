@@ -14,7 +14,9 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
 * Development of Microservices
     * TBD: Quarkus Backend Service Code
     * TBD: Quarkus Backend Service Container
-    * TBD: Vue.js Frontend Service Code
+    * Vue.js Frontend Service Code
+       * [VUE and AppID](documentation/vue-appid-frontend.md)
+       * [VUE access the backend](vue-using-access-token-quarkus-endpoint.md)
     * TBD: Vue.js Frontend Service Container
     * TBD: Externalization of Variables in Backend Microservices
     * TBD: Externalization of Variables in Frontend Microservices
