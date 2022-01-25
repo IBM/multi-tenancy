@@ -30,21 +30,22 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
 * Serverless via IBM Code Engine
     * Architecture
     * Initial Setup via Scripts
-    * Onboarding
     * [CI/CD](documentation/serverless-cicd.md)
+    * Onboarding
     * Observability (logging, monitoring, vulnerabilities)
     * Billing
     * Clean up
 * Kubernetes via IBM Kubernetes Service and IBM OpenShift
     * Architecture
     * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning%20A%20Kubernetes%20Based%20Infrastructure.md)
-    * Onboarding
     * CI/CD DevSecOps
         * [Overview](documentation/devsecops-overview.md)
         * [CI for backend and frontend](documentation/ci-pull-request.md)
         * [CD](documentation/cd-pull-request.md)
         * Security and Compliance
-        * Initial Setup
+        * [Initial Setup CI Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_ci.md)
+        * [Initial Setup CD Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_cd.md)
+    * Onboarding
     * Observability (logging, monitoring, vulnerabilities)
     * Billing
 
