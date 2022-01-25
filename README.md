@@ -40,11 +40,16 @@ This repo contains multi-tenancy assets for IBM partners to build SaaS (Software
     * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning%20A%20Kubernetes%20Based%20Infrastructure.md)
     * CI/CD DevSecOps
         * [Overview](documentation/devsecops-overview.md)
-        * [CI for backend and frontend](documentation/ci-pull-request.md)
-        * [CD](documentation/cd-pull-request.md)
+        * CI
+            * [CI pull request](documentation/ci-pull-request.md)
+            * [CI pipeline](documentation/ci-pipeline.md)
+        * CD
+            * [CD pull request](documentation/cd-pull-request.md)
+            * [CD pipeline](documentation/cd-pipeline.md)
         * Security and Compliance
-        * [Initial Setup CI Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_ci.md)
-        * [Initial Setup CD Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_cd.md)
+        * Initial Setup
+            * [CI Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_ci.md)
+            * CD Toolchain
     * Onboarding
     * Observability (logging, monitoring, vulnerabilities)
     * Billing
