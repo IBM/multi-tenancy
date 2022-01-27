@@ -88,7 +88,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
         * Setup of the Toolchains
             * [CI Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_ci.md)
             * [CD Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_cd.md)
-    * Onboarding
+    * [Onboarding](documentation/k8s-onboarding.md)
     * [Observability (logging, monitoring, vulnerabilities)](documentation/observability.md)
     * Billing
 
