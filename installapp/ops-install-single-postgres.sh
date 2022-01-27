@@ -2,15 +2,11 @@
 
 # CLI tools Documentation
 # ================
-# Code Engine: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
 # Cloud databases
-# IBM Cloud Container Registry 
 
 # Needed IBM Cloud CLI plugins
 # =============
-# - code engine 
 # - cloud databases (ibmcloud plugin install cloud-databases)
-# - container registry 
 
 # Needed tools 
 # ============
@@ -39,57 +35,21 @@ echo "---------------------------------"
 
 # Globale config
 # --------------
-# IBM Cloud Container Registry
-export IBM_CR_SERVER=$(cat ./$1 | jq '.REGISTRY.URL' | sed 's/"//g')
-# CE for IBM Cloud Container Registry access
-export SECRET_NAME=$(cat ./$1 | jq '.REGISTRY.SECRET_NAME' | sed 's/"//g')
-export IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
-export REGISTRY_URL=$(cat ./$1 | jq '.REGISTRY.URL' | sed 's/"//g')
-export IBM_CR_SERVER=$REGISTRY_URL
-export IMAGE_TAG=$(cat ./$1 | jq '.REGISTRY.TAG' | sed 's/"//g')
-export NAMESPACE=$(cat ./$1 | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
 # IBM Cloud target
 export RESOURCE_GROUP=$(cat ./$1 | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
 export REGION=$(cat ./$1 | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
-# ecommerce application container registry
-export FRONTEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
-export BACKEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
-export FRONTEND_IMAGE="$REGISTRY_URL/$NAMESPACE/$FRONTEND_IMAGE_NAME:$IMAGE_TAG"
-export SERVICE_CATALOG_IMAGE="$REGISTRY_URL/$NAMESPACE/$BACKEND_IMAGE_NAME:$IMAGE_TAG"
 
 # Tenant config
 # --------------
-# Code Engine
-export PROJECT_NAME=$(cat ./$2 | jq '.CODE_ENGINE.PROJECT_NAME' | sed 's/"//g') 
 # postgres
 export POSTGRES_SERVICE_INSTANCE=$(cat ./$2 | jq '.POSTGRES.SERVICE_INSTANCE' | sed 's/"//g') 
 export POSTGRES_SERVICE_KEY_NAME=$(cat ./$2 | jq '.POSTGRES.SERVICE_KEY_NAME' | sed 's/"//g')
 export POSTGRES_SQL_FILE=$(cat ./$2 | jq '.POSTGRES.SQL_FILE' | sed 's/"//g')
-# ecommerce application names
-export SERVICE_CATALOG_NAME=$(cat ./$2 | jq '.APPLICATION.CONTAINER_NAME_BACKEND' | sed 's/"//g')
-export FRONTEND_NAME=$(cat ./$2 | jq '.APPLICATION.CONTAINER_NAME_FRONTEND' | sed 's/"//g')
-export FRONTEND_CATEGORY=$(cat ./$2 | jq '.APPLICATION.CATEGORY' | sed 's/"//g')
-# App ID
-export APPID_SERVICE_INSTANCE_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_INSTANCE' | sed 's/"//g')
-export APPID_SERVICE_KEY_NAME=$(cat ./$2 | jq '.APP_ID.SERVICE_KEY_NAME' | sed 's/"//g')
 
-
-echo "Code Engine project              : $PROJECT_NAME"
-echo "---------------------------------"
-echo "App ID service instance name     : $APPID_SERVICE_INSTANCE_NAME"
-echo "App ID service key name          : $APPID_SERVICE_KEY_NAME"
-echo "---------------------------------"
-echo "Application Service Catalog name : $SERVICE_CATALOG_NAME"
-echo "Application Frontend name        : $FRONTEND_NAME"
-echo "Application Frontend category    : $FRONTEND_CATEGORY"
-echo "Application Service Catalog image: $SERVICE_CATALOG_IMAGE"
-echo "Application Frontend image       : $FRONTEND_IMAGE"
 echo "---------------------------------"
 echo "Postgres instance name           : $POSTGRES_SERVICE_INSTANCE"
 echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
 echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
-echo "---------------------------------"
-echo "IBM Cloud Container Registry URL : $IBM_CR_SERVER"
 echo "---------------------------------"
 echo "IBM Cloud RESOURCE_GROUP         : $RESOURCE_GROUP"
 echo "IBM Cloud REGION                 : $REGION"
@@ -102,37 +62,6 @@ read input
 # **************** Global variables set as default values
 export NAMESPACE=""
 export STATUS="Running"
-export SECRET_NAME="multi.tenancy.cr.sec"
-export EMAIL=thomas@example.com
-
-# ecommerce application URLs
-export FRONTEND_URL=""
-export SERVICE_CATALOG_URL=""
-
-# AppID Service
-export SERVICE_PLAN="graduated-tier"
-export APPID_SERVICE_NAME="appid"
-export APPID_SERVICE_KEY_ROLE="Manager"
-export TENANTID=""
-export MANAGEMENTURL=""
-export APPLICATION_DISCOVERYENDPOINT=""
-
-# AppID User
-export USER_IMPORT_FILE="appid-configs/user-import.json"
-export USER_EXPORT_FILE="appid-configs/user-export.json"
-export ENCRYPTION_SECRET="12345678"
-
-# AppID Application configuration
-export ADD_APPLICATION="appid-configs/add-application.json"
-export ADD_SCOPE="appid-configs/add-scope.json"
-export ADD_ROLE="appid-configs/add-roles.json"
-export ADD_REDIRECT_URIS="appid-configs/add-redirecturis.json"
-export ADD_UI_TEXT="appid-configs/add-ui-text.json"
-export ADD_IMAGE="appid-images/logo.png"
-export ADD_COLOR="appid-configs/add-ui-color.json"
-export APPLICATION_CLIENTID=""
-export APPLICATION_TENANTID=""
-export APPLICATION_OAUTHSERVERURL=""
 
 # Postgres Service
 export POSTGRES_SERVICE_NAME=databases-for-postgresql
@@ -149,70 +78,15 @@ export POSTGRES_URL=""
 # Functions definition
 # **********************************************************************************
 
-function setupCLIenvCE() {
+function setupCLIenv() {
   echo "**********************************"
-  echo " Using following project: $PROJECT_NAME" 
+  echo " Using following: "
+  echo " - Resource group: $RESOURCE_GROUP " 
+  echo " - Region: $REGION " 
   echo "**********************************"
 
   ibmcloud target -g $RESOURCE_GROUP
   ibmcloud target -r $REGION
-
-  ibmcloud ce project create --name $PROJECT_NAME 
-
-  RESULT=$(ibmcloud ce project get --name $PROJECT_NAME | grep "Status" |  awk '{print $2;}')
-  if [[ $RESULT == "soft" ]]; then
-        echo "*** The project $PROJECT_NAME was deleted."
-        echo "*** The script 'ce-install-application.sh' ends here!"
-        echo "*** Review your 'tenant-xx.json' configuration file."
-        exit 1
-  fi
-  ibmcloud ce project select -n $PROJECT_NAME
-  
-  #to use the kubectl commands
-  ibmcloud ce project select -n $PROJECT_NAME --kubecfg
-  
-  NAMESPACE=$(ibmcloud ce project get --name $PROJECT_NAME --output json | grep "namespace" | awk '{print $2;}' | sed 's/"//g' | sed 's/,//g')
-  echo "Namespace: $NAMESPACE"
-  kubectl get pods -n $NAMESPACE
-
-  CHECK=$(ibmcloud ce project get -n $PROJECT_NAME | awk '/Apps/ {print $2;}')
-  echo "**********************************"
-  echo "Check for existing apps? '$CHECK'"
-  echo "**********************************"
-  if [[ $CHECK != "0" ]];then
-    echo "Error: There are remaining '$CHECK' apps in the Code Engine project."
-    echo "Wait until all apps are deleted inside project '$PROJECT_NAME'."
-    echo "The script exits here!"
-    exit 1
-  fi
-}
-
-function setupCRenvCE() {
-   
-   IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
-   IBMCLOUDCLI_KEY_DESCRIPTION="CLI APIkey $IBMCLOUDCLI_KEY_NAME"
-   CLIKEY_FILE="cli_key.json"
-   USERNAME="iamapikey"
-   
-   RESULT=$(ibmcloud iam api-keys | grep '$IBMCLOUDCLI_KEY_NAME' | awk '{print $1;}' | head -n 1)
-   echo "API key: $RESULT"
-   if [[ $RESULT == $IBMCLOUDCLI_KEY_NAME ]]; then
-        echo "*** The Cloud API key '$IBMCLOUDCLI_KEY_NAME' already exists !"
-        echo "*** The script 'ce-install-application.sh' ends here!"
-        echo "*** Review your existing API keys 'https://cloud.ibm.com/iam/apikeys'."
-        exit 1
-   fi
-
-   ibmcloud iam api-key-create $IBMCLOUDCLI_KEY_NAME -d "My IBM CLoud CLI API key for project $PROJECT_NAME" --file $CLIKEY_FILE
-   CLIAPIKEY=$(cat $CLIKEY_FILE | grep '"apikey":' | awk '{print $2;}' | sed 's/"//g' | sed 's/,//g' )
-   #echo $CLIKEY
-   rm -f $CLIKEY_FILE
-
-   ibmcloud ce registry create --name $SECRET_NAME \
-                               --server $IBM_CR_SERVER \
-                               --username $USERNAME \
-                               --password $CLIAPIKEY \
-                               --email $EMAIL
 }
 
 # **** Postgres ****
@@ -410,288 +284,7 @@ function createTablesPostgress () {
     pwd
 }
 
-# **** AppID ****
-
-function createAppIDService() {
-    ibmcloud target -g $RESOURCE_GROUP
-    ibmcloud target -r $REGION
-    # Create AppID service
-    RESULT=$(ibmcloud resource service-instance $APPID_SERVICE_INSTANCE_NAME --location $REGION -g $RESOURCE_GROUP | grep "OK")
-    if [[ $RESULT == "OK" ]]; then
-        echo "*** The AppID service '$APPID_SERVICE_INSTANCE_NAME' already exists!"
-        echo "*** The script 'ce-install-application.sh' ends here!"
-        exit 1
-    fi
-    ibmcloud resource service-instance-create $APPID_SERVICE_INSTANCE_NAME $APPID_SERVICE_NAME $SERVICE_PLAN $REGION
-    # Create a service key for the service
-    ibmcloud resource service-key-create $APPID_SERVICE_KEY_NAME $APPID_SERVICE_KEY_ROLE --instance-name $APPID_SERVICE_INSTANCE_NAME
-    # Get the tenantId of the AppID service key
-    TENANTID=$(ibmcloud resource service-keys --instance-name $APPID_SERVICE_INSTANCE_NAME --output json | grep "tenantId" | awk '{print $2;}' | sed 's/"//g')
-    echo "Tenant ID: $TENANTID"
-    # Get the managementUrl of the AppID from service key
-    MANAGEMENTURL=$(ibmcloud resource service-keys --instance-name $APPID_SERVICE_INSTANCE_NAME --output json | grep "managementUrl" | awk '{print $2;}' | sed 's/"//g' | sed 's/,//g')
-    echo "Management URL: $MANAGEMENTURL"
-}
-
-function configureAppIDInformation(){
-
-    #****** Set identity providers
-    echo ""
-    echo "-------------------------"
-    echo " Set identity providers"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    result=$(curl -d @./appid-configs/idps-custom.json -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/idps/custom)
-    echo ""
-    echo "-------------------------"
-    echo "Result custom: $result"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    result=$(curl -d @./appid-configs/idps-facebook.json -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/idps/facebook)
-    echo ""
-    echo "-------------------------"
-    echo "Result facebook: $result"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    result=$(curl -d @./appid-configs/idps-google.json -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/idps/google)
-    echo ""
-    echo "-------------------------"
-    echo "Result google: $result"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    result=$(curl -d @./appid-configs/idps-clouddirectory.json -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/idps/cloud_directory)
-    echo ""
-    echo "-------------------------"
-    echo "Result cloud directory: $result"
-    echo "-------------------------"
-    echo ""
-
-    #****** Add application ******
-    echo ""
-    echo "-------------------------"
-    echo " Create application"
-    echo "-------------------------"
-    echo ""
-    sed "s+FRONTENDNAME+$FRONTEND_NAME+g" ./appid-configs/add-application-template.json > ./$ADD_APPLICATION
-    result=$(curl -d @./$ADD_APPLICATION -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/applications)
-    echo "-------------------------"
-    echo "Result application: $result"
-    echo "-------------------------"
-    APPLICATION_CLIENTID=$(echo $result | sed -n 's|.*"clientId":"\([^"]*\)".*|\1|p')
-    APPLICATION_TENANTID=$(echo $result | sed -n 's|.*"tenantId":"\([^"]*\)".*|\1|p')
-    APPLICATION_OAUTHSERVERURL=$(echo $result | sed -n 's|.*"oAuthServerUrl":"\([^"]*\)".*|\1|p')
-    APPLICATION_DISCOVERYENDPOINT=$(echo $result | sed -n 's|.*"discoveryEndpoint":"\([^"]*\)".*|\1|p')
-    echo "ClientID: $APPLICATION_CLIENTID"
-    echo "TenantID: $APPLICATION_TENANTID"
-    echo "oAuthServerUrl: $APPLICATION_OAUTHSERVERURL"
-    echo "discoveryEndpoint: $APPLICATION_DISCOVERYENDPOINT"
-    echo ""
-
-    #****** Add scope ******
-    echo ""
-    echo "-------------------------"
-    echo " Add scope"
-    echo "-------------------------"
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    result=$(curl -d @./$ADD_SCOPE -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/applications/$APPLICATION_CLIENTID/scopes)
-    echo "-------------------------"
-    echo "Result scope: $result"
-    echo "-------------------------"
-    echo ""
-
-    #****** Add role ******
-    echo "-------------------------"
-    echo " Add role"
-    echo "-------------------------"
-    #Create file from template
-    sed "s+APPLICATIONID+$APPLICATION_CLIENTID+g" ./appid-configs/add-roles-template.json > ./$ADD_ROLE
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    #echo $OAUTHTOKEN
-    result=$(curl -d @./$ADD_ROLE -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/roles)
-    rm -f ./$ADD_ROLE
-    echo "-------------------------"
-    echo "Result role: $result"
-    echo "-------------------------"
-    echo ""
- 
-    #****** Import cloud directory users ******
-    echo ""
-    echo "-------------------------"
-    echo " Cloud directory import users"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    result=$(curl -d @./$USER_IMPORT_FILE -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/cloud_directory/import?encryption_secret=$ENCRYPTION_SECRET)
-    echo "-------------------------"
-    echo "Result import: $result"
-    echo "-------------------------"
-    echo ""
-
-    #******* Configure ui text  ******
-    echo ""
-    echo "-------------------------"
-    echo " Configure ui text"
-    echo "-------------------------"
-    echo ""
-    sed "s+FRONTENDNAME+$FRONTEND_NAME+g" ./appid-configs/add-ui-text-template.json > ./$ADD_UI_TEXT
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    echo "PUT url: $MANAGEMENTURL/config/ui/theme_txt"
-    result=$(curl -d @./$ADD_UI_TEXT -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_text)
-    rm -f $ADD_UI_TEXT
-    echo "-------------------------"
-    echo "Result import: $result"
-    echo "-------------------------"
-    echo ""
-
-    #******* Configure ui color  ******
-    echo ""
-    echo "-------------------------"
-    echo " Configure ui color"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    echo "PUT url: $MANAGEMENTURL/config/ui/theme_color"
-    result=$(curl -d @./$ADD_COLOR -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_color)
-    echo "-------------------------"
-    echo "Result import: $result"
-    echo "-------------------------"
-    echo ""
-
-    #******* Configure ui image  ******
-    echo ""
-    echo "-------------------------"
-    echo " Configure ui image"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    echo "POST url: $MANAGEMENTURL/config/ui/media?mediaType=logo"
-    result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/media?mediaType=logo")
-    echo "-------------------------"
-    echo "Result import: $result"
-    echo "-------------------------"
-    echo ""
-}
-
-function addRedirectURIAppIDInformation(){
-
-    #****** Add redirect uris ******
-    echo ""
-    echo "-------------------------"
-    echo " Add redirect uris"
-    echo "-------------------------"
-    echo ""
-    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
-    echo "Redirect URL: $FRONTEND_URL"
-    #Create file from template
-    sed "s+APPLICATION_REDIRECT_URL+$FRONTEND_URL+g" ./appid-configs/add-redirecturis-template.json > ./$ADD_REDIRECT_URIS
-    result=$(curl -d @./$ADD_REDIRECT_URIS -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/redirect_uris)
-    rm -f ./$ADD_REDIRECT_URIS
-    echo "-------------------------"
-    echo "Result redirect uris: $result"
-    echo "-------------------------"
-    echo ""
-}
-
 # **** application and microservices ****
-
-function createSecrets() {
-
-    echo "Create secrets" 
-    ibmcloud ce secret create --name postgres.certificate-data --from-literal "POSTGRES_CERTIFICATE_DATA=$POSTGRES_CERTIFICATE_DATA"
-    ibmcloud ce secret create --name postgres.username --from-literal "POSTGRES_USERNAME=$POSTGRES_USERNAME"
-    ibmcloud ce secret create --name postgres.password --from-literal "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
-    ibmcloud ce secret create --name postgres.url --from-literal "POSTGRES_URL=$POSTGRES_URL"
-    ibmcloud ce secret create --name appid.oauthserverurl --from-literal "APPID_AUTH_SERVER_URL=$APPLICATION_OAUTHSERVERURL"
-    ibmcloud ce secret create --name appid.client-id-catalog-service  --from-literal "APPID_CLIENT_ID=$APPLICATION_CLIENTID"
-    ibmcloud ce secret create --name appid.client-id-fronted  --from-literal "VUE_APPID_CLIENT_ID=$APPLICATION_CLIENTID"
-    ibmcloud ce secret create --name appid.discovery-endpoint --from-literal "VUE_APPID_DISCOVERYENDPOINT=$APPLICATION_DISCOVERYENDPOINT"
-
-}
-
-function deployServiceCatalog(){
-    
-    ibmcloud ce application create --name $SERVICE_CATALOG_NAME \
-                                   --image $SERVICE_CATALOG_IMAGE \
-                                   --env-from-secret postgres.certificate-data \
-                                   --env-from-secret postgres.username \
-                                   --env-from-secret postgres.password \
-                                   --env-from-secret postgres.url \
-                                   --env-from-secret appid.oauthserverurl \
-                                   --env-from-secret appid.client-id-catalog-service \
-                                   --cpu "1" \
-                                   --memory "2G" \
-                                   --port 8081 \
-                                   --registry-secret "$SECRET_NAME" \
-                                   --max-scale 1 \
-                                   --min-scale 0 
-                                       
-    SERVICE_CATALOG_URL=$(ibmcloud ce application get --name "$SERVICE_CATALOG_NAME" -o url)
-    echo "Set SERVICE CATALOG URL: $SERVICE_CATALOG_URL"
-}
-
-function deployFrontend(){
-    
-    ibmcloud ce application create --name $FRONTEND_NAME \
-                                   --image $FRONTEND_IMAGE \
-                                   --cpu "1" \
-                                   --memory "2G" \
-                                   --env-from-secret appid.client-id-fronted \
-                                   --env-from-secret appid.discovery-endpoint \
-                                   --env VUE_APP_API_URL_PRODUCTS="$SERVICE_CATALOG_URL/base/category" \
-                                   --env VUE_APP_API_URL_ORDERS="$SERVICE_CATALOG_URL/base/customer/Orders" \
-                                   --env VUE_APP_API_URL_CATEGORIES="$SERVICE_CATALOG_URL/base/category" \
-                                   --env VUE_APP_CATEGORY_NAME="$FRONTEND_CATEGORY" \
-                                   --env VUE_APP_HEADLINE="$FRONTEND_NAME" \
-                                   --env VUE_APP_ROOT="/" \
-                                   --registry-secret "$SECRET_NAME" \
-                                   --max-scale 1 \
-                                   --min-scale 0 \
-                                   --port 8080 
-
-    ibmcloud ce application get --name $FRONTEND_NAME
-    FRONTEND_URL=$(ibmcloud ce application get --name "$FRONTEND_NAME" -o url)
-    echo "Set FRONTEND URL: $FRONTEND_URL"
-}
-
-# **** Kubernetes CLI ****
-
-function kubeDeploymentVerification(){
-
-    echo "************************************"
-    echo " pods, deployments and configmaps details "
-    echo "************************************"
-    
-    kubectl get pods -n $NAMESPACE
-    kubectl get deployments -n $NAMESPACE
-    kubectl get configmaps -n $NAMESPACE
-
-}
-
-function getKubeContainerLogs(){
-
-    echo "************************************"
-    echo " $FRONTEND_NAME log"
-    echo "************************************"
-
-    FIND="$FRONTEND_NAME"
-    FRONTEND_LOG=$(kubectl get pod -n $NAMESPACE | grep $FIND | awk '{print $1}')
-    echo $FRONTEND_LOG
-    kubectl logs $FRONTEND_LOG user-container
-
-    echo "************************************"
-    echo " $SERVICE_CATALOG_NAME logs"
-    echo "************************************"
-
-    FIND=$SERVICE_CATALOG_NAME
-    SERVICE_CATALOG_LOG=$(kubectl get pod -n $NAMESPACE | grep $FIND | awk '{print $1}')
-    echo $SERVICE_CATALOG_LOG
-    kubectl logs $SERVICE_CATALOG_LOG user-container
-
-}
 
 function checkKubernetesPod (){
     application_pod="${1}" 
@@ -728,79 +321,24 @@ echo "************************************"
 echo " CLI config"
 echo "************************************"
 
-setupCLIenvCE
-
-echo "************************************"
-echo " Configure container registry access"
-echo "************************************"
-
-# setupCRenvCE
+setupCLIenv
 
 echo "************************************"
 echo " Create Postgres instance and database"
 echo "************************************"
 
 createPostgres
-# createTablesPostgress
+createTablesPostgress
 extractPostgresConfiguration
 
 echo "************************************"
-echo " AppID creation"
+echo " Relevant Postgres configuration"
 echo "************************************"
-
-# createAppIDService
-
-echo "************************************"
-echo " AppID configuration"
-echo "************************************"
-
-# configureAppIDInformation
-
-echo "************************************"
-echo " Create secrets"
-echo "************************************"
-
-# createSecrets
-
-echo "************************************"
-echo " service catalog"
-echo "************************************"
-
-# deployServiceCatalog
-# ibmcloud ce application events --application $SERVICE_CATALOG_NAME
-
-echo "************************************"
-echo " frontend"
-echo "************************************"
-
-# deployFrontend
-# ibmcloud ce application events --application $FRONTEND_NAME
-
-echo "************************************"
-echo " AppID add redirect URI"
-echo "************************************"
-
-# addRedirectURIAppIDInformation
-
-echo "************************************"
-echo " Verify deployments"
-echo "************************************"
-
-# kubeDeploymentVerification
-
-echo "************************************"
-echo " Container logs"
-echo "************************************"
-
-# getKubeContainerLogs
-
-echo "************************************"
-echo " URLs"
-echo "************************************"
-echo " - oAuthServerUrl   : $APPLICATION_OAUTHSERVERURL"
-echo " - discoveryEndpoint: $APPLICATION_DISCOVERYENDPOINT"
-echo " - Frontend         : $FRONTEND_URL"
-echo " - ServiceCatalog   : $SERVICE_CATALOG_URL"
+echo "-------------------------"
+echo "POSTGRES_CERTIFICATE_DATA:  $POSTGRES_CERTIFICATE_DATA"
+echo "POSTGRES_USERNAME:          $POSTGRES_USERNAME"
+echo "POSTGRES_PASSWORD:          $POSTGRES_PASSWORD"
+echo "POSTGRES_URL     :          $POSTGRES_URL"
 echo "------------------------------"
 echo "Verify the given entries and press return"
 echo "------------------------------"
