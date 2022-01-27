@@ -60,11 +60,11 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * Authentication Flow (AppID, backend, frontend)
 * Creation of managed IBM Cloud Services
     * Database
-        * [Programmatic Creation of Postgres] (documentation/create-postgres.md)
-        * [Programmatic Configuration of Postgres including Schema] (documentation/create-postgres-schema.md)
+        * [Programmatic Creation of Postgres](documentation/create-postgres.md)
+        * [Programmatic Configuration of Postgres including Schema](documentation/create-postgres-schema.md)
     * Authentication
-        * [Programmatic Creation of AppID] (documentation/create-appid.md)
-        * Programmatic Configuration of AppID (documentation/configure-appid.md)
+        * [Programmatic Creation of AppID](documentation/create-appid.md)
+        * [Programmatic Configuration of AppID](documentation/configure-appid.md)
 * Serverless via IBM Code Engine
     * Architecture
     * Initial Setup via Scripts
