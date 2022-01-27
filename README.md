@@ -71,7 +71,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * [CI/CD](documentation/serverless-cicd.md)
     * [Onboarding](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_onboarding.md)
     * [Observability (logging, monitoring, vulnerabilities)](documentation/observability.md)
-    * Billing
+    * [Billing](documentation/code-engine-billing.md)
     * [Clean Up](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_clean_up.md)
 * Kubernetes via IBM Kubernetes Service and IBM OpenShift
     * Architecture
