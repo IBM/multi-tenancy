@@ -50,9 +50,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
 * Development of Microservices
     * [Quarkus Backend Service Code](documentation/backend-service-impl.md)
     * [Quarkus Backend Service Container](documentation/backend-service-container.md)
-    * Vue.js Frontend Service Code
-       * [Vue.js and AppID](documentation/vue-appid-frontend.md)
-       * [Vue.js access the backend](documentation/vue-using-access-token-quarkus-endpoint.md)
+    * [Vue.js Frontend Service Code]()
     * Vue.js Frontend Service Container
     * [Externalization of Variables in Backend Microservices](https://suedbroecker.net/2021/05/31/how-to-use-environment-variables-to-make-a-containerized-quarkus-application-more-flexible/)
     * [Externalization of Variables in Frontend Microservices](https://suedbroecker.net/2021/06/07/use-environment-variables-to-make-a-containerized-vue-js-frontend-application-more-flexible-and-deploy-it-to-code-engine/)
