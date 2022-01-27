@@ -55,9 +55,7 @@ echo "IBM Cloud RESOURCE_GROUP         : $RESOURCE_GROUP"
 echo "IBM Cloud REGION                 : $REGION"
 echo "---------------------------------"
 echo ""
-echo "------------------------------"
-echo "Verify parameters and press return"
-read input
+
 
 # **************** Global variables set as default values
 export NAMESPACE=""
