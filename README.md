@@ -52,7 +52,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * [Quarkus Backend Service Container](documentation/backend-service-container.md)
     * [Vue.js Frontend Service Code](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/frontend-service-code.md)
     * [Vue.js Frontend Service Container](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/frontend-service-container.md)
-    * [Externalization of Variables in Backend Microservices](https://suedbroecker.net/2021/05/31/how-to-use-environment-variables-to-make-a-containerized-quarkus-application-more-flexible/)
+    * [Externalization of Variables in Backend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/externalization-of-variables-in-backend-microservices.md)
     * [Externalization of Variables in Frontend Microservices](https://suedbroecker.net/2021/06/07/use-environment-variables-to-make-a-containerized-vue-js-frontend-application-more-flexible-and-deploy-it-to-code-engine/)
     * [Local Development of Services](documentation/local-development.md)
     * Authentication Flow (AppID, backend, frontend)
