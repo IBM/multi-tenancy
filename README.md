@@ -55,7 +55,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * [Externalization of Variables in Backend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/externalization-of-variables-in-backend-microservices.md)
     * [Externalization of Variables in Frontend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/externalization-of-variables-in-frontend-microservices.md)
     * [Local Development of Services](documentation/local-development.md)
-    * Authentication Flow (AppID, backend, frontend)
+    * [Authentication Flow (AppID, backend, frontend)](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/authentication-flow-appip-backend-frontend.md)
 * Creation of managed IBM Cloud Services
     * Database
         * [Programmatic Creation of Postgres](documentation/create-postgres.md)
