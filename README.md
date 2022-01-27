@@ -53,7 +53,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * [Vue.js Frontend Service Code](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/frontend-service-code.md)
     * [Vue.js Frontend Service Container](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/frontend-service-container.md)
     * [Externalization of Variables in Backend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/externalization-of-variables-in-backend-microservices.md)
-    * [Externalization of Variables in Frontend Microservices](https://suedbroecker.net/2021/06/07/use-environment-variables-to-make-a-containerized-vue-js-frontend-application-more-flexible-and-deploy-it-to-code-engine/)
+    * [Externalization of Variables in Frontend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/externalization-of-variables-in-frontend-microservices.md)
     * [Local Development of Services](documentation/local-development.md)
     * Authentication Flow (AppID, backend, frontend)
 * Creation of managed IBM Cloud Services
