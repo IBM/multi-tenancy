@@ -75,7 +75,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * [Clean Up](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless/2-initial_automated_setup_for_serverless/README_clean_up.md)
 * Kubernetes via IBM Kubernetes Service and IBM OpenShift
     * Architecture
-    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning%20A%20Kubernetes%20Based%20Infrastructure.md)
+    * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning-A-Kubernetes-Based-Infrastructure.md)
     * CI/CD DevSecOps
         * [Overview](documentation/devsecops-overview.md)
         * CI
