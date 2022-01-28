@@ -44,6 +44,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
 <kbd><img src="documentation/example-app.png" /></kbd>
 
 
+
 ## Documentation
 
 * [Introduction](#introduction)
