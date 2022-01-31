@@ -59,7 +59,7 @@ When you're ready to embrace DevOps, a simple toolchain is provided with CI/CD p
 
 When you're ready to try with IBM Kubernetes Service or OpenShift, terraform templates are provided to automate the cluster creation on IBM Cloud.  A more comprehensive toolchain is introduced for deployment to a Kubernetes cluster, using a DevSecOps approach.  This brings a more robust process where the CI/CD pipelines ensure that developer's code is scanned for security vulnerabilities (e.g. secrets or credentials in the code), and repository branch protection prevents a developer from directly updating the main branch without first issuing a pull/merge request to be approved by a second developer.  In addition, the container images are scanned for vulnerabilities, a dynamic application security testing tool looks for vulnerabilities in the deployed application, and application acceptance tests all contribute to a secure and quality assured release.
 
-Any of these approaches are ready to deploy the multiples tenancies of a SaaS application.  Simply change the externalized properties and re-run a script or trigger the pipelines.
+Any of these approaches are ready to deploy the multiple tenancies of a SaaS application.  Simply change the externalized properties and re-run the script or trigger the pipelines.
 
 ### Ready for regulated industries
 
