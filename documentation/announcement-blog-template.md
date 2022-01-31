@@ -44,3 +44,13 @@
 * Call to action
     * Try serverless getting started 
     * Provide feedback
+
+
+
+
+    Other notes:
+
+    * Pull Request (PR) Pipeline: This is typically triggered by a developer when they want to conribute source code from their own branch, by creating a merge or pull request (PR) in the application repository.  The pipeline runs unit test and static scans on the source code and second developer must approve the PR.
+* Continuous Integration (CI) Pipeline: When a change is merged to the main branch of the application repository, the CI Pipeline runs tests on the source code and deployment manifests to detect secrets or security risks, as well as scanning the container images for vulnerabilities.  Unit and code coverage tests can also be incorporated.  The CI pipeline builds the binary artifacts (containers), uploads them to the IBM Container Registry and deploys them to the runtime environment as an integration test.  The CI Pipeline also generates metadata about the build artifacts and stores this in another repository, for purposes of compliance and audit.
+* Promotion (CD) Pipeline: This is manually triggered to create a new merge / PR to push the latest code changes from the source (main) branch to the target branch of a particular tenant.
+* Continuous Deployment (CD) Pipeline: The CD pipeline is used to deploy the application to the production environments of specific tenant (i.e. a tenant specifc namespace in a Kubernetes cluster).  For compliance reasons it needs to be triggered manually, after the merge is completed from the previous Promotion Pipeline.
