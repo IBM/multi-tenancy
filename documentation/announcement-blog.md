@@ -29,7 +29,7 @@ The project provides a starting point for learning how to create an application 
 
 ### Support for multiple platforms
 
-The following diagram shows the different deployment platform options.  So far the project includes the implementation of the IBM Cloud deployment options.  The future addition of IBM Cloud Satellite will allow the SaaS application to be deployed on-premises at client data centers, while still taking advantage of an OpenShift cluster managed by IBM Cloud.  Additionally, the same SaaS application could be deployed to other managed OpenShift services like AWS ROSA and Azure ARO.
+The following diagram shows the different deployment platform options, currently including several alternatives for IBM Cloud, as indicated by the green boxes.  The orange boxes represent planned future developments, including the addition of IBM Cloud Satellite which will allow the SaaS application to be deployed on-premises at client data centers, while still taking advantage of an OpenShift cluster managed by IBM Cloud.  Additionally, the same SaaS application could be deployed to other managed OpenShift services like AWS ROSA and Azure ARO.
 
 The easiest way to get started is with serverless, using the fully managed IBM Code Engine platform to run the application.  For more advanced cloud-native applications, a dedicated Kubernetes or OpenShift cluster can be used.  Compute isolation can be achieved with a shared cluster using Kubernetes namespaces/OpenShift projects, or by having dedicated clusters for each SaaS tenant.
 
@@ -51,15 +51,15 @@ A sample e-commerce application is provided, which is deployed as two containers
 
 ### Automation first
 
-Everything in this project embraces automation and the asset provides a series of approaches to deploy SaaS, from simple bash scripts to DevSecOps CI/CD pipelines that are more suitable for regulated industries.
+Everything in this project embraces automation and a series of approaches to deploy SaaS are provided, each with an increasing degree of capability.  You are able to start with any of the following approaches:
 
-You can get started quickly by using scripts to create the sample application container images, deploy and configure PostgreSQL and AppID cloud services.
-
-When you're ready to embrace DevOps, a simple toolchain is provided with CI/CD pipelines for build and deployment of both frontend and backend containers, using IBM Code Engine.  The pipelines are used to orchestrates build, test, and deployment jobs (optionally across multiple environments) as changes progress from the developer to production.
-
-When you're ready to try with IBM Kubernetes Service or OpenShift, terraform templates are provided to automate the cluster creation on IBM Cloud.  A more comprehensive toolchain is introduced for deployment to a Kubernetes cluster, using a DevSecOps approach.  This brings a more robust process where the CI/CD pipelines ensure that code is scanned for security vulnerabilities (e.g. secrets or credentials), and repository branch protection prevents a developer from directly updating the main branch without first issuing a pull/merge request to be approved by a second developer.  In addition, the container images are scanned for vulnerabilities, a dynamic application security testing tool looks for vulnerabilities in the deployed application, and application acceptance tests all contribute to a secure and quality assured release.
+* Simple bash scripts to create and deploy the sample application container images, and the PostgreSQL and AppID cloud services.
+* A simple DevOps toolchain with CI/CD pipelines which deploys to IBM Code Engine.  The pipelines orchestrate build, test, and deployment jobs (optionally across multiple environments) as changes progress from the developer to production.
+* A more comprehensive DevSecOps toolchain which deploys to a Kubernetes cluster.  This brings a more robust process where the CI/CD pipelines ensure that code is scanned for security vulnerabilities (e.g. secrets or credentials), and repository branch protection prevents a developer from directly updating the main branch without first issuing a pull/merge request to be approved by a second developer.  In addition, the container images are scanned for vulnerabilities, a dynamic application security testing tool looks for vulnerabilities in the deployed application, and application acceptance tests all contribute to a secure and quality assured release.
 
 Any of these approaches are ready to deploy the multiple tenancies of a SaaS application.  Simply change the externalised properties and re-run the script or trigger the pipelines.
+
+For deployments to IBM Kubernetes Service or OpenShift, terraform templates are also provided to automate the cluster creation on IBM Cloud.
 
 ### Ready for regulated industries
 
