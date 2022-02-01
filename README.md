@@ -113,8 +113,6 @@ This repo is the 'parent repo' including documentation and global configuration.
 
 * [multi-tenancy-serverless-ci-cd](https://github.com/IBM/multi-tenancy-serverless-ci-cd) - CI and CD pipelines for serverless
 
-* [multi-tenancy-documentation](https://github.com/IBM/multi-tenancy-documentation) - documentation and images
-
 
 ## Getting Started
 
