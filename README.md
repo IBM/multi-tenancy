@@ -35,7 +35,7 @@ For more advanced cloud-native applications Kubernetes and OpenShift can be used
 
 For CI/CD the IBM DevSecOps reference architecture based on IBM Toolchain is used which is also the internal IBM standard and which guarantees compliance for regulated industries.
 
-<kbd><img src="documentation/SaaS-Options.png" /></kbd>
+<kbd><img src="documentation/Options-Simple.png" /></kbd>
 
 ### Sample Application
 
