@@ -49,21 +49,21 @@ The project comes with a simple e-commerce example application. A SaaS provider 
 
 * [Introduction](#introduction)
 * Development of Microservices
-    * [Quarkus Backend Service Code](documentation/backend-service-impl.md)
-    * [Quarkus Backend Service Container](documentation/backend-service-container.md)
-    * [Vue.js Frontend Service Code](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/frontend-service-code.md)
-    * [Vue.js Frontend Service Container](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/frontend-service-container.md)
-    * [Externalization of Variables in Backend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/externalization-of-variables-in-backend-microservices.md)
-    * [Externalization of Variables in Frontend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/externalization-of-variables-in-frontend-microservices.md)
-    * [Local Development of Services](documentation/local-development.md)
-    * [Authentication Flow (AppID, backend, frontend)](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/thomas/authentication-flow-appip-backend-frontend.md)
+    * [Quarkus Backend Service Code](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/backend-service-impl.md)
+    * [Quarkus Backend Service Container](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/backend-service-container.md)
+    * [Vue.js Frontend Service Code](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/frontend-service-code.md)
+    * [Vue.js Frontend Service Container](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/frontend-service-container.md)
+    * [Externalization of Variables in Backend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/externalization-of-variables-in-backend-microservices.md)
+    * [Externalization of Variables in Frontend Microservices](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/externalization-of-variables-in-frontend-microservices.md)
+    * [Local Development of Services](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/local-development.md)
+    * [Authentication Flow (AppID, backend, frontend)](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/authentication-flow-appip-backend-frontend.md)
 * Creation of managed IBM Cloud Services
     * Database
-        * [Programmatic Creation of Postgres](documentation/create-postgres.md)
-        * [Programmatic Configuration of Postgres including Schema](documentation/create-postgres-schema.md)
+        * [Programmatic Creation of Postgres](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/creation-of-managed-ibm-cloud-services/create-postgres.md)
+        * [Programmatic Configuration of Postgres including Schema](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/creation-of-managed-ibm-cloud-services/create-postgres-schema.md)
     * Authentication
-        * [Programmatic Creation of AppID](documentation/create-appid.md)
-        * [Programmatic Configuration of AppID](documentation/configure-appid.md)
+        * [Programmatic Creation of AppID](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/creation-of-managed-ibm-cloud-services/create-appid.md)
+        * [Programmatic Configuration of AppID](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/creation-of-managed-ibm-cloud-services/configure-appid.md)
 * Serverless via IBM Code Engine
     * Architecture
     * Initial Setup via Scripts
