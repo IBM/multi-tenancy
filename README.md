@@ -78,7 +78,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * Architecture
     * [Initial Setup via Scripts](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/automation/terraform/3-Provisionning-A-Kubernetes-Based-Infrastructure.md)
     * CI/CD DevSecOps
-        * [Overview](documentation/devsecops-overview.md)
+        * [Overview](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/devsecops-overview.md)
         * CI
             * [CI pull request](documentation/ci-pull-request.md)
             * [CI pipeline](documentation/ci-pipeline.md)
