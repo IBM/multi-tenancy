@@ -83,8 +83,8 @@ The project comes with a simple e-commerce example application. A SaaS provider 
             * [CI pull request](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/ci-pull-request.md)
             * [CI pipeline](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/ci-pipeline.md)
         * CD
-            * [CD pull request](documentation/cd-pull-request.md)
-            * [CD pipeline](documentation/cd-pipeline.md)
+            * [CD pull request](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/cd-pull-request.md)
+            * [CD pipeline](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/cd-pipeline.md)
         * [Security and Compliance](documentation/security-and-compliance.md)
         * Setup of the Toolchains
             * [CI Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_ci.md)
