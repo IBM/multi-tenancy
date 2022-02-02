@@ -89,9 +89,9 @@ The project comes with a simple e-commerce example application. A SaaS provider 
         * Setup of the Toolchains
             * [CI Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_ci.md)
             * [CD Toolchains](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/k8s/3-ci-cd/README_cd.md)
-    * [Onboarding](documentation/k8s-onboarding.md)
-    * [Observability (logging, monitoring, vulnerabilities)](documentation/observability.md)
-    * [Billing](documentation/k8s-billing.md)
+    * [Onboarding](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/k8s-onboarding.md)
+    * [Observability (logging, monitoring, vulnerabilities)](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/observability.md)
+    * [Billing](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/k8s-billing.md)
 
 ## Repositories
 
