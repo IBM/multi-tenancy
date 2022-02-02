@@ -80,8 +80,8 @@ The project comes with a simple e-commerce example application. A SaaS provider 
     * CI/CD DevSecOps
         * [Overview](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/devsecops-overview.md)
         * CI
-            * [CI pull request](documentation/ci-pull-request.md)
-            * [CI pipeline](documentation/ci-pipeline.md)
+            * [CI pull request](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/ci-pull-request.md)
+            * [CI pipeline](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/kubernetes-via-ibm-kubernetes-service-and-ibm-openshift/ci-pipeline.md)
         * CD
             * [CD pull request](documentation/cd-pull-request.md)
             * [CD pipeline](documentation/cd-pipeline.md)
