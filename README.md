@@ -47,7 +47,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
 
 ## Documentation
 
-You can access the easier navigable and consumable version of the documentation be pressing this button [![](documentation/images/button-documentation.png)](https://ibm.github.io/multi-tenancy-documentation/)
+You can access the easier navigable and consumable version of the documentation by pressing this button [![](documentation/images/button-documentation.png)](https://ibm.github.io/multi-tenancy-documentation/)
 
 * [Introduction](#introduction)
 * Development of Microservices
