@@ -71,7 +71,7 @@ The project comes with a simple e-commerce example application. A SaaS provider 
         2. [Verify the created instances](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless-via-ibm-code-engine/ce-verify-the-created-instances.md) 
     * [CI/CD](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless-via-ibm-code-engine/serverless-cicd.md)
     * [Onboarding](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless-via-ibm-code-engine/code-engine-onboarding.md)
-    * [Observability (logging, monitoring, vulnerabilities)](documentation/observability.md)
+    * [Observability (logging, monitoring, vulnerabilities)](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless-via-ibm-code-engine/observability.md)
     * [Billing](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless-via-ibm-code-engine/code-engine-billing.md)
     * [Clean Up](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/serverless-via-ibm-code-engine/ce_clean_up.md)
 * Kubernetes via IBM Kubernetes Service and IBM OpenShift
