@@ -1,11 +1,6 @@
 ## New Open-Source Multi-Cloud Asset to build SaaS
 Development and automated deployment of SaaS for multiple tenants, using Red Hat OpenShift/Kubernetes and DevSecOps
 
-#IBM
-#DevSecOps
-#Kubernetes
-#OpenShift
-
 ### Introduction
 
 When software is provided as a managed service (SaaS), using a multi-tenant approach helps minimise costs for the deployments and operations of each tenant.  In order to leverage these advantages, applications need to be designed so that they can be deployed to support multiple tenants, while maintaining isolation for security reasons.  At the same time, common deployment and operation models are required so that new SaaS versions can be deployed to existing tenants, or to onboard new tenants, in a reliable and efficient way.
