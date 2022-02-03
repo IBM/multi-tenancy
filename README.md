@@ -47,6 +47,8 @@ The project comes with a simple e-commerce example application. A SaaS provider 
 
 ## Documentation
 
+You can access the easier navigable and consumable version of the documentation be pressing this button [![](documentation/images/button-documentation.png)](https://ibm.github.io/multi-tenancy-documentation/)
+
 * [Introduction](#introduction)
 * Development of Microservices
     * [Quarkus Backend Service Code](https://github.com/IBM/multi-tenancy-documentation/blob/main/documentation/development_of_microservices/backend-service-impl.md)
