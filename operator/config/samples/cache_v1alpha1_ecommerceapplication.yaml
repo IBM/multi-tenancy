@@ -1,0 +1,7 @@
+apiVersion: cache.saas.ecommerce.sample.com/v1alpha1
+kind: ECommerceApplication
+metadata:
+  name: ecommerceapplication-sample
+spec:
+  foo: niklas
+  size: 1
