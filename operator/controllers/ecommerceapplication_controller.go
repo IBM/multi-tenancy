@@ -24,6 +24,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,6 +37,8 @@ import (
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 
 	cachev1alpha1 "github.com/multi-tenancy/operator/api/v1alpha1"
+
+	batch "k8s.io/api/batch/v1"
 )
 
 // ECommerceApplicationReconciler reconciles a Memcached object
@@ -253,6 +256,29 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		return ctrl.Result{}, err
 	}
 
+	// Create batch Job to populate Postgres
+	// How to make sure this only happens once?
+	pgJob, err := createPostgresJob(memcached.Namespace)
+	// Error creating replicating the secret - requeue the request.
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	err = r.Get(context.TODO(), types.NamespacedName{Name: pgJob.Name, Namespace: pgJob.Namespace}, pgJob)
+	if err != nil && errors.IsNotFound(err) {
+		log.Info(fmt.Sprintf("Job %s doesn't exist, creating it", pgJob.Name))
+		err = r.Create(context.TODO(), pgJob)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	} else {
+		log.Info(fmt.Sprintf("Job %s exists, updating it now", pgJob.Name))
+		err = r.Update(context.TODO(), pgJob)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, found)
@@ -373,7 +399,7 @@ func (r *ECommerceApplicationReconciler) SetupWithManager(mgr ctrl.Manager) erro
 		Complete(r)
 }
 
-// TODO refactor this so it is more generic, and can be used to create the multiple secrets required by backend
+// Create Secret definition
 func createSecret(name string, namespace string, key string, value string) (*corev1.Secret, error) {
 	m := make(map[string]string)
 	//m["POSTGRES_USERNAME"] = data.Postgres.Authentication.Username
@@ -386,5 +412,42 @@ func createSecret(name string, namespace string, key string, value string) (*cor
 		Data:       map[string][]byte{},
 		StringData: m,
 		Type:       "Opaque",
+	}, nil
+}
+
+func createPostgresJob(namespace string) (*batch.Job, error) {
+	args := []string{"/bin/sh", "-c", "date; echo Hello from the Kubernetes cluster"}
+
+	return &batch.Job{
+		TypeMeta: metav1.TypeMeta{Kind: "Job"},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:                       "pg",
+			GenerateName:               "",
+			Namespace:                  metav1.NamespaceDefault,
+			SelfLink:                   "",
+			UID:                        "",
+			ResourceVersion:            "",
+			Generation:                 0,
+			CreationTimestamp:          metav1.Time{},
+			DeletionTimestamp:          &metav1.Time{},
+			DeletionGracePeriodSeconds: new(int64),
+			Labels:                     map[string]string{},
+			Annotations:                map[string]string{},
+			OwnerReferences:            []metav1.OwnerReference{},
+			Finalizers:                 []string{},
+			ClusterName:                "",
+			ManagedFields:              []metav1.ManagedFieldsEntry{},
+		},
+		Spec: batch.JobSpec{
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{Name: "pg", Namespace: namespace},
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{Image: "bash"},
+						{Args: args},
+					},
+				},
+			},
+		},
 	}, nil
 }
