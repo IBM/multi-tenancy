@@ -145,9 +145,87 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	} else if err == nil {
 
 		//targetSecretName := fmt.Sprintf("%s%s%s", memcached.Spec.PostgresSecretName, "-", memcached.Spec.TenantName)
-		targetSecretName := "postgres.username"
+		// try to unmarshal the contents of the ICO secret
+		var data PostgresBindingJSON
+		if err := json.Unmarshal(secret.Data["connection"], &data); err != nil {
+			fmt.Println("could not unmarshal:", err)
+			return ctrl.Result{}, err
+		}
 
-		targetSecret, err := createSecretPostgresUsername(secret, targetSecretName, memcached.Namespace)
+		// Create secrets for backend connection to Postgres
+		// Create secret postgres.username
+		targetSecretName := "postgres.username"
+		targetSecret, err := createSecret(targetSecretName, memcached.Namespace, "POSTGRES_USERNAME", data.Postgres.Authentication.Username)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+			err = r.Create(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+			err = r.Update(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		// Create secret postgres.certificate-data
+		targetSecretName = "postgres.certificate-data"
+		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_CERTIFICATE_DATA", data.Postgres.Certificate.CertificateBase64)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+			err = r.Create(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+			err = r.Update(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		// Create secret postgres.password
+		targetSecretName = "postgres.password"
+		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_PASSWORD", data.Postgres.Authentication.Password)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+			err = r.Create(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+			err = r.Update(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		// Create secret postgres.url
+		targetSecretName = "postgres.url"
+		//targetSecretName := fmt.Sprintf("%s%s%s", memcached.Spec.PostgresSecretName, "-", memcached.Spec.TenantName)
+		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_URL", fmt.Sprintf("%s%s%s", "jdbc:", data.Postgres.Composed[0], "&sslrootcert=/cloud-postgres-cert"))
 		// Error creating replicating the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
@@ -293,38 +371,17 @@ func (r *ECommerceApplicationReconciler) SetupWithManager(mgr ctrl.Manager) erro
 }
 
 // TODO refactor this so it is more generic, and can be used to create the multiple secrets required by backend
-func createSecretPostgresUsername(secret *corev1.Secret, name string, namespace string) (*corev1.Secret, error) {
-	labels := map[string]string{
-		"multi-tenant-saas.ibm.com/replicated-from": fmt.Sprintf("%s.%s", secret.Namespace, secret.Name),
-	}
-	annotations := map[string]string{
-		"multi-tenant-saas.ibm.com/replicated-time":             time.Now().Format("Mon Jan 2 15:04:05 MST 2006"),
-		"multi-tenant-saas.ibm.com/replicated-resource-version": secret.ResourceVersion,
-	}
-
-	// try to unmarshal the contents of the ICO secret
-	var data PostgresBindingJSON
-	if err := json.Unmarshal(secret.Data["connection"], &data); err != nil {
-		fmt.Println("could not unmarshal:", err)
-		return secret, err
-	}
-
+func createSecret(name string, namespace string, key string, value string) (*corev1.Secret, error) {
 	m := make(map[string]string)
-	m["POSTGRES_USERNAME"] = data.Postgres.Authentication.Username
+	//m["POSTGRES_USERNAME"] = data.Postgres.Authentication.Username
+	m[key] = value
 
 	return &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: secret.TypeMeta.APIVersion,
-			Kind:       secret.Kind,
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   namespace,
-			Labels:      labels,
-			Annotations: annotations,
-		},
-		//Data: secret.Data,
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Secret"},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		Immutable:  new(bool),
+		Data:       map[string][]byte{},
 		StringData: m,
-		Type:       secret.Type,
+		Type:       "Opaque",
 	}, nil
 }
