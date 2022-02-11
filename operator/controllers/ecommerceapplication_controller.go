@@ -17,6 +17,8 @@ limitations under the License.
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -56,6 +58,64 @@ type ECommerceApplicationReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
+
+// Used to deserialize connection strings to IBM Cloud services
+type PostgresBindingJSON struct {
+	Cli      Cli      `json:"cli"`
+	Postgres Postgres `json:"postgres"`
+}
+
+type Cli struct {
+	Arguments   []Argument  `json:"argument"`
+	Bin         string      `json:"bin"`
+	Certificate Certificate `json:"certificate"`
+	Composed    []string    `json:"composed"`
+	Environment Environment `json:"environment"`
+	Type        string      `json:"type"`
+}
+
+type Argument struct {
+	arr []string
+}
+
+type Certificate struct {
+	CertificateAuthority string `json:"certificate_authority"`
+	CertificateBase64    string `json:"certificate_base64"`
+	Name                 string `json:"name"`
+}
+
+type Environment struct {
+	PgpPassword   string `json:"PGPASSWORD"`
+	PgSslRootCert string `json:"PGSSLROOTCERT"`
+}
+
+type Postgres struct {
+	Authentication Authentication `json:"authentication"`
+	Certificate    Certificate    `json:"certificate"`
+	Composed       []string       `json:"composed"`
+	Database       string         `json:"database"`
+	Hosts          []Hosts        `json:"hosts"`
+	Path           string         `json:"path"`
+	QueryOptions   QueryOptions   `json:"query_options"`
+	Scheme         string         `json:"scheme"`
+	Type           string         `json:"type"`
+}
+
+type Authentication struct {
+	Method   string `json:"method"`
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
+type Hosts struct {
+	Hostname string `json:"hostname"`
+	Port     int    `json:"port"`
+}
+
+type QueryOptions struct {
+	SslMode string `json:"sslmode"`
+}
+
 func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
 
@@ -72,6 +132,43 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		}
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get Memcached")
+		return ctrl.Result{}, err
+	}
+
+	// Check if the Postgres secret created by IBM Cloud Operator already exists
+	secret := &corev1.Secret{}
+	err = r.Get(ctx, types.NamespacedName{Name: memcached.Spec.PostgresSecretName, Namespace: memcached.Namespace}, secret)
+	if err != nil && errors.IsNotFound(err) {
+		log.Info("Secret does not exist, wait for a while")
+
+		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
+	} else if err == nil {
+
+		//targetSecretName := fmt.Sprintf("%s%s%s", memcached.Spec.PostgresSecretName, "-", memcached.Spec.TenantName)
+		targetSecretName := "postgres.username"
+
+		targetSecret, err := createSecretPostgresUsername(secret, targetSecretName, memcached.Namespace)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+			err = r.Create(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+			err = r.Update(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+	} else if err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -193,4 +290,41 @@ func (r *ECommerceApplicationReconciler) SetupWithManager(mgr ctrl.Manager) erro
 		For(&cachev1alpha1.ECommerceApplication{}).
 		Owns(&appsv1.Deployment{}).
 		Complete(r)
+}
+
+// TODO refactor this so it is more generic, and can be used to create the multiple secrets required by backend
+func createSecretPostgresUsername(secret *corev1.Secret, name string, namespace string) (*corev1.Secret, error) {
+	labels := map[string]string{
+		"multi-tenant-saas.ibm.com/replicated-from": fmt.Sprintf("%s.%s", secret.Namespace, secret.Name),
+	}
+	annotations := map[string]string{
+		"multi-tenant-saas.ibm.com/replicated-time":             time.Now().Format("Mon Jan 2 15:04:05 MST 2006"),
+		"multi-tenant-saas.ibm.com/replicated-resource-version": secret.ResourceVersion,
+	}
+
+	// try to unmarshal the contents of the ICO secret
+	var data PostgresBindingJSON
+	if err := json.Unmarshal(secret.Data["connection"], &data); err != nil {
+		fmt.Println("could not unmarshal:", err)
+		return secret, err
+	}
+
+	m := make(map[string]string)
+	m["POSTGRES_USERNAME"] = data.Postgres.Authentication.Username
+
+	return &corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: secret.TypeMeta.APIVersion,
+			Kind:       secret.Kind,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      labels,
+			Annotations: annotations,
+		},
+		//Data: secret.Data,
+		StringData: m,
+		Type:       secret.Type,
+	}, nil
 }

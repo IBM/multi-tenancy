@@ -1,7 +1,23 @@
 apiVersion: cache.saas.ecommerce.sample.com/v1alpha1
 kind: ECommerceApplication
 metadata:
-  name: ecommerceapplication-sample
+  name: ecommerceapplication-ten-c
 spec:
-  foo: niklas
   size: 1
+  postgresSecretName: multi-tenancy-pg-ten-c-secret
+---
+apiVersion: ibmcloud.ibm.com/v1
+kind: Service
+metadata:
+  name: multi-tenancy-pg-ten-c
+spec:
+  plan: standard
+  serviceClass: databases-for-postgresql
+---
+apiVersion: ibmcloud.ibm.com/v1
+kind: Binding
+metadata:
+  name: binding-multi-tenancy-pg-ten-c
+spec:
+  serviceName: multi-tenancy-pg-ten-c
+  secretName: multi-tenancy-pg-ten-c-secret

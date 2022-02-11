@@ -41,6 +41,8 @@ spec:
                 description: Foo is an example field of ECommerceApplication. Edit
                   ecommerceapplication_types.go to remove/update
                 type: string
+              postgresSecretName:
+                type: string
               size:
                 description: Size is the size of the memcached deployment
                 format: int32
