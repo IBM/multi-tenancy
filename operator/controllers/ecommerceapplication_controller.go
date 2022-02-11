@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -176,29 +177,6 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
-		// Create secret postgres.certificate-data
-		targetSecretName = "postgres.certificate-data"
-		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_CERTIFICATE_DATA", data.Postgres.Certificate.CertificateBase64)
-		// Error creating replicating the secret - requeue the request.
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-		if err != nil && errors.IsNotFound(err) {
-			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
-			err = r.Create(context.TODO(), targetSecret)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-		} else {
-			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
-			err = r.Update(context.TODO(), targetSecret)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-
 		// Create secret postgres.password
 		targetSecretName = "postgres.password"
 		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_PASSWORD", data.Postgres.Authentication.Password)
@@ -222,10 +200,35 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
+		// Create secret postgres.certificate-data
+		targetSecretName = "postgres.certificate-data"
+		decodeArr, _ := b64.StdEncoding.DecodeString(data.Postgres.Certificate.CertificateBase64)
+		certDecoded := string(decodeArr[:])
+		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_CERTIFICATE_DATA", certDecoded)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+			err = r.Create(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+			err = r.Update(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
 		// Create secret postgres.url
 		targetSecretName = "postgres.url"
-		//targetSecretName := fmt.Sprintf("%s%s%s", memcached.Spec.PostgresSecretName, "-", memcached.Spec.TenantName)
-		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_URL", fmt.Sprintf("%s%s%s", "jdbc:", data.Postgres.Composed[0], "&sslrootcert=/cloud-postgres-cert"))
+		postgresUrl := fmt.Sprintf("%s%s%s%d%s%s%s", "jdbc:postgresql://", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database, "?sslmode=verify-full&sslrootcert=/cloud-postgres-cert")
+		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "POSTGRES_URL", postgresUrl)
 		// Error creating replicating the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
@@ -331,7 +334,7 @@ func (r *ECommerceApplicationReconciler) deploymentForMemcached(m *cachev1alpha1
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
-						Image: "docker.io/openliberty/open-liberty:latest",
+						Image: "quay.io/nheidloff/service-catalog:latest",
 						Name:  "service-catalog",
 						Ports: []corev1.ContainerPort{{
 							ContainerPort: 8081,

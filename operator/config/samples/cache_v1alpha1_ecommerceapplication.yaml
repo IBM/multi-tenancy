@@ -4,20 +4,20 @@ metadata:
   name: ecommerceapplication-ten-c
 spec:
   size: 1
-  postgresSecretName: multi-tenancy-pg-ten-c-secret
----
-apiVersion: ibmcloud.ibm.com/v1
-kind: Service
-metadata:
-  name: multi-tenancy-pg-ten-c
-spec:
-  plan: standard
-  serviceClass: databases-for-postgresql
+  postgresSecretName: multi-tenancy-serverless-pg-ten-b-secret
+#---
+#apiVersion: ibmcloud.ibm.com/v1
+#kind: Service
+#metadata:
+#  name: multi-tenancy-pg-ten-c
+#spec:
+#  plan: standard
+#  serviceClass: databases-for-postgresql
 ---
 apiVersion: ibmcloud.ibm.com/v1
 kind: Binding
 metadata:
-  name: binding-multi-tenancy-pg-ten-c
+  name: binding-multi-tenancy-pg-ten-a
 spec:
-  serviceName: multi-tenancy-pg-ten-c
-  secretName: multi-tenancy-pg-ten-c-secret
+  serviceName: multi-tenancy-serverless-pg-ten-b
+  secretName: multi-tenancy-serverless-pg-ten-b-secret
