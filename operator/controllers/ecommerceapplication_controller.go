@@ -267,11 +267,14 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	err = r.Get(context.TODO(), types.NamespacedName{Name: pgJob.Name, Namespace: pgJob.Namespace}, pgJob)
 	if err != nil && errors.IsNotFound(err) {
 		log.Info(fmt.Sprintf("Job %s doesn't exist, creating it", pgJob.Name))
+
 		err = r.Create(context.TODO(), pgJob)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
+		// Do nothing?
+
 		log.Info(fmt.Sprintf("Job %s exists, updating it now", pgJob.Name))
 		err = r.Update(context.TODO(), pgJob)
 		if err != nil {
@@ -416,38 +419,35 @@ func createSecret(name string, namespace string, key string, value string) (*cor
 }
 
 func createPostgresJob(namespace string) (*batch.Job, error) {
+
+	fmt.Println("createPostgresJob start")
+
 	args := []string{"/bin/sh", "-c", "date; echo Hello from the Kubernetes cluster"}
 
+	var backOffLimit int32 = 0
+
+	// TODO: Need to work out how to reference the namespace via input param
+
 	return &batch.Job{
-		TypeMeta: metav1.TypeMeta{Kind: "Job"},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:                       "pg",
-			GenerateName:               "",
-			Namespace:                  metav1.NamespaceDefault,
-			SelfLink:                   "",
-			UID:                        "",
-			ResourceVersion:            "",
-			Generation:                 0,
-			CreationTimestamp:          metav1.Time{},
-			DeletionTimestamp:          &metav1.Time{},
-			DeletionGracePeriodSeconds: new(int64),
-			Labels:                     map[string]string{},
-			Annotations:                map[string]string{},
-			OwnerReferences:            []metav1.OwnerReference{},
-			Finalizers:                 []string{},
-			ClusterName:                "",
-			ManagedFields:              []metav1.ManagedFieldsEntry{},
+			Name:      "pg2",
+			Namespace: "deleeuw",
 		},
 		Spec: batch.JobSpec{
 			Template: v1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Name: "pg", Namespace: namespace},
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
-						{Image: "bash"},
-						{Args: args},
+						{
+							Name:  "pg2",
+							Image: "bash",
+							Args:  args,
+						},
 					},
+					RestartPolicy: v1.RestartPolicyNever,
 				},
 			},
+			BackoffLimit: &backOffLimit,
 		},
 	}, nil
+
 }
