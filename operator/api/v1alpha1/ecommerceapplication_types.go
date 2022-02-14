@@ -36,6 +36,8 @@ type ECommerceApplicationSpec struct {
 	Size int32 `json:"size"`
 
 	PostgresSecretName string `json:"postgresSecretName,omitempty"`
+
+	TenantName string `json:"tenantName,omitempty"`
 }
 
 // ECommerceApplicationStatus defines the observed state of ECommerceApplication

@@ -307,8 +307,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	// Create batch Job to populate Postgres
-	// How to make sure this only happens once?
-	pgJob, err := createPostgresJob(memcached.Namespace)
+	jobName := fmt.Sprintf("%s%s", "pg-", memcached.Spec.TenantName)
+	pgJob, err := createPostgresJob(memcached.Namespace, jobName)
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
 		return ctrl.Result{}, err
@@ -525,7 +525,7 @@ func createSecret(name string, namespace string, key string, value string) (*cor
 	}, nil
 }
 
-func createPostgresJob(namespace string) (*batch.Job, error) {
+func createPostgresJob(namespace string, jobName string) (*batch.Job, error) {
 
 	fmt.Println("createPostgresJob start")
 
@@ -537,15 +537,15 @@ func createPostgresJob(namespace string) (*batch.Job, error) {
 
 	return &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pg2",
-			Namespace: "deleeuw",
+			Name:      jobName,
+			Namespace: namespace,
 		},
 		Spec: batch.JobSpec{
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
 						{
-							Name:  "pg2",
+							Name:  jobName,
 							Image: "bash",
 							Args:  args,
 						},

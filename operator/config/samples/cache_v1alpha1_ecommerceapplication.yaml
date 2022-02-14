@@ -5,6 +5,7 @@ metadata:
 spec:
   size: 1
   postgresSecretName: multi-tenancy-pg-ten-c-secret
+  tenantName: ten-c
 ---
 apiVersion: ibmcloud.ibm.com/v1
 kind: Service
