@@ -369,11 +369,23 @@ func (r *ECommerceApplicationReconciler) deploymentForMemcached(m *cachev1alpha1
 							ContainerPort: 8081,
 							Name:          "service-catalog",
 						}},
+						Env: []corev1.EnvVar{{
+							Name: "POSTGRES_USERNAME",
+							ValueFrom: &v1.EnvVarSource{
+								SecretKeyRef: &v1.SecretKeySelector{
+									LocalObjectReference: v1.LocalObjectReference{
+										Name: "postgres.username",
+									},
+									Key: "POSTGRES_USERNAME",
+								},
+							},
+						}},
 					}},
 				},
 			},
 		},
 	}
+
 	// Set Memcached instance as the owner and controller
 	ctrl.SetControllerReference(m, dep, r.Scheme)
 	return dep
