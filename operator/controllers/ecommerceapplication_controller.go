@@ -252,6 +252,56 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
+		// TODO - Thomas to merge in front end deployment later
+		// Create secret appid.oauthserverurl
+		targetSecretName = "appid.oauthserverurl"
+		authServerUrl := "https://eu-de.appid.cloud.ibm.com/oauth/v4/e1b4e68e-f1ea-44b2-b8f3-eed95fa21c13"
+		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+			err = r.Create(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+			err = r.Update(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		// TODO - Thomas to merge in front end deployment later
+		// Create secret appid.client-id-catalog-service
+		targetSecretName = "appid.client-id-catalog-service"
+		clientId := "b12a05c3-8164-45d9-a1b8-af1dedf8ccc3"
+		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "APPID_CLIENT_ID", clientId)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+			err = r.Create(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+			err = r.Update(context.TODO(), targetSecret)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
 	} else if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -378,8 +428,53 @@ func (r *ECommerceApplicationReconciler) deploymentForMemcached(m *cachev1alpha1
 									},
 									Key: "POSTGRES_USERNAME",
 								},
-							},
-						}},
+							}},
+							{Name: "POSTGRES_CERTIFICATE_DATA",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "postgres.certificate-data",
+										},
+										Key: "POSTGRES_CERTIFICATE_DATA",
+									},
+								}},
+							{Name: "POSTGRES_PASSWORD",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "postgres.password",
+										},
+										Key: "POSTGRES_PASSWORD",
+									},
+								}},
+							{Name: "POSTGRES_URL",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "postgres.url",
+										},
+										Key: "POSTGRES_URL",
+									},
+								}},
+							{Name: "APPID_AUTH_SERVER_URL",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "appid.oauthserverurl",
+										},
+										Key: "APPID_AUTH_SERVER_URL",
+									},
+								}},
+							{Name: "APPID_CLIENT_ID",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "appid.client-id-catalog-service",
+										},
+										Key: "APPID_CLIENT_ID",
+									},
+								},
+							}},
 					}},
 				},
 			},
