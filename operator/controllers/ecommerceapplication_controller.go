@@ -39,6 +39,8 @@ import (
 	cachev1alpha1 "github.com/multi-tenancy/operator/api/v1alpha1"
 
 	batch "k8s.io/api/batch/v1"
+
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // ECommerceApplicationReconciler reconciles a Memcached object
@@ -465,6 +467,7 @@ func (r *ECommerceApplicationReconciler) deploymentForMemcached(m *cachev1alpha1
 										Key: "APPID_AUTH_SERVER_URL",
 									},
 								}},
+
 							{Name: "APPID_CLIENT_ID",
 								ValueFrom: &v1.EnvVarSource{
 									SecretKeyRef: &v1.SecretKeySelector{
@@ -473,8 +476,20 @@ func (r *ECommerceApplicationReconciler) deploymentForMemcached(m *cachev1alpha1
 										},
 										Key: "APPID_CLIENT_ID",
 									},
-								},
-							}},
+								}},
+						},
+						ReadinessProbe: &v1.Probe{
+							Handler: v1.Handler{
+								HTTPGet: &v1.HTTPGetAction{Path: "/q/health/live", Port: intstr.FromInt(8081)},
+							},
+							InitialDelaySeconds: 20,
+						},
+						LivenessProbe: &v1.Probe{
+							Handler: v1.Handler{
+								HTTPGet: &v1.HTTPGetAction{Path: "/q/health/ready", Port: intstr.FromInt(8081)},
+							},
+							InitialDelaySeconds: 40,
+						},
 					}},
 				},
 			},
