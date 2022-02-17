@@ -36,6 +36,7 @@ type ECommerceApplicationSpec struct {
 	Size int32 `json:"size"`
 
 	PostgresSecretName string `json:"postgresSecretName,omitempty"`
+	AppIdSecretName    string `json:"appidSecretName,omitempty"`
 
 	TenantName string `json:"tenantName,omitempty"`
 }

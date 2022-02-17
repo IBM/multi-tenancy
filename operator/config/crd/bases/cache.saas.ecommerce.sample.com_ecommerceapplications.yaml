@@ -37,6 +37,8 @@ spec:
           spec:
             description: ECommerceApplicationSpec defines the desired state of ECommerceApplication
             properties:
+              appidSecretName:
+                type: string
               foo:
                 description: Foo is an example field of ECommerceApplication. Edit
                   ecommerceapplication_types.go to remove/update

@@ -5,6 +5,7 @@ metadata:
 spec:
   size: 1
   postgresSecretName: multi-tenancy-pg-ten-c-secret
+  appIdSecretName: multi-tenancy-appid-ten-c-secret
   tenantName: ten-c
 ---
 apiVersion: ibmcloud.ibm.com/v1
@@ -16,9 +17,25 @@ spec:
   serviceClass: databases-for-postgresql
 ---
 apiVersion: ibmcloud.ibm.com/v1
+kind: Service
+metadata:
+  name: multi-tenancy-appid-ten-c
+spec:
+  plan: graduated-tier
+  serviceClass: appid
+---
+apiVersion: ibmcloud.ibm.com/v1
 kind: Binding
 metadata:
   name: binding-multi-tenancy-pg-ten-c
 spec:
   serviceName: multi-tenancy-pg-ten-c
   secretName: multi-tenancy-pg-ten-c-secret
+---
+apiVersion: ibmcloud.ibm.com/v1
+kind: Binding
+metadata:
+  name: binding-multi-tenancy-appid-ten-c
+spec:
+  serviceName: multi-tenancy-appid-ten-c
+  secretName: multi-tenancy-appid-ten-c-secret

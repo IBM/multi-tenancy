@@ -33,14 +33,15 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 
 	cachev1alpha1 "github.com/multi-tenancy/operator/api/v1alpha1"
 
-	batch "k8s.io/api/batch/v1"
-
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	ibmAppId "github.com/multi-tenancy/operator/appIdHelper"
 )
 
 // ECommerceApplicationReconciler reconciles a Memcached object
@@ -254,8 +255,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
-		// TODO - Thomas to merge in front end deployment later
 		// Create secret appid.oauthserverurl
+		// TODO - add a new function to AppIdHelper
 		targetSecretName = "appid.oauthserverurl"
 		authServerUrl := "https://eu-de.appid.cloud.ibm.com/oauth/v4/e1b4e68e-f1ea-44b2-b8f3-eed95fa21c13"
 		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
@@ -279,37 +280,60 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
-		// TODO - Thomas to merge in front end deployment later
 		// Create secret appid.client-id-catalog-service
-		targetSecretName = "appid.client-id-catalog-service"
-		clientId := "b12a05c3-8164-45d9-a1b8-af1dedf8ccc3"
-		targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "APPID_CLIENT_ID", clientId)
-		// Error creating replicating the secret - requeue the request.
-		if err != nil {
-			return ctrl.Result{}, err
+		//targetSecretName = "appid.client-id-catalog-service"
+		//clientId := "b12a05c3-8164-45d9-a1b8-af1dedf8ccc3"
+
+		// Retrieve the IBM Cloud App Id secret if it exists
+		err = r.Get(context.TODO(), types.NamespacedName{Name: memcached.Spec.PostgresSecretName, Namespace: memcached.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			// requeue
+			return ctrl.Result{RequeueAfter: time.Minute}, nil
+
+		} else {
+
+			// Use appIdHelper packager to retrieve the correct client Id
+			clientId, err := ibmAppId.GetClientId(*secret)
+			// Error retrieving client Id - requeue the request.
+			if err != nil {
+				return ctrl.Result{RequeueAfter: time.Minute}, nil
+			} else {
+				log.Info(fmt.Sprintf("App Id client Id = %s", clientId))
+
+				// Create new secret for backend using App Id clientId
+				targetSecret, err = createSecret(targetSecretName, memcached.Namespace, "APPID_CLIENT_ID", clientId)
+				// Error creating replicating the secret - requeue the request.
+				if err != nil {
+					return ctrl.Result{}, err
+				}
+
+				err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+				if err != nil && errors.IsNotFound(err) {
+					log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+					err = r.Create(context.TODO(), targetSecret)
+					if err != nil {
+						return ctrl.Result{}, err
+					}
+				} else {
+					log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+					err = r.Update(context.TODO(), targetSecret)
+					if err != nil {
+						return ctrl.Result{}, err
+					}
+				}
+
+			}
 		}
 
-		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-		if err != nil && errors.IsNotFound(err) {
-			log.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
-			err = r.Create(context.TODO(), targetSecret)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-		} else {
-			log.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
-			err = r.Update(context.TODO(), targetSecret)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-		}
+		// TODO - Merge in front end deployment later
 
 	} else if err != nil {
 		return ctrl.Result{}, err
 	}
 
+	// We no longer use a job to populate Postgres
 	// Create batch Job to populate Postgres
-	jobName := fmt.Sprintf("%s%s", "pg-", memcached.Spec.TenantName)
+	/*jobName := fmt.Sprintf("%s%s", "pg-", memcached.Spec.TenantName)
 	pgJob, err := createPostgresJob(memcached.Namespace, jobName)
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
@@ -332,7 +356,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-	}
+	}*/
 
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
@@ -540,7 +564,7 @@ func createSecret(name string, namespace string, key string, value string) (*cor
 	}, nil
 }
 
-func createPostgresJob(namespace string, jobName string) (*batch.Job, error) {
+/*func createPostgresJob(namespace string, jobName string) (*batch.Job, error) {
 
 	fmt.Println("createPostgresJob start")
 
@@ -572,4 +596,4 @@ func createPostgresJob(namespace string, jobName string) (*batch.Job, error) {
 		},
 	}, nil
 
-}
+} */
