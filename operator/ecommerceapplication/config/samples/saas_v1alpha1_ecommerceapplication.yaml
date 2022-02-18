@@ -4,3 +4,4 @@ metadata:
   name: ecommerceapplication-sample
 spec:
   # TODO(user): Add fields here
+  size: 1
