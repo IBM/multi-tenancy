@@ -1,0 +1,20 @@
+# permissions for end users to view ecommerceapplications.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ecommerceapplication-viewer-role
+rules:
+- apiGroups:
+  - saas.saas.ecommerce.sample.com
+  resources:
+  - ecommerceapplications
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - saas.saas.ecommerce.sample.com
+  resources:
+  - ecommerceapplications/status
+  verbs:
+  - get

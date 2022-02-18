@@ -1,0 +1,6 @@
+apiVersion: saas.saas.ecommerce.sample.com/v1alpha1
+kind: ECommerceApplication
+metadata:
+  name: ecommerceapplication-sample
+spec:
+  # TODO(user): Add fields here
