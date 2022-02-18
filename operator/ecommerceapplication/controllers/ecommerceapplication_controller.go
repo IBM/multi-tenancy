@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -231,8 +232,8 @@ func labelsForFrontend(name string) map[string]string {
 	return map[string]string{"app": "labelsForTenancyFrontend", "ecommerceapplication_cr": name}
 }
 
-// deploymentForTenancyFronted returns a tenancyfrontend Deployment object
-func (r *ECommerceApplicationReconciler) deploymentForFrontend(m *v1alpha1.TenancyFrontend, ctx context.Context) *appsv1.Deployment {
+// deploymentForFrontend definition and returns a tenancyfrontend Deployment object
+func (r *ECommerceApplicationReconciler) deploymentForFrontend(m *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
 	logger := log.FromContext(ctx)
 	ls := labelsForFrontend(m.Name)
 	replicas := m.Spec.Size
@@ -337,4 +338,92 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(m *v1alpha1.Tenan
 	// Set TenancyFrontend instance as the owner and controller
 	ctrl.SetControllerReference(m, dep, r.Scheme)
 	return dep
+}
+
+// Create Secret definition
+func defineSecret(name string, namespace string, key string, value string) (*corev1.Secret, error) {
+	m := make(map[string]string)
+	m[key] = value
+
+	return &corev1.Secret{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Secret"},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		Immutable:  new(bool),
+		Data:       map[string][]byte{},
+		StringData: m,
+		Type:       "Opaque",
+	}, nil
+}
+
+// Create Service NodePort definition
+func defineServiceNodePort(name string, namespace string) (*corev1.Service, error) {
+	// Define map for the selector
+	mselector := make(map[string]string)
+	key := "app"
+	value := "service-frontend"
+	mselector[key] = value
+
+	var port int32 = 8080
+
+	return &corev1.Service{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeNodePort,
+			Ports: []corev1.ServicePort{{
+				Port: port,
+				Name: "http",
+			}},
+			Selector: mselector,
+		},
+	}, nil
+}
+
+// Create Service ClusterIP definition
+func defineServiceClust(name string, namespace string) (*corev1.Service, error) {
+
+	mselector := make(map[string]string)
+	key := "app"
+	value := "service-frontend-cip"
+	mselector[key] = value
+
+	var port int32 = 80
+	var targetPort int32 = 8080
+
+	return &corev1.Service{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeClusterIP,
+			Ports: []corev1.ServicePort{{
+				Port:       port,
+				TargetPort: intstr.IntOrString{IntVal: targetPort},
+			}},
+			Selector: mselector,
+		},
+	}, nil
+}
+
+// ********************************************************
+// Helpers to minimize code in reconcile
+
+// Do all the error verification for the vSecrectStatus
+func verifySecrectStatus(ctx context.Context, r *ECommerceApplicationReconciler, targetSecretName string, targetSecret *v1.Secret, err error) error {
+	logger := log.FromContext(ctx)
+
+	if err != nil && errors.IsNotFound(err) {
+		logger.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
+		err = r.Create(context.TODO(), targetSecret)
+		if err != nil {
+			return err
+		}
+	} else {
+		logger.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
+		err = r.Update(context.TODO(), targetSecret)
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
