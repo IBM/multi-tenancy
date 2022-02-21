@@ -53,7 +53,7 @@ type ECommerceApplicationReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// Used to deserialize connection strings to IBM Cloud services
+// Used to deserialize connection strings for IBM Cloud services
 type PostgresBindingJSON struct {
 	Cli      Cli      `json:"cli"`
 	Postgres Postgres `json:"postgres"`
