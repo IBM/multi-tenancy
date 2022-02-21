@@ -18,6 +18,9 @@ package controllers
 
 import (
 	"context"
+	b64 "encoding/base64"
+	"encoding/json"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -37,6 +40,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	ibmAppId "github.com/multi-tenancy/operator/appIdHelper"
 )
 
 // turn on and of custom debugging output
@@ -47,6 +52,65 @@ type ECommerceApplicationReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
+
+// Used to deserialize connection strings to IBM Cloud services
+type PostgresBindingJSON struct {
+	Cli      Cli      `json:"cli"`
+	Postgres Postgres `json:"postgres"`
+}
+
+type Cli struct {
+	Arguments   []Argument  `json:"argument"`
+	Bin         string      `json:"bin"`
+	Certificate Certificate `json:"certificate"`
+	Composed    []string    `json:"composed"`
+	Environment Environment `json:"environment"`
+	Type        string      `json:"type"`
+}
+
+type Argument struct {
+	arr []string
+}
+
+type Certificate struct {
+	CertificateAuthority string `json:"certificate_authority"`
+	CertificateBase64    string `json:"certificate_base64"`
+	Name                 string `json:"name"`
+}
+
+type Environment struct {
+	PgpPassword   string `json:"PGPASSWORD"`
+	PgSslRootCert string `json:"PGSSLROOTCERT"`
+}
+
+type Postgres struct {
+	Authentication Authentication `json:"authentication"`
+	Certificate    Certificate    `json:"certificate"`
+	Composed       []string       `json:"composed"`
+	Database       string         `json:"database"`
+	Hosts          []Hosts        `json:"hosts"`
+	Path           string         `json:"path"`
+	QueryOptions   QueryOptions   `json:"query_options"`
+	Scheme         string         `json:"scheme"`
+	Type           string         `json:"type"`
+}
+
+type Authentication struct {
+	Method   string `json:"method"`
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
+type Hosts struct {
+	Hostname string `json:"hostname"`
+	Port     int    `json:"port"`
+}
+
+type QueryOptions struct {
+	SslMode string `json:"sslmode"`
+}
+
+var data PostgresBindingJSON
 
 //+kubebuilder:rbac:groups=saas.saas.ecommerce.sample.com,resources=ecommerceapplications,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=saas.saas.ecommerce.sample.com,resources=ecommerceapplications/status,verbs=get;update;patch
@@ -84,10 +148,191 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		return ctrl.Result{}, err
 	}
 
+	//*****************************************
+	// Backend
+	//*****************************************
+
+	// Check if the Postgres Binding secret created by IBM Cloud Operator already exists
+	secret := &corev1.Secret{}
+
+	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.PostgresSecretName, Namespace: ecommerceapplication.Namespace}, secret)
+	if err != nil && errors.IsNotFound(err) {
+		logger.Info("IBM Cloud Binding secret for Postgres does not exist, wait for a while")
+		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
+	} else if err == nil {
+
+		//targetSecretName := fmt.Sprintf("%s%s%s", memcached.Spec.PostgresSecretName, "-", memcached.Spec.TenantName)
+		// Try to unmarshal the contents of the ICO Binding secret
+
+		if err := json.Unmarshal(secret.Data["connection"], &data); err != nil {
+			log.Log.Error(err, "could not unmarshal data")
+			return ctrl.Result{}, err
+		}
+
+		// Create secrets for backend connection to Postgres
+		// Create secret postgres.username
+		targetSecretName := "postgres.username"
+		targetSecret, err := defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_USERNAME", data.Postgres.Authentication.Username)
+		// Error defining the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		if secretErr != nil && errors.IsNotFound(secretErr) {
+			return ctrl.Result{}, secretErr
+		}
+
+		// Create secret postgres.password
+		targetSecretName = "postgres.password"
+		targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_PASSWORD", data.Postgres.Authentication.Password)
+		// Error defining the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr = verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		if secretErr != nil && errors.IsNotFound(secretErr) {
+			return ctrl.Result{}, secretErr
+		}
+
+		// Create secret postgres.certificate-data
+		targetSecretName = "postgres.certificate-data"
+		decodeArr, _ := b64.StdEncoding.DecodeString(data.Postgres.Certificate.CertificateBase64)
+		certDecoded := string(decodeArr[:])
+		targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_CERTIFICATE_DATA", certDecoded)
+		// Error defining the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr = verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		if secretErr != nil && errors.IsNotFound(secretErr) {
+			return ctrl.Result{}, secretErr
+		}
+
+		// Create secret postgres.url
+		targetSecretName = "postgres.url"
+		postgresUrl := fmt.Sprintf("%s%s%s%d%s%s%s", "jdbc:postgresql://", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database, "?sslmode=verify-full&sslrootcert=/cloud-postgres-cert")
+		targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_URL", postgresUrl)
+		// Error defining the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr = verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		if secretErr != nil && errors.IsNotFound(secretErr) {
+			return ctrl.Result{}, secretErr
+		}
+	}
+
+	// Check if the App Id Binding secret created by IBM Cloud Operator already exists
+	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.AppIdSecretName, Namespace: ecommerceapplication.Namespace}, secret)
+	if err != nil && errors.IsNotFound(err) {
+		logger.Info("App Id Binding Secret does not exist, wait for a while")
+		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
+	} else if err == nil {
+
+		// Create secret appid.oauthserverurl
+		targetSecretName := "appid.oauthserverurl"
+		//authServerUrl := "https://eu-de.appid.cloud.ibm.com/oauth/v4/e1b4e68e-f1ea-44b2-b8f3-eed95fa21c13"
+		authServerUrl := string(secret.Data["oauthServerUrl"])
+		targetSecret, err := defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
+		// Error creating replicating the secret - requeue the request.
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		if secretErr != nil && errors.IsNotFound(secretErr) {
+			return ctrl.Result{}, secretErr
+		}
+
+		// Create secret appid.client-id-catalog-service
+		targetSecretName = "appid.client-id-catalog-service"
+
+		// Use appIdHelper packager to retrieve the correct client Id, via REST API
+		managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
+		tenantId := secret.Data["tenantId"]
+
+		logger.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
+		logger.Info(fmt.Sprintf("App Id tenantId = %s", tenantId))
+
+		apiKey, err := getIbmCloudApiKey(r, ecommerceapplication.Spec.IbmCloudOperatorSecretName, ecommerceapplication.Spec.IbmCloudOperatorSecretNamespace)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		logger.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
+		clientId, err := ibmAppId.GetClientId(managementUrl, apiKey, string(tenantId), ctx)
+
+		// Error retrieving client Id - requeue the request.
+		if err != nil {
+			return ctrl.Result{RequeueAfter: time.Minute}, nil
+		} else {
+			logger.Info(fmt.Sprintf("App Id client Id = %s", clientId))
+			// Create new secret for backend using App Id clientId
+			targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_CLIENT_ID", clientId)
+			// Error defining the secret - requeue the request.
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+
+			err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+			secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+			if secretErr != nil && errors.IsNotFound(secretErr) {
+				return ctrl.Result{}, secretErr
+			}
+		}
+
+	}
+
+	// Check if the deployment already exists, if not create a new one
+	found := &appsv1.Deployment{}
+	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Name, Namespace: ecommerceapplication.Namespace}, found)
+	if err != nil && errors.IsNotFound(err) {
+		// Define a new deployment
+		dep := r.deploymentForbackend(ecommerceapplication, ctx)
+		logger.Info("Creating a new backend Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+		err = r.Create(ctx, dep)
+		if err != nil {
+			logger.Error(err, "Failed to create new backend Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+			return ctrl.Result{}, err
+		}
+		// Deployment created successfully - return and requeue
+		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		logger.Error(err, "Failed to get Deployment")
+		return ctrl.Result{}, err
+	}
+
+	//*****************************************
+	// Database
+	//*****************************************
+
+	// Init database
+	// urlExample := "postgres://username:password@localhost:5432/database_name"
+
+	/*postgresUrlForInit := fmt.Sprintf("%s%s%s%s%s%s%s%d%s%s", "postgres://", data.Postgres.Authentication.Username, ":", data.Postgres.Authentication.Password, "@", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database)
+	conn, err := pgx.Connect(context.Background(), postgresUrlForInit)
+
+	if err != nil {
+		logger.Error(err, "Postgres connection error")
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
+
+	} else {
+		logger.Info("successfully connected to postgres")
+		defer conn.Close(context.Background())
+	}*/
+
+	//*****************************************
+	// Frontend
+	//*****************************************
+
 	// Check if the deployment already exists, if not create a new one
 	logger.Info("Verify if the deployment already exists, if not create a new one")
 
-	found := &appsv1.Deployment{}
+	found = &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Name, Namespace: ecommerceapplication.Namespace}, found)
 
 	if err != nil && errors.IsNotFound(err) {
@@ -171,7 +416,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	//*****************************************
 	// Define secret
 	helpers.CustomLogs("Define secret", ctx, customLogger)
-	secret := &corev1.Secret{}
+	secret = &corev1.Secret{}
 
 	//*****************************************
 	// Create secret appid.client-id-frontend
@@ -230,6 +475,120 @@ func (r *ECommerceApplicationReconciler) SetupWithManager(mgr ctrl.Manager) erro
 // Example: Is used in "deploymentForFrontend"
 func labelsForFrontend(name string) map[string]string {
 	return map[string]string{"app": "labelsForTenancyFrontend", "ecommerceapplication_cr": name}
+}
+
+// labelsForTenancyFrontend returns the labels for selecting the resources
+// belonging to the given ecommerceapplication CR name.
+// Example: Is used in "deploymentForFrontend"
+func labelsForBackend(name string) map[string]string {
+	return map[string]string{"app": "labelsForTenancyBackeend", "ecommerceapplication_cr": name}
+}
+
+// deploymentForBackend definition and returns a tenancybackendend Deployment object
+func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
+	ls := labelsForBackend(m.Name)
+	replicas := m.Spec.Size
+
+	dep := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: ls,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: ls,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Image: "quay.io/nheidloff/service-catalog:latest",
+						Name:  "service-catalog",
+						Ports: []corev1.ContainerPort{{
+							ContainerPort: 8081,
+							Name:          "service-catalog",
+						}},
+						Env: []corev1.EnvVar{{
+							Name: "POSTGRES_USERNAME",
+							ValueFrom: &v1.EnvVarSource{
+								SecretKeyRef: &v1.SecretKeySelector{
+									LocalObjectReference: v1.LocalObjectReference{
+										Name: "postgres.username",
+									},
+									Key: "POSTGRES_USERNAME",
+								},
+							}},
+							{Name: "POSTGRES_CERTIFICATE_DATA",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "postgres.certificate-data",
+										},
+										Key: "POSTGRES_CERTIFICATE_DATA",
+									},
+								}},
+							{Name: "POSTGRES_PASSWORD",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "postgres.password",
+										},
+										Key: "POSTGRES_PASSWORD",
+									},
+								}},
+							{Name: "POSTGRES_URL",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "postgres.url",
+										},
+										Key: "POSTGRES_URL",
+									},
+								}},
+							{Name: "APPID_AUTH_SERVER_URL",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "appid.oauthserverurl",
+										},
+										Key: "APPID_AUTH_SERVER_URL",
+									},
+								}},
+
+							{Name: "APPID_CLIENT_ID",
+								ValueFrom: &v1.EnvVarSource{
+									SecretKeyRef: &v1.SecretKeySelector{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: "appid.client-id-catalog-service",
+										},
+										Key: "APPID_CLIENT_ID",
+									},
+								}},
+						},
+						ReadinessProbe: &v1.Probe{
+							Handler: v1.Handler{
+								HTTPGet: &v1.HTTPGetAction{Path: "/q/health/live", Port: intstr.FromInt(8081)},
+							},
+							InitialDelaySeconds: 20,
+						},
+						LivenessProbe: &v1.Probe{
+							Handler: v1.Handler{
+								HTTPGet: &v1.HTTPGetAction{Path: "/q/health/ready", Port: intstr.FromInt(8081)},
+							},
+							InitialDelaySeconds: 40,
+						},
+					}},
+				},
+			},
+		},
+	}
+
+	// Set Memcached instance as the owner and controller
+	ctrl.SetControllerReference(m, dep, r.Scheme)
+	return dep
 }
 
 // deploymentForFrontend definition and returns a tenancyfrontend Deployment object
@@ -426,4 +785,20 @@ func verifySecrectStatus(ctx context.Context, r *ECommerceApplicationReconciler,
 	}
 
 	return err
+}
+
+// Retrieve IBM Cloud API key from secret used by IBM Cloud Operator
+func getIbmCloudApiKey(r *ECommerceApplicationReconciler, name string, namespace string) (apiKey string, err error) {
+
+	secret := &corev1.Secret{}
+	err = r.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: namespace}, secret)
+	if err != nil && errors.IsNotFound(err) {
+		log.Log.Error(err, "IBM Cloud Operator secret was not found.  Cannot access IBM Cloud API key")
+		return "", err
+
+	} else {
+
+		apiKey := secret.Data["api-key"]
+		return string(apiKey), nil
+	}
 }
