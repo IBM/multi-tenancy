@@ -284,7 +284,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 		// Init databases
 		// urlExample := "postgres://username:password@localhost:5432/database_name"
-		//urlExample := "postgres://ibm_cloud_2af38851_9103_4b0e_b374_c30bd5ec047e:1b718ca8052e9c3d3d2127d053f05b6aea46b37b3884e969b4b67975a575a3c0@add7b69b-e22b-4881-a713-4b9005178235.c13p25pf03djhc8of4jg.databases.appdomain.cloud:31107/ibmclouddb"
+
 		postgresUrlForInit := fmt.Sprintf("%s%s%s%s%s%s%s%d%s%s", "postgres://", data.Postgres.Authentication.Username, ":", data.Postgres.Authentication.Password, "@", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database)
 
 		conn, err := pgx.Connect(context.Background(), postgresUrlForInit)
