@@ -42,6 +42,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	ibmAppId "github.com/multi-tenancy/operator/appIdHelper"
+
+	"github.com/jackc/pgx/v4"
 )
 
 // ECommerceApplicationReconciler reconciles a Memcached object
@@ -280,24 +282,77 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
-		// Create secret appid.client-id-catalog-service
-		//targetSecretName = "appid.client-id-catalog-service"
-		//clientId := "b12a05c3-8164-45d9-a1b8-af1dedf8ccc3"
+		// Init databases
+		// urlExample := "postgres://username:password@localhost:5432/database_name"
+		//urlExample := "postgres://ibm_cloud_2af38851_9103_4b0e_b374_c30bd5ec047e:1b718ca8052e9c3d3d2127d053f05b6aea46b37b3884e969b4b67975a575a3c0@add7b69b-e22b-4881-a713-4b9005178235.c13p25pf03djhc8of4jg.databases.appdomain.cloud:31107/ibmclouddb"
+		postgresUrlForInit := fmt.Sprintf("%s%s%s%s%s%s%s%d%s%s", "postgres://", data.Postgres.Authentication.Username, ":", data.Postgres.Authentication.Password, "@", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database)
 
-		// Retrieve the IBM Cloud App Id secret if it exists
-		err = r.Get(context.TODO(), types.NamespacedName{Name: memcached.Spec.PostgresSecretName, Namespace: memcached.Namespace}, secret)
-		if err != nil && errors.IsNotFound(err) {
-			// requeue
+		conn, err := pgx.Connect(context.Background(), postgresUrlForInit)
+		//conn, err := pgx.Connect(ctx, urlExample)
+		if err != nil {
+			//fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+			log.Error(err, "Postgres connection error")
 			return ctrl.Result{RequeueAfter: time.Minute}, nil
 
 		} else {
 
-			// Use appIdHelper packager to retrieve the correct client Id
-			clientId, err := ibmAppId.GetClientId(*secret)
+			log.Info("successfully connected to postgres")
+			defer conn.Close(context.Background())
+			/*var name string
+			var weight int64
+			err = conn.QueryRow(context.Background(), "select name, weight from widgets where id=$1", 42).Scan(&name, &weight)
+			if err != nil {
+				log.Error(err, "QueryRow failed")
+			}*/
+
+		}
+
+		// Create secret appid.client-id-catalog-service
+		//targetSecretName = "appid.client-id-catalog-service"
+		//clientId := "b12a05c3-8164-45d9-a1b8-af1dedf8ccc3"
+
+		log.Info("1")
+		// Retrieve the IBM Cloud App Id secret if it exists
+
+		log.Info(memcached.Spec.AppIdSecretName)
+		log.Info(memcached.Spec.PostgresSecretName)
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: memcached.Spec.AppIdSecretName, Namespace: memcached.Namespace}, secret)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info(fmt.Sprintf("Target secret %s in namespace %s does not exist, wait for a while", memcached.Spec.AppIdSecretName, memcached.Namespace))
+
+			return ctrl.Result{RequeueAfter: time.Second * 300}, nil
+		} else if err == nil {
+
+			// Use appIdHelper packager to retrieve the correct client Id, via REST API
+
+			log.Info("2")
+			//managementUrl := secret.Data["managementUrl"]
+
+			managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
+
+			log.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
+
+			log.Info("3")
+			apiKey, err := getIbmCloudApiKey(r, memcached.Spec.IbmCloudOperatorSecretName, memcached.Spec.IbmCloudOperatorSecretNamespace)
+			log.Info("4")
+			if err != nil {
+				log.Info("5")
+				return ctrl.Result{}, err
+			}
+			log.Info("6")
+			log.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
+
+			log.Info("7")
+			clientId, err := ibmAppId.GetClientId(managementUrl, apiKey, ctx)
+
+			log.Info("8")
 			// Error retrieving client Id - requeue the request.
 			if err != nil {
+				log.Info("9")
 				return ctrl.Result{RequeueAfter: time.Minute}, nil
 			} else {
+				log.Info("10")
 				log.Info(fmt.Sprintf("App Id client Id = %s", clientId))
 
 				// Create new secret for backend using App Id clientId
@@ -562,6 +617,21 @@ func createSecret(name string, namespace string, key string, value string) (*cor
 		StringData: m,
 		Type:       "Opaque",
 	}, nil
+}
+
+func getIbmCloudApiKey(r *ECommerceApplicationReconciler, name string, namespace string) (apiKey string, err error) {
+
+	secret := &corev1.Secret{}
+	err = r.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: namespace}, secret)
+	if err != nil && errors.IsNotFound(err) {
+		//log.Info(fmt.Sprintf("Ibm cloud operator secret %s doesn't exist, creating it", name))
+		return "", err
+
+	} else {
+
+		apiKey := secret.Data["api-key"]
+		return string(apiKey), nil
+	}
 }
 
 /*func createPostgresJob(namespace string, jobName string) (*batch.Job, error) {

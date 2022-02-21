@@ -36,9 +36,12 @@ type ECommerceApplicationSpec struct {
 	Size int32 `json:"size"`
 
 	PostgresSecretName string `json:"postgresSecretName,omitempty"`
-	AppIdSecretName    string `json:"appidSecretName,omitempty"`
+	AppIdSecretName    string `json:"appIdSecretName,omitempty"`
 
 	TenantName string `json:"tenantName,omitempty"`
+
+	IbmCloudOperatorSecretName      string `json:"ibmCloudOperatorSecretName,omitempty"`
+	IbmCloudOperatorSecretNamespace string `json:"ibmCloudOperatorSecretNamespace,omitempty"`
 }
 
 // ECommerceApplicationStatus defines the observed state of ECommerceApplication

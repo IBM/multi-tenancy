@@ -4,9 +4,11 @@ metadata:
   name: ecommerceapplication-ten-c
 spec:
   size: 1
-  postgresSecretName: multi-tenancy-pg-ten-c-secret
   appIdSecretName: multi-tenancy-appid-ten-c-secret
+  postgresSecretName: multi-tenancy-pg-ten-c-secret
   tenantName: ten-c
+  ibmCloudOperatorSecretName: ibmcloud-operator-secret
+  ibmCloudOperatorSecretNamespace: default
 ---
 apiVersion: ibmcloud.ibm.com/v1
 kind: Service
