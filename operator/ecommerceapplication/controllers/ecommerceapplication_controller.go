@@ -40,6 +40,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	ibmAppId "github.com/multi-tenancy/operator/appIdHelper"
 )
 
 // turn on and of custom debugging output
@@ -149,6 +151,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	//*****************************************
 	// Backend
 	//*****************************************
+	logger.Info("About to create backend resources")
 
 	// Check if the Postgres Binding secret created by IBM Cloud Operator already exists
 	secret := &corev1.Secret{}
@@ -226,21 +229,26 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	// Check if the App Id Binding secret created by IBM Cloud Operator already exists
-	/*err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.AppIdSecretName, Namespace: ecommerceapplication.Namespace}, secret)
+	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.AppIdSecretName, Namespace: ecommerceapplication.Namespace}, secret)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info("App Id Binding Secret does not exist, wait for a while")
 		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
 	} else if err == nil {
+
+		managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
+		tenantId := secret.Data["tenantId"]
+		logger.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
+		logger.Info(fmt.Sprintf("App Id tenantId = %s", tenantId))
 
 		// Create secret appid.oauthserverurl
 		targetSecretName := "appid.oauthserverurl"
 		//authServerUrl := "https://eu-de.appid.cloud.ibm.com/oauth/v4/e1b4e68e-f1ea-44b2-b8f3-eed95fa21c13"
 		authServerUrl := string(secret.Data["oauthServerUrl"])
 		targetSecret, err := defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
+
+		logger.Info(fmt.Sprintf("App Id AuthServerUrl = %s", authServerUrl))
+		logger.Info("Creating appid.oauthserverurl")
 		// Error creating replicating the secret - requeue the request.
-		if err != nil {
-			return ctrl.Result{}, err
-		}
 		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
 		secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
 		if secretErr != nil && errors.IsNotFound(secretErr) {
@@ -251,17 +259,11 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		targetSecretName = "appid.client-id-catalog-service"
 
 		// Use appIdHelper packager to retrieve the correct client Id, via REST API
-		managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
-		tenantId := secret.Data["tenantId"]
-
-		logger.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
-		logger.Info(fmt.Sprintf("App Id tenantId = %s", tenantId))
-
 		apiKey, err := getIbmCloudApiKey(r, ecommerceapplication.Spec.IbmCloudOperatorSecretName, ecommerceapplication.Spec.IbmCloudOperatorSecretNamespace)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		logger.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
+		//logger.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
 		clientId, err := ibmAppId.GetClientId(managementUrl, apiKey, string(tenantId), ctx)
 
 		// Error retrieving client Id - requeue the request.
@@ -275,7 +277,6 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-
 			err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
 			secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
 			if secretErr != nil && errors.IsNotFound(secretErr) {
@@ -283,15 +284,11 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
-	} */
-
-	logger.Info("ADAM: About to define backend deployment")
+	}
 
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Name, Namespace: ecommerceapplication.Namespace}, found)
-
-	logger.Info("ADAM: Check for errors")
 
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
@@ -309,11 +306,10 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		return ctrl.Result{}, err
 	}
 
-	logger.Info("ADAM: About to create database")
-
 	//*****************************************
 	// Database
 	//*****************************************
+	logger.Info("About to create database")
 
 	// Init database
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
@@ -333,6 +329,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	//*****************************************
 	// Frontend
 	//*****************************************
+	logger.Info("About to create frontend resources")
 
 	// Check if the deployment already exists, if not create a new one
 	logger.Info("Verify if the deployment already exists, if not create a new one")
