@@ -36,11 +36,21 @@ spec:
           spec:
             description: ECommerceApplicationSpec defines the desired state of ECommerceApplication
             properties:
+              appIdSecretName:
+                type: string
+              ibmCloudOperatorSecretName:
+                type: string
+              ibmCloudOperatorSecretNamespace:
+                type: string
+              postgresSecretName:
+                type: string
               size:
                 description: Foo is an example field of ECommerceApplication. Edit
                   ecommerceapplication_types.go to remove/update
                 format: int32
                 type: integer
+              tenantName:
+                type: string
             required:
             - size
             type: object
