@@ -14,7 +14,7 @@ import (
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func GetClientId(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) (string, error) {
+func getAppIdApplications(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) ([]byte, error) {
 
 	//$ curl -X POST     "https://iam.cloud.ibm.com/identity/token"     -H "content-type: application/x-www-form-urlencoded"     -H "accept: application/json"     -d 'grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=<API_KEY>' > token.json
 
@@ -27,11 +27,13 @@ func GetClientId(managementUrl string, ibmCloudApiKey string, tenantId string, c
 
 	log := ctrllog.FromContext(ctx)
 
+	var body []byte
+
 	//clientId := ""
 	oauth, err := getIbmCloudOauthToken(ibmCloudApiKey, ctx)
 	if err != nil {
 		log.Error(err, "Error retrieving IBM Cloud Oauth token")
-		return "", err
+		return body, err
 	}
 
 	client := &http.Client{}
@@ -56,7 +58,7 @@ func GetClientId(managementUrl string, ibmCloudApiKey string, tenantId string, c
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(err, "Create GET request failed")
-		return "", err
+		return body, err
 	}
 	defer resp.Body.Close()
 
@@ -64,12 +66,132 @@ func GetClientId(managementUrl string, ibmCloudApiKey string, tenantId string, c
 	log.Info(fmt.Sprintf("%s%s", "response Headers:", resp.Header))
 	//fmt.Println("response Status:", resp.Status)
 	//fmt.Println("response Headers:", resp.Header)
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ = ioutil.ReadAll(resp.Body)
 	//fmt.Println("response Body:", string(body))
 
-	log.Info(fmt.Sprintf("%s%s", "returning clientId=", string(body)))
-	return string(body), nil
+	log.Info(fmt.Sprintf("%s%s", "returning body=", string(body)))
+	return body, nil
 
+}
+
+func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) (string, error) {
+
+	//{"applications":[]}
+
+	type appIdApplication struct {
+		ClientId       string `json:"clientId"`
+		TenantId       string `json:"tenantId"`
+		Secret         string `json:"secret"`
+		Name           string `json:"name"`
+		OAuthServerUrl string `json:"oAuthServerUrl"`
+		Type           string `json:"type"`
+	}
+
+	type appIdApplications struct {
+		Applications []appIdApplication `json:"applications"`
+	}
+
+	var jsonData appIdApplications
+	log := ctrllog.FromContext(ctx)
+	var clientId string
+
+	appIdApps, err := getAppIdApplications(managementUrl, ibmCloudApiKey, tenantId, ctx)
+	// Error retrieving client Id - requeue the request.
+	if err != nil {
+		return "", err
+	} else {
+		// Verify if App Id has applications configured
+		err = json.Unmarshal(appIdApps, &jsonData)
+		if err != nil {
+			log.Error(err, "unmarshall error")
+			return "", err
+		}
+
+		if len(jsonData.Applications) == 0 {
+			log.Info("App Id Application count is 0.  Need to perform initial App Id configuration")
+
+			//addApplication()
+			//addScope()
+			//addRole()
+			//addUsers()
+			//configureUiText()
+			//configureUiColour()
+			//configureUiImage()
+
+			//jsonData.Applications[0].ClientId
+
+		} else {
+			log.Info("App Id Application count is more than zero.  Return the clientId for the first application")
+		}
+
+	}
+
+	return clientId, nil
+
+}
+
+func addApplication(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+
+	/*
+			sed "s+FRONTENDNAME+$FRONTEND_NAME+g" ./appid-configs/add-application-template.json > ./$ADD_APPLICATION
+		    result=$(curl -d @./$ADD_APPLICATION -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/applications)
+	*/
+
+	return nil
+}
+
+func addScope(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+	/*
+		OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+			result=$(curl -d @./$ADD_SCOPE -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/applications/$APPLICATION_CLIENTID/scopes)
+	*/
+	return nil
+}
+
+func addRole(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+	/*
+			sed "s+APPLICATIONID+$APPLICATION_CLIENTID+g" ./appid-configs/add-roles-template.json > ./$ADD_ROLE
+		    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+		    #echo $OAUTHTOKEN
+		    result=$(curl -d @./$ADD_ROLE -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/roles)
+	*/
+	return nil
+}
+
+func addUsers(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+	/*
+			OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+		    result=$(curl -d @./$USER_IMPORT_FILE -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/cloud_directory/import?encryption_secret=$ENCRYPTION_SECRET)
+	*/
+	return nil
+}
+
+func configureUiText(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+	/*
+	   	sed "s+FRONTENDNAME+$FRONTEND_NAME+g" ./appid-configs/add-ui-text-template.json > ./$ADD_UI_TEXT
+	       OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+	       echo "PUT url: $MANAGEMENTURL/config/ui/theme_txt"
+	       result=$(curl -d @./$ADD_UI_TEXT -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_text)
+	*/
+	return nil
+}
+
+func configureUiColour(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+	/*
+		OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+			echo "PUT url: $MANAGEMENTURL/config/ui/theme_color"
+			result=$(curl -d @./$ADD_COLOR -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_color)
+	*/
+	return nil
+}
+
+func configureUiImage(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+	/*
+	   	OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
+	       echo "POST url: $MANAGEMENTURL/config/ui/media?mediaType=logo"
+	       result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/media?mediaType=logo")
+	*/
+	return nil
 }
 
 func getIbmCloudOauthToken(apiKey string, ctx context.Context) (string, error) {

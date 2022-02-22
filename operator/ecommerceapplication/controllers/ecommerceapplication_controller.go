@@ -264,7 +264,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			return ctrl.Result{}, err
 		}
 		//logger.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
-		clientId, err := ibmAppId.GetClientId(managementUrl, apiKey, string(tenantId), ctx)
+		clientId, err := ibmAppId.ConfigureAppId(managementUrl, apiKey, string(tenantId), ctx)
 
 		// Error retrieving client Id - requeue the request.
 		if err != nil {
