@@ -14,7 +14,7 @@ import (
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func GetClientId(managementUrl string, ibmCloudApiKey string, ctx context.Context) (string, error) {
+func GetClientId(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) (string, error) {
 
 	//$ curl -X POST     "https://iam.cloud.ibm.com/identity/token"     -H "content-type: application/x-www-form-urlencoded"     -H "accept: application/json"     -d 'grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=<API_KEY>' > token.json
 
@@ -38,22 +38,24 @@ func GetClientId(managementUrl string, ibmCloudApiKey string, ctx context.Contex
 
 	//appIdUrl := fmt.Sprintf("%s%s", managementUrl, "applications")
 	//log.Info(fmt.Sprintf("%s%s", "appIdUrl=", appIdUrl))
-	log.Info(fmt.Sprintf("%s%s", "managementUrl=", managementUrl))
 
-	jsonPayload := fmt.Sprintf("%s%s", "name:", "")
+	jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"tenantId\":", "\"", tenantId, "\"}"))
+	//jsonPayload := []byte(`{"tenantId":"e38a8715-b8a4-4f1f-82b2-5e434e198768"}`)
+
+	log.Info(fmt.Sprintf("%s%s", "managementUrl=", managementUrl))
+	//log.Info(fmt.Sprintf("%s%s", "jsonPayload=", jsonPayload))
 
 	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
 	log.Info(fmt.Sprintf("%s%s", "bearer=", bearer))
 
-	var jsonStr = []byte(jsonPayload)
-	req, err := http.NewRequest("POST", managementUrl, bytes.NewBuffer(jsonStr))
-	//req.Header.Set("X-Custom-Header", "myvalue")
+	//jsonStr = []byte(jsonPayload)
+	req, err := http.NewRequest("GET", managementUrl, bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", bearer)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error(err, "Create POST request failed")
+		log.Error(err, "Create GET request failed")
 		return "", err
 	}
 	defer resp.Body.Close()

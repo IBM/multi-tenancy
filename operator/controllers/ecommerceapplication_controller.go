@@ -23,6 +23,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -330,8 +331,10 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			//managementUrl := secret.Data["managementUrl"]
 
 			managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
+			tenantId := secret.Data["tenantId"]
 
 			log.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
+			log.Info(fmt.Sprintf("App Id tenantId = %s", tenantId))
 
 			log.Info("3")
 			apiKey, err := getIbmCloudApiKey(r, memcached.Spec.IbmCloudOperatorSecretName, memcached.Spec.IbmCloudOperatorSecretNamespace)
@@ -344,7 +347,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			log.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
 
 			log.Info("7")
-			clientId, err := ibmAppId.GetClientId(managementUrl, apiKey, ctx)
+			clientId, err := ibmAppId.GetClientId(managementUrl, apiKey, string(tenantId), ctx)
 
 			log.Info("8")
 			// Error retrieving client Id - requeue the request.
