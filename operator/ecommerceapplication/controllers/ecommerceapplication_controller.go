@@ -40,8 +40,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	ibmAppId "github.com/multi-tenancy/operator/appIdHelper"
 )
 
 // turn on and of custom debugging output
@@ -228,7 +226,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	// Check if the App Id Binding secret created by IBM Cloud Operator already exists
-	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.AppIdSecretName, Namespace: ecommerceapplication.Namespace}, secret)
+	/*err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.AppIdSecretName, Namespace: ecommerceapplication.Namespace}, secret)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info("App Id Binding Secret does not exist, wait for a while")
 		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
@@ -285,11 +283,16 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			}
 		}
 
-	}
+	} */
+
+	logger.Info("ADAM: About to define backend deployment")
 
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Name, Namespace: ecommerceapplication.Namespace}, found)
+
+	logger.Info("ADAM: Check for errors")
+
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
 		dep := r.deploymentForbackend(ecommerceapplication, ctx)
@@ -305,6 +308,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		logger.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
 	}
+
+	logger.Info("ADAM: About to create database")
 
 	//*****************************************
 	// Database
