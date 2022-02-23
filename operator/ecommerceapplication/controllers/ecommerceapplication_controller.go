@@ -235,7 +235,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
 	} else if err == nil {
 
-		managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
+		//managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
+		managementUrl := string(secret.Data["managementUrl"])
 		tenantId := secret.Data["tenantId"]
 		logger.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
 		logger.Info(fmt.Sprintf("App Id tenantId = %s", tenantId))
@@ -264,7 +265,9 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			return ctrl.Result{}, err
 		}
 		//logger.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
-		clientId, err := ibmAppId.ConfigureAppId(managementUrl, apiKey, string(tenantId), ctx)
+		clientId, err := ibmAppId.ConfigureAppId(managementUrl, apiKey, string(tenantId), ecommerceapplication.Spec.TenantName, ctx)
+		//clientId, err := ibmAppId.ConfigureAppId("", "", "", "", ctx)
+		//func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string, tenantName string, ctx context.Context)
 
 		// Error retrieving client Id - requeue the request.
 		if err != nil {
@@ -272,6 +275,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		} else {
 			logger.Info(fmt.Sprintf("App Id client Id = %s", clientId))
 			// Create new secret for backend using App Id clientId
+			//Temp
+			clientId = "1234567"
 			targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_CLIENT_ID", clientId)
 			// Error defining the secret - requeue the request.
 			if err != nil {

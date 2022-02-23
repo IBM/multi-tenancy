@@ -14,6 +14,19 @@ import (
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+type appIdApplication struct {
+	ClientId       string `json:"clientId"`
+	TenantId       string `json:"tenantId"`
+	Secret         string `json:"secret"`
+	Name           string `json:"name"`
+	OAuthServerUrl string `json:"oAuthServerUrl"`
+	Type           string `json:"type"`
+}
+
+type appIdApplications struct {
+	Applications []appIdApplication `json:"applications"`
+}
+
 func getAppIdApplications(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) ([]byte, error) {
 
 	//$ curl -X POST     "https://iam.cloud.ibm.com/identity/token"     -H "content-type: application/x-www-form-urlencoded"     -H "accept: application/json"     -d 'grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=<API_KEY>' > token.json
@@ -74,28 +87,21 @@ func getAppIdApplications(managementUrl string, ibmCloudApiKey string, tenantId 
 
 }
 
-func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) (string, error) {
+func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string, tenantName string, ctx context.Context) (string, error) {
 
 	//{"applications":[]}
-
-	type appIdApplication struct {
-		ClientId       string `json:"clientId"`
-		TenantId       string `json:"tenantId"`
-		Secret         string `json:"secret"`
-		Name           string `json:"name"`
-		OAuthServerUrl string `json:"oAuthServerUrl"`
-		Type           string `json:"type"`
-	}
-
-	type appIdApplications struct {
-		Applications []appIdApplication `json:"applications"`
-	}
 
 	var jsonData appIdApplications
 	log := ctrllog.FromContext(ctx)
 	var clientId string
+	//var body []byte
 
-	appIdApps, err := getAppIdApplications(managementUrl, ibmCloudApiKey, tenantId, ctx)
+	//Temp
+	if true {
+		return clientId, nil
+	}
+
+	appIdApps, err := getAppIdApplications(fmt.Sprintf("%s%s", managementUrl, "/applications"), ibmCloudApiKey, tenantId, ctx)
 	// Error retrieving client Id - requeue the request.
 	if err != nil {
 		return "", err
@@ -110,8 +116,15 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 		if len(jsonData.Applications) == 0 {
 			log.Info("App Id Application count is 0.  Need to perform initial App Id configuration")
 
-			//addApplication()
-			//addScope()
+			// Add Application
+			body, err := addApplication(managementUrl, ibmCloudApiKey, tenantName, ctx)
+			if err != nil {
+				return "", err
+			}
+			log.Info(fmt.Sprintf("%s%s", "addApplication body=", string(body)))
+
+			// Add Scope
+			//body, err := addScope()
 			//addRole()
 			//addUsers()
 			//configureUiText()
@@ -130,14 +143,35 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 
 }
 
-func addApplication(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+func addApplication(managementUrl string, ibmCloudApiKey string, tenantName string, ctx context.Context) (string, error) {
 
 	/*
 			sed "s+FRONTENDNAME+$FRONTEND_NAME+g" ./appid-configs/add-application-template.json > ./$ADD_APPLICATION
 		    result=$(curl -d @./$ADD_APPLICATION -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/applications)
 	*/
 
-	return nil
+	/*{
+		"name": "FRONTENDNAME",
+		"type": "singlepageapp"
+	}*/
+
+	var clientId string
+	jsonPayload := []byte(fmt.Sprintf("%s%s%s%s%s%s", "{\"name\":", "\"", tenantName, "\"", ",", "\"type\": \"singlepageapp\"}"))
+	body, err := doHttpPost(jsonPayload, managementUrl, ibmCloudApiKey, ctx)
+	var jsonData appIdApplication
+
+	if err != nil {
+		return clientId, err
+	}
+
+	err = json.Unmarshal(body, &jsonData)
+	if err != nil {
+		return clientId, err
+	}
+
+	clientId = jsonData.ClientId
+
+	return clientId, nil
 }
 
 func addScope(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
@@ -192,6 +226,44 @@ func configureUiImage(managementUrl string, ibmCloudApiKey string, tenantId stri
 	       result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/media?mediaType=logo")
 	*/
 	return nil
+}
+
+func doHttpPost(jsonPayload []byte, url string, ibmCloudApiKey string, ctx context.Context) ([]byte, error) {
+
+	log := ctrllog.FromContext(ctx)
+	var body []byte
+	client := &http.Client{}
+
+	log.Info(fmt.Sprintf("%s%s", "url=", url))
+	log.Info(fmt.Sprintf("%s%s", "jsonPayload=", string(jsonPayload)))
+
+	oauth, err := getIbmCloudOauthToken(ibmCloudApiKey, ctx)
+	if err != nil {
+		log.Error(err, "Error retrieving IBM Cloud Oauth token")
+		return body, err
+	}
+
+	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", bearer)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error(err, "Create POST request failed")
+		return body, err
+	}
+	defer resp.Body.Close()
+
+	log.Info(fmt.Sprintf("%s%s", "response Status:", resp.Status))
+	log.Info(fmt.Sprintf("%s%s", "response Headers:", resp.Header))
+
+	body, _ = ioutil.ReadAll(resp.Body)
+
+	log.Info(fmt.Sprintf("%s%s", "returning body=", string(body)))
+	return body, nil
+
 }
 
 func getIbmCloudOauthToken(apiKey string, ctx context.Context) (string, error) {

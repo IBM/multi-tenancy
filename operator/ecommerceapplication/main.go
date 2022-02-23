@@ -28,6 +28,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -47,6 +48,11 @@ func init() {
 	utilruntime.Must(saasv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
+
+// TODO edit this namespace/project list to support concorrent development when running operator locally with "make install run"
+// this changes the operator scope from cluster to namespace
+// the default namespace must also be included
+var developerNamespaces = []string{"deleeuw", "default"} // List of Namespaces
 
 func main() {
 	var metricsAddr string
@@ -72,6 +78,8 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "27344913.saas.ecommerce.sample.com",
+		NewCache:               cache.MultiNamespacedCacheBuilder(developerNamespaces),
+		//Namespace:              developerNamespace,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
