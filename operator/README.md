@@ -2,7 +2,7 @@
 
 ### Step 1: Login to the cluster
 
-### Step 2: Create an `operator development project` for each developer on the cluster
+### Step 2: Create an `operator development project` for you as a developer on the cluster
 
 ### Step 3: Navigate to the `operator source code folder`
 
@@ -18,11 +18,23 @@
 var developerNamespaces = []string{"saas-operator-development-thomas", "default"} // List of Namespaces
 ```
 
+### Reuse of existing IBM Cloud services
+
+1. Does a developer project already exist and there are instances for AppID and Postgres?
+
+export CLUSTERNAME=roks-gen2-suedbro ibmcloud login --sso
+
 ### Step 6: Execute the operator locally 
 
 ```sh
 make install run  
 ```
+
+### Known issues:
+
+### IBM Cloud Operator
+
+> Don't delete CRDs for the IBM Cloud Operator and don't delete projects that contains CRDs of the IBM Cloud Operator! The deletion will break the IBM Cloud Operator and you need to install it again. [Related GitHub issue](https://github.com/IBM/cloud-operators/issues/265)
 
 
 
