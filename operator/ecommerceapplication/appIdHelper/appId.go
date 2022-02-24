@@ -49,6 +49,8 @@ func getAppIdApplications(managementUrl string, ibmCloudApiKey string, tenantId 
 		return body, err
 	}
 
+	url := fmt.Sprintf("%s%s", managementUrl, "/applications")
+
 	client := &http.Client{}
 
 	//appIdUrl := fmt.Sprintf("%s%s", managementUrl, "applications")
@@ -64,7 +66,7 @@ func getAppIdApplications(managementUrl string, ibmCloudApiKey string, tenantId 
 	log.Info(fmt.Sprintf("%s%s", "bearer=", bearer))
 
 	//jsonStr = []byte(jsonPayload)
-	req, err := http.NewRequest("GET", managementUrl, bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", bearer)
 
@@ -101,7 +103,7 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 		return clientId, nil
 	}
 
-	appIdApps, err := getAppIdApplications(fmt.Sprintf("%s%s", managementUrl, "/applications"), ibmCloudApiKey, tenantId, ctx)
+	appIdApps, err := getAppIdApplications(managementUrl, ibmCloudApiKey, tenantId, ctx)
 	// Error retrieving client Id - requeue the request.
 	if err != nil {
 		return "", err
@@ -117,14 +119,17 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 			log.Info("App Id Application count is 0.  Need to perform initial App Id configuration")
 
 			// Add Application
-			body, err := addApplication(managementUrl, ibmCloudApiKey, tenantName, ctx)
+			clientId, err := addApplication(managementUrl, ibmCloudApiKey, tenantName, ctx)
 			if err != nil {
 				return "", err
 			}
-			log.Info(fmt.Sprintf("%s%s", "addApplication body=", string(body)))
+			log.Info(fmt.Sprintf("%s%s", "addApplication clientId=", clientId))
 
 			// Add Scope
-			//body, err := addScope()
+			err = addScope(managementUrl, ibmCloudApiKey, clientId, ctx)
+			if err != nil {
+				return "", err
+			}
 			//addRole()
 			//addUsers()
 			//configureUiText()
@@ -156,8 +161,9 @@ func addApplication(managementUrl string, ibmCloudApiKey string, tenantName stri
 	}*/
 
 	var clientId string
+	url := fmt.Sprintf("%s%s", managementUrl, "/applications/")
 	jsonPayload := []byte(fmt.Sprintf("%s%s%s%s%s%s", "{\"name\":", "\"", tenantName, "\"", ",", "\"type\": \"singlepageapp\"}"))
-	body, err := doHttpPost(jsonPayload, managementUrl, ibmCloudApiKey, ctx)
+	body, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
 	var jsonData appIdApplication
 
 	if err != nil {
@@ -174,11 +180,20 @@ func addApplication(managementUrl string, ibmCloudApiKey string, tenantName stri
 	return clientId, nil
 }
 
-func addScope(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+func addScope(managementUrl string, ibmCloudApiKey string, clientId string, ctx context.Context) error {
+
 	/*
 		OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
 			result=$(curl -d @./$ADD_SCOPE -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/applications/$APPLICATION_CLIENTID/scopes)
 	*/
+
+	url := fmt.Sprintf("%s%s%s%s", managementUrl, "/applications/", clientId, "/scopes")
+	jsonPayload := []byte("{\"scopes\": [\"tenant_scope\"]}")
+	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
