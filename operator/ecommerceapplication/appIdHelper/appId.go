@@ -130,7 +130,12 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 			if err != nil {
 				return "", err
 			}
-			//addRole()
+			// Add Role
+			err = addRole(managementUrl, ibmCloudApiKey, clientId, ctx)
+			if err != nil {
+				return "", err
+			}
+
 			//addUsers()
 			//configureUiText()
 			//configureUiColour()
@@ -197,13 +202,21 @@ func addScope(managementUrl string, ibmCloudApiKey string, clientId string, ctx 
 	return nil
 }
 
-func addRole(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+func addRole(managementUrl string, ibmCloudApiKey string, clientId string, ctx context.Context) error {
 	/*
 			sed "s+APPLICATIONID+$APPLICATION_CLIENTID+g" ./appid-configs/add-roles-template.json > ./$ADD_ROLE
 		    OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
 		    #echo $OAUTHTOKEN
 		    result=$(curl -d @./$ADD_ROLE -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/roles)
 	*/
+
+	url := fmt.Sprintf("%s%s", managementUrl, "/roles")
+	jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"name\": \"tenant_user_access\",\"description\": \"This is an example role.\",\"access\": [{\"application_id\": \"", clientId, "\"'", "\"scopes\": [\"tenant_scope\"]}]}"))
+
+	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -212,6 +225,10 @@ func addUsers(managementUrl string, ibmCloudApiKey string, tenantId string, ctx 
 			OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
 		    result=$(curl -d @./$USER_IMPORT_FILE -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/cloud_directory/import?encryption_secret=$ENCRYPTION_SECRET)
 	*/
+
+	// TODO WORK IN PROGRESS
+	//jsonPayload := []byte("{\"itemsPerPage\":1,\"totalResults\":1,\"users\":[{\"scimUser\":{\"originalId\":\"7cdf7ac3-371f-4b4c-8d0a-81e479ab449b\",\"name\":{\"givenName\":\"Thomas\",\"familyName\":\"Example\",\"formatted\":\"Thomas Example\"},\"displayName\":\"Thomas Example\",\"active\":true,\"emails\":[{\"value\":\"thomas@example.com\",\"primary\":true}],\"passwordHistory\":[{\"passwordHash\":\"L6EEYnQANBPSBF0tDCPDZl4uVD07H3Ur8qIVynB1Ht4Bn4s/x0lA6kvyJxEPr/06m5hi5wdLM45JtYDlT8M0hjVIBI3YpXRR9J4oXZA/Yt/V13yjsUPsXKek6RWdOKWp+wuD5w3Bobh43QbRR3dXFoKUbcLVWQoKLWqvRATMQis=\",\"hashAlgorithm\":\"PBKDF2WithHmacSHA512\"}],\"status\":\"CONFIRMED\",\"passwordExpirationTimestamp\":0,\"passwordUpdatedTimestamp\":0,\"mfaContext\":{}},\"passwordHash\":\"L6EEYnQANBPSBF0tDCPDZl4uVD07H3Ur8qIVynB1Ht4Bn4s/x0lA6kvyJxEPr/06m5hi5wdLM45JtYDlT8M0hjVIBI3YpXRR9J4oXZA/Yt/V13yjsUPsXKek6RWdOKWp+wuD5w3Bobh43QbRR3dXFoKUbcLVWQoKLWqvRATMQis=\",\"passwordHashAlg\":\"PBKDF2WithHmacSHA512\",\"profile\":{\"attributes\":{}},\"roles\":[\"tenant_user_access\"]}]}")
+
 	return nil
 }
 

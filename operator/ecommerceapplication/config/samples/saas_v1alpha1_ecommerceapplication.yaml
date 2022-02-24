@@ -4,16 +4,16 @@ metadata:
   name: ecommerceapplication-ten-c
 spec:
   size: 1
-  appIdSecretName: multi-tenancy-appid-ten-e-secret
-  postgresSecretName: multi-tenancy-pg-ten-e-secret
-  tenantName: ten-c
+  appIdSecretName: multi-tenancy-appid-ten-f-secret
+  postgresSecretName: multi-tenancy-pg-ten-f-secret
+  tenantName: ten-f
   ibmCloudOperatorSecretName: ibmcloud-operator-secret
   ibmCloudOperatorSecretNamespace: default
 ---
 apiVersion: ibmcloud.ibm.com/v1
 kind: Service
 metadata:
-  name: multi-tenancy-pg-ten-e
+  name: multi-tenancy-pg-ten-f
 spec:
   plan: standard
   serviceClass: databases-for-postgresql
@@ -21,7 +21,7 @@ spec:
 apiVersion: ibmcloud.ibm.com/v1
 kind: Service
 metadata:
-  name: multi-tenancy-appid-ten-e
+  name: multi-tenancy-appid-ten-f
 spec:
   plan: graduated-tier
   serviceClass: appid
@@ -29,15 +29,15 @@ spec:
 apiVersion: ibmcloud.ibm.com/v1
 kind: Binding
 metadata:
-  name: binding-multi-tenancy-pg-ten-e
+  name: binding-multi-tenancy-pg-ten-f
 spec:
-  serviceName: multi-tenancy-pg-ten-e
-  secretName: multi-tenancy-pg-ten-e-secret
+  serviceName: multi-tenancy-pg-ten-f
+  secretName: multi-tenancy-pg-ten-f-secret
 ---
 apiVersion: ibmcloud.ibm.com/v1
 kind: Binding
 metadata:
-  name: binding-multi-tenancy-appid-ten-e
+  name: binding-multi-tenancy-appid-ten-f
 spec:
-  serviceName: multi-tenancy-appid-ten-e
-  secretName: multi-tenancy-appid-ten-e-secret
+  serviceName: multi-tenancy-appid-ten-f
+  secretName: multi-tenancy-appid-ten-f-secret
