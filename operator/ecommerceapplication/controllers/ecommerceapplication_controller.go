@@ -340,11 +340,12 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	logger.Info("Verify if the deployment already exists, if not create a new one")
 
 	found = &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Name, Namespace: ecommerceapplication.Namespace}, found)
+	frontend_deployment := "frontend" + ecommerceapplication.Name
+	err = r.Get(ctx, types.NamespacedName{Name: frontend_deployment, Namespace: ecommerceapplication.Namespace}, found)
 
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := r.deploymentForFrontend(ecommerceapplication, ctx)
+		dep := r.deploymentForFrontend(ecommerceapplication, ctx, frontend_deployment)
 		logger.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 		err = r.Create(ctx, dep)
 		if err != nil {
@@ -599,7 +600,7 @@ func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.EC
 }
 
 // deploymentForFrontend definition and returns a tenancyfrontend Deployment object
-func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
+func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, ctx context.Context, frontend_deployment string) *appsv1.Deployment {
 	logger := log.FromContext(ctx)
 	ls := labelsForFrontend(frontend.Name, frontend.Name)
 	replicas := frontend.Spec.Size
@@ -626,7 +627,7 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1a
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      frontend.Name,
+			Name:      frontend_deployment,
 			Namespace: frontend.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
