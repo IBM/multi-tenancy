@@ -1,0 +1,28 @@
+apiVersion: saas.saas.ecommerce.sample.com/v1alpha1
+kind: ECommerceApplication
+metadata:
+  name: ecommerceapplication-ten-dev-2
+spec:
+  size: 1
+  appIdSecretName: multi-tenancy-appid-ten-f-secret
+  postgresSecretName: multi-tenancy-pg-ten-f-secret
+  tenantName: ten-f
+  ibmCloudOperatorSecretName: ibmcloud-operator-secret
+  ibmCloudOperatorSecretNamespace: default
+# The service deleted to ensure developer two will access only the serice bindings
+---
+apiVersion: ibmcloud.ibm.com/v1
+kind: Binding
+metadata:
+  name: binding-multi-tenancy-pg-ten-f
+spec:
+  serviceName: multi-tenancy-pg-ten-f
+  secretName: multi-tenancy-pg-ten-f-secret
+---
+apiVersion: ibmcloud.ibm.com/v1
+kind: Binding
+metadata:
+  name: binding-multi-tenancy-appid-ten-f
+spec:
+  serviceName: multi-tenancy-appid-ten-f
+  secretName: multi-tenancy-appid-ten-f-secret

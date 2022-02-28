@@ -20,9 +20,55 @@ var developerNamespaces = []string{"saas-operator-development-thomas", "default"
 
 ### Reuse of existing IBM Cloud services
 
-1. Does a developer project already exist and there are instances for AppID and Postgres?
+#### Step 1: Does a developer project already exist with  instances for AppID and Postgres?
 
+```sh
+export DEVELOPER_1_PROJECT=""
+export DEVELOPER_2_PROJECT=""
 export CLUSTERNAME=roks-gen2-suedbro ibmcloud login --sso
+```
+
+### Step 2: We will copy secret from developer one to developer two project
+
+Ensure you are in developer one project 
+
+```sh
+oc project $DEVELOPER_1_PROJECT
+```
+
+### Step 3: Copy the sercet name from the CRD for the operator (`saas_v1alpha1_developer2-ecommerceapplication.yaml`)
+
+```yaml
+apiVersion: saas.saas.ecommerce.sample.com/v1alpha1
+kind: ECommerceApplication
+metadata:
+  name: ecommerceapplication-ten-dev-2
+spec:
+  size: 1
+  appIdSecretName: multi-tenancy-appid-ten-f-secret
+  postgresSecretName: multi-tenancy-pg-ten-f-secret
+  tenantName: ten-f
+  ibmCloudOperatorSecretName: ibmcloud-operator-secret
+  ibmCloudOperatorSecretNamespace: default
+# The service deleted to ensure developer two will access only the serice bindings
+```
+
+### Step 4: Verify that these secrets exists
+
+```sh
+export APPID_SECRET_NAME=multi-tenancy-appid-ten-f-secret
+export POSTGRES_SECRET_NAME=multi-tenancy-pg-ten-f-secret
+
+oc get secret $APPID_SECRET_NAME -o yaml
+oc get secret $POSTGRES_SECRET_NAME -o yaml
+```
+
+### Step 5: Extract the secret to the local machine
+
+```sh
+oc extract secret/$APPID_SECRET_NAME --to=/tmp - -n $DEVELOPER_1_PROJECT
+```
+
 
 ### Step 6: Execute the operator locally 
 

@@ -1,3 +1,4 @@
+tmp/
 javacore*
 jitdump*
 .mvn

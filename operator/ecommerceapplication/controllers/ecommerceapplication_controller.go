@@ -367,7 +367,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Create service NodePort
 	helpers.CustomLogs("Create service NodePort", ctx, customLogger)
 
-	targetServPort, err := defineServiceNodePort("service-frontend", ecommerceapplication.Namespace)
+	targetServPort, err := defineServiceNodePort(ecommerceapplication.Name, ecommerceapplication.Namespace)
 
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
@@ -397,7 +397,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Create service cluster
 	helpers.CustomLogs("Create service Cluster IP", ctx, customLogger)
 
-	targetServClust, err := defineServiceClust("service-frontend-cip", ecommerceapplication.Namespace)
+	targetServClust, err := defineServiceClust(ecommerceapplication.Name, ecommerceapplication.Namespace)
 
 	// Error creating replicating the service cluster - requeue the request.
 	if err != nil {
@@ -480,8 +480,8 @@ func (r *ECommerceApplicationReconciler) SetupWithManager(mgr ctrl.Manager) erro
 // labelsForTenancyFrontend returns the labels for selecting the resources
 // belonging to the given ecommerceapplication CR name.
 // Example: Is used in "deploymentForFrontend"
-func labelsForFrontend(name string) map[string]string {
-	return map[string]string{"app": "labelsForTenancyFrontend", "ecommerceapplication_cr": name}
+func labelsForFrontend(tenancyfrontendname string, ecommerceapplication_cr string) map[string]string {
+	return map[string]string{"app": tenancyfrontendname, "ecommerceapplication_cr": ecommerceapplication_cr}
 }
 
 // labelsForTenancyFrontend returns the labels for selecting the resources
@@ -599,10 +599,10 @@ func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.EC
 }
 
 // deploymentForFrontend definition and returns a tenancyfrontend Deployment object
-func (r *ECommerceApplicationReconciler) deploymentForFrontend(m *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
+func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
 	logger := log.FromContext(ctx)
-	ls := labelsForFrontend(m.Name)
-	replicas := m.Spec.Size
+	ls := labelsForFrontend(frontend.Name, frontend.Name)
+	replicas := frontend.Spec.Size
 
 	// Just reflect the command in the deployment.yaml
 	// for the ReadinessProbe and LivenessProbe
@@ -626,8 +626,8 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(m *saasv1alpha1.E
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name,
-			Namespace: m.Namespace,
+			Name:      frontend.Name,
+			Namespace: frontend.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
@@ -726,14 +726,20 @@ func defineServiceNodePort(name string, namespace string) (*corev1.Service, erro
 	// Define map for the selector
 	mselector := make(map[string]string)
 	key := "app"
-	value := "service-frontend"
+	value := name
 	mselector[key] = value
+
+	// Define map for the labels
+	mlabel := make(map[string]string)
+	key = "app"
+	value = "service-frontend"
+	mlabel[key] = value
 
 	var port int32 = 8080
 
 	return &corev1.Service{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
-		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace, Labels: mlabel},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeNodePort,
 			Ports: []corev1.ServicePort{{
@@ -748,17 +754,25 @@ func defineServiceNodePort(name string, namespace string) (*corev1.Service, erro
 // Create Service ClusterIP definition
 func defineServiceClust(name string, namespace string) (*corev1.Service, error) {
 
+	// Define map for the selector
 	mselector := make(map[string]string)
 	key := "app"
-	value := "service-frontend-cip"
+	value := name
 	mselector[key] = value
+
+	// Define map for the labels
+	mlabel := make(map[string]string)
+	key = "app"
+	value = "service-frontend"
+	mlabel[key] = value
 
 	var port int32 = 80
 	var targetPort int32 = 8080
+	var clustserv = name + "clusterip"
 
 	return &corev1.Service{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
-		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		ObjectMeta: metav1.ObjectMeta{Name: clustserv, Namespace: namespace, Labels: mlabel},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeClusterIP,
 			Ports: []corev1.ServicePort{{
