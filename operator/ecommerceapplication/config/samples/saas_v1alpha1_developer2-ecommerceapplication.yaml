@@ -10,19 +10,3 @@ spec:
   ibmCloudOperatorSecretName: ibmcloud-operator-secret
   ibmCloudOperatorSecretNamespace: default
 # The service deleted to ensure developer two will access only the serice bindings
----
-apiVersion: ibmcloud.ibm.com/v1
-kind: Binding
-metadata:
-  name: binding-multi-tenancy-pg-ten-f
-spec:
-  serviceName: multi-tenancy-pg-ten-f
-  secretName: multi-tenancy-pg-ten-f-secret
----
-apiVersion: ibmcloud.ibm.com/v1
-kind: Binding
-metadata:
-  name: binding-multi-tenancy-appid-ten-f
-spec:
-  serviceName: multi-tenancy-appid-ten-f
-  secretName: multi-tenancy-appid-ten-f-secret

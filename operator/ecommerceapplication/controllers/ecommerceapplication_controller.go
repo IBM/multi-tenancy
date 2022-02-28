@@ -614,9 +614,9 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1a
 
 	// Using the context to log information
 	logger.Info("Logging: Creating a new Deployment", "Replicas", replicas)
-	message := "Logging: (Name: " + m.Name + ") \n"
+	message := "Logging: (Name: " + frontend.Name + ") \n"
 	logger.Info(message)
-	message = "Logging: (Namespace: " + m.Namespace + ") \n"
+	message = "Logging: (Namespace: " + frontend.Namespace + ") \n"
 	logger.Info(message)
 
 	for key, value := range ls {
@@ -702,7 +702,7 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1a
 	} // Deployment
 
 	// Set TenancyFrontend instance as the owner and controller
-	ctrl.SetControllerReference(m, dep, r.Scheme)
+	ctrl.SetControllerReference(frontend, dep, r.Scheme)
 	return dep
 }
 
