@@ -5,11 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
+
+	"os"
 
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -136,10 +141,29 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 				return "", err
 			}
 
-			//addUsers()
-			//configureUiText()
-			//configureUiColour()
+			// Add Users
+			err = addUsers(managementUrl, ibmCloudApiKey, ctx)
+			if err != nil {
+				return "", err
+			}
+
+			// Configure UI Text
+			err = configureUiText(managementUrl, ibmCloudApiKey, tenantId, ctx)
+			if err != nil {
+				return "", err
+			}
+
+			// Configure UI Colour
+			err = configureUiColour(managementUrl, ibmCloudApiKey, ctx)
+			if err != nil {
+				return "", err
+			}
+
 			//configureUiImage()
+			err = configureUiImage(managementUrl, ibmCloudApiKey, ctx)
+			if err != nil {
+				return "", err
+			}
 
 			//jsonData.Applications[0].ClientId
 
@@ -220,15 +244,19 @@ func addRole(managementUrl string, ibmCloudApiKey string, clientId string, ctx c
 	return nil
 }
 
-func addUsers(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+func addUsers(managementUrl string, ibmCloudApiKey string, ctx context.Context) error {
 	/*
 			OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
 		    result=$(curl -d @./$USER_IMPORT_FILE -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/cloud_directory/import?encryption_secret=$ENCRYPTION_SECRET)
 	*/
 
-	// TODO WORK IN PROGRESS
-	//jsonPayload := []byte("{\"itemsPerPage\":1,\"totalResults\":1,\"users\":[{\"scimUser\":{\"originalId\":\"7cdf7ac3-371f-4b4c-8d0a-81e479ab449b\",\"name\":{\"givenName\":\"Thomas\",\"familyName\":\"Example\",\"formatted\":\"Thomas Example\"},\"displayName\":\"Thomas Example\",\"active\":true,\"emails\":[{\"value\":\"thomas@example.com\",\"primary\":true}],\"passwordHistory\":[{\"passwordHash\":\"L6EEYnQANBPSBF0tDCPDZl4uVD07H3Ur8qIVynB1Ht4Bn4s/x0lA6kvyJxEPr/06m5hi5wdLM45JtYDlT8M0hjVIBI3YpXRR9J4oXZA/Yt/V13yjsUPsXKek6RWdOKWp+wuD5w3Bobh43QbRR3dXFoKUbcLVWQoKLWqvRATMQis=\",\"hashAlgorithm\":\"PBKDF2WithHmacSHA512\"}],\"status\":\"CONFIRMED\",\"passwordExpirationTimestamp\":0,\"passwordUpdatedTimestamp\":0,\"mfaContext\":{}},\"passwordHash\":\"L6EEYnQANBPSBF0tDCPDZl4uVD07H3Ur8qIVynB1Ht4Bn4s/x0lA6kvyJxEPr/06m5hi5wdLM45JtYDlT8M0hjVIBI3YpXRR9J4oXZA/Yt/V13yjsUPsXKek6RWdOKWp+wuD5w3Bobh43QbRR3dXFoKUbcLVWQoKLWqvRATMQis=\",\"passwordHashAlg\":\"PBKDF2WithHmacSHA512\",\"profile\":{\"attributes\":{}},\"roles\":[\"tenant_user_access\"]}]}")
+	url := fmt.Sprintf("%s%s", managementUrl, "/cloud_directory/import?encryption_secret=12345678")
+	jsonPayload := []byte("{\"itemsPerPage\":1,\"totalResults\":1,\"users\":[{\"scimUser\":{\"originalId\":\"7cdf7ac3-371f-4b4c-8d0a-81e479ab449b\",\"name\":{\"givenName\":\"Thomas\",\"familyName\":\"Example\",\"formatted\":\"Thomas Example\"},\"displayName\":\"Thomas Example\",\"active\":true,\"emails\":[{\"value\":\"thomas@example.com\",\"primary\":true}],\"passwordHistory\":[{\"passwordHash\":\"L6EEYnQANBPSBF0tDCPDZl4uVD07H3Ur8qIVynB1Ht4Bn4s/x0lA6kvyJxEPr/06m5hi5wdLM45JtYDlT8M0hjVIBI3YpXRR9J4oXZA/Yt/V13yjsUPsXKek6RWdOKWp+wuD5w3Bobh43QbRR3dXFoKUbcLVWQoKLWqvRATMQis=\",\"hashAlgorithm\":\"PBKDF2WithHmacSHA512\"}],\"status\":\"CONFIRMED\",\"passwordExpirationTimestamp\":0,\"passwordUpdatedTimestamp\":0,\"mfaContext\":{}},\"passwordHash\":\"L6EEYnQANBPSBF0tDCPDZl4uVD07H3Ur8qIVynB1Ht4Bn4s/x0lA6kvyJxEPr/06m5hi5wdLM45JtYDlT8M0hjVIBI3YpXRR9J4oXZA/Yt/V13yjsUPsXKek6RWdOKWp+wuD5w3Bobh43QbRR3dXFoKUbcLVWQoKLWqvRATMQis=\",\"passwordHashAlg\":\"PBKDF2WithHmacSHA512\",\"profile\":{\"attributes\":{}},\"roles\":[\"tenant_user_access\"]}]}")
 
+	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -239,24 +267,100 @@ func configureUiText(managementUrl string, ibmCloudApiKey string, tenantId strin
 	       echo "PUT url: $MANAGEMENTURL/config/ui/theme_txt"
 	       result=$(curl -d @./$ADD_UI_TEXT -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_text)
 	*/
+
+	url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/theme_txt")
+	jsonPayload := []byte(fmt.Sprintf("%s%s%s", "{\"tabTitle\": \"Login to\"", tenantId, "\", \"footnote\": \"Powered by the EMEA - Hybrid Cloud Build Team\"}"))
+
+	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func configureUiColour(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+func configureUiColour(managementUrl string, ibmCloudApiKey string, ctx context.Context) error {
 	/*
 		OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
 			echo "PUT url: $MANAGEMENTURL/config/ui/theme_color"
 			result=$(curl -d @./$ADD_COLOR -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_color)
 	*/
+
+	url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/theme_color")
+	jsonPayload := []byte("{\"headerColor\": \"#008b8b\"}")
+
+	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+	if err != nil {
+		return err
+	}
 	return nil
+
 }
 
-func configureUiImage(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+func configureUiImage(managementUrl string, ibmCloudApiKey string, ctx context.Context) error {
 	/*
 	   	OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
 	       echo "POST url: $MANAGEMENTURL/config/ui/media?mediaType=logo"
 	       result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/media?mediaType=logo")
 	*/
+	//appid-images/logo.png
+
+	//url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/media?mediaType=logo")
+
+	//https: //raw.githubusercontent.com/IBM/multi-tenancy/main/installapp/appid-images/logo.png
+
+	url := fmt.Sprintf("%s%s", managementUrl, "config/ui/media?mediaType=logo")
+
+	log := ctrllog.FromContext(ctx)
+
+	//Download the image file from GitHub
+	fileUrl := "https://raw.githubusercontent.com/IBM/multi-tenancy/main/installapp/appid-images/logo.png"
+	err := downloadFile("logo.png", fileUrl)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	body := &bytes.Buffer{}
+
+	writer := multipart.NewWriter(body)
+
+	fw, err := writer.CreateFormFile("file", "logo.png")
+	if err != nil {
+	}
+	file, err := os.Open("test.png")
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(fw, file)
+	if err != nil {
+		return err
+	}
+
+	writer.Close()
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body.Bytes()))
+	if err != nil {
+		return err
+	}
+
+	oauth, err := getIbmCloudOauthToken(ibmCloudApiKey, ctx)
+	if err != nil {
+		log.Error(err, "Error retrieving IBM Cloud Oauth token")
+		return err
+	}
+	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Content-Type", "multipart/form-data")
+	req.Header.Set("Authorization", bearer)
+
+	rsp, _ := client.Do(req)
+	if rsp.StatusCode != http.StatusOK {
+		log.Info("Request failed with response code: %d", rsp.StatusCode)
+	}
+
 	return nil
 }
 
@@ -352,4 +456,25 @@ func getIbmCloudOauthToken(apiKey string, ctx context.Context) (string, error) {
 	}
 
 	return jsonData.Access_token, nil
+}
+
+func downloadFile(filepath string, url string) error {
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
 }
