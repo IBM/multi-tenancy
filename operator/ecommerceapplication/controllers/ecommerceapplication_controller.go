@@ -32,6 +32,7 @@ import (
 
 	saasv1alpha1 "github.com/multi-tenancy/operator/api/v1alpha1"
 	"github.com/multi-tenancy/operator/helpers"
+	"github.com/multi-tenancy/operator/postgresHelper"
 
 	// imports to apply to the reconsile loop
 	"fmt"
@@ -111,6 +112,7 @@ type QueryOptions struct {
 }
 
 var data PostgresBindingJSON
+var postgresTableExists bool = false
 
 //+kubebuilder:rbac:groups=saas.saas.ecommerce.sample.com,resources=ecommerceapplications,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=saas.saas.ecommerce.sample.com,resources=ecommerceapplications/status,verbs=get;update;patch
@@ -129,7 +131,7 @@ var data PostgresBindingJSON
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
 func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-
+	postgresUrl := ""
 	// "Verify if a CRD of ECommerceApplication exists"
 	logger.Info("Verify if a CRD of ECommerceApplication exists")
 	ecommerceapplication := &saasv1alpha1.ECommerceApplication{}
@@ -215,7 +217,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 		// Create secret postgres.url
 		targetSecretName = "postgres.url"
-		postgresUrl := fmt.Sprintf("%s%s%s%d%s%s%s", "jdbc:postgresql://", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database, "?sslmode=verify-full&sslrootcert=/cloud-postgres-cert")
+		postgresUrl = fmt.Sprintf("%s%s%s%d%s%s%s", "jdbc:postgresql://", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database, "?sslmode=verify-full&sslrootcert=/cloud-postgres-cert")
 		targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_URL", postgresUrl)
 		// Error defining the secret - requeue the request.
 		if err != nil {
@@ -314,22 +316,23 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	//*****************************************
 	// Database
 	//*****************************************
-	logger.Info("About to create database")
+	if !postgresTableExists {
 
-	// Init database
-	// urlExample := "postgres://username:password@localhost:5432/database_name"
+		postgresUrl = fmt.Sprintf("%s%s%s%s%s%s%s%d%s%s", "postgresql://", data.Postgres.Authentication.Username, ":", data.Postgres.Authentication.Password, "@", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database)
+		logger.Info("About to create database: " + postgresUrl)
 
-	/*postgresUrlForInit := fmt.Sprintf("%s%s%s%s%s%s%s%d%s%s", "postgres://", data.Postgres.Authentication.Username, ":", data.Postgres.Authentication.Password, "@", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database)
-	conn, err := pgx.Connect(context.Background(), postgresUrlForInit)
-
-	if err != nil {
-		logger.Error(err, "Postgres connection error")
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
-
-	} else {
-		logger.Info("successfully connected to postgres")
-		defer conn.Close(context.Background())
-	}*/
+		err, postgresTableExists = postgresHelper.CreateExampleDatabase(postgresUrl, ctx)
+		if err != nil {
+			logger.Error(err, "Can't create initial tables in database")
+			return ctrl.Result{}, err
+		} else {
+			if postgresTableExists {
+				logger.Info("Tables created")
+			} else {
+				logger.Info("Tables exists")
+			}
+		}
+	}
 
 	//*****************************************
 	// Frontend
