@@ -7,7 +7,8 @@ export CHECK_JQ="jq-"
 export CHECK_SED="sed"
 export CHECK_AWK="awk"
 export CHECK_CURL="curl"
-export CHECK_DOCKER="Docker"
+export CHECK_BUILDAH="Buildah"
+export CHECK_KUBECTL="Client"
 export CHECK_PLUGIN_CLOUDDATABASES="cloud-databases"
 export CHECK_PLUGIN_CODEENGINE="code-engine"
 export CHECK_PLUGIN_CONTAINERREGISTERY="container-registry"
@@ -21,7 +22,7 @@ export VERICATION=""
 # Functions definition
 # **********************************************************************************
 
-function verifyLibpq() {  
+verifyLibpq() {  
     VERICATION=$(psql --version)
 
     if [[ $VERICATION =~ $CHECK_LIBPQ ]]; then
@@ -33,7 +34,7 @@ function verifyLibpq() {
     fi
 }
 
-function verifyGrep() {  
+verifyGrep() {  
     VERICATION=$(grep --version)
 
     if [[ $VERICATION =~ $CHECK_GREP  ]]; then
@@ -45,7 +46,7 @@ function verifyGrep() {
     fi
 }
 
-function verifyCURL() {  
+verifyCURL() {  
     VERICATION=$(curl --version)
 
     if [[ $VERICATION =~ $CHECK_CURL  ]]; then
@@ -57,8 +58,8 @@ function verifyCURL() {
     fi
 }
 
-function verifyAWK() {  
-    VERICATION=$(awk --version)
+verifyAWK() {  
+    VERICATION=$(mawk --version)
 
     if [[ $VERICATION =~ $CHECK_AWK  ]]; then
     echo "- AWK is installed: $VERICATION !"
@@ -69,7 +70,7 @@ function verifyAWK() {
     fi
 }
 
-function verifySed() {  
+verifySed() {  
     VERICATION=$(sed --version)
 
     if [[ $VERICATION =~ $CHECK_SED  ]]; then
@@ -81,7 +82,7 @@ function verifySed() {
     fi
 }
 
-function verifyIBMCloudCLI() {  
+verifyIBMCloudCLI() {  
     VERICATION=$(ibmcloud --version)
 
     if [[ $VERICATION =~ $CHECK_IBMCLOUDCLI  ]]; then
@@ -93,7 +94,7 @@ function verifyIBMCloudCLI() {
     fi
 }
 
-function verifyJQ() {
+verifyJQ() {
     VERICATION=$(jq --version)
 
     if [[ $VERICATION =~ $CHECK_JQ  ]]; then
@@ -105,7 +106,7 @@ function verifyJQ() {
     fi
 }
 
-function verifyIBMCloudPluginCloudDatabases() {
+verifyIBMCloudPluginCloudDatabases() {
     VERICATION=$(ibmcloud plugin show cloud-databases | grep 'Plugin Name' |  awk '{print $3}' )
 
     if [[ $VERICATION =~ $CHECK_PLUGIN_CLOUDDATABASES  ]]; then
@@ -117,7 +118,7 @@ function verifyIBMCloudPluginCloudDatabases() {
     fi
 }
 
-function verifyIBMCloudPluginCodeEngine() {
+verifyIBMCloudPluginCodeEngine() {
     VERICATION=$(ibmcloud plugin show code-engine | grep 'Plugin Name' |  awk '{print $3}' )
 
     if [[ $VERICATION =~ $CHECK_PLUGIN_CODEENGINE  ]]; then
@@ -129,7 +130,7 @@ function verifyIBMCloudPluginCodeEngine() {
     fi
 }
 
-function verifyIBMCloudPluginContainerRegistry() {
+verifyIBMCloudPluginContainerRegistry() {
     VERICATION=$(ibmcloud plugin show container-registry | grep 'Plugin Name' |  awk '{print $3}' )
 
     if [[ $VERICATION =~ $CHECK_PLUGIN_CONTAINERREGISTERY  ]]; then
@@ -141,13 +142,25 @@ function verifyIBMCloudPluginContainerRegistry() {
     fi
 }
 
-function verifyDocker() {  
-    VERICATION=$(docker --version)
+verifyBuildah() {  
+    VERICATION=$(buildah --version)
 
-    if [[ $VERICATION =~ $CHECK_DOCKER ]]; then
-    echo "- Docker is installed: $VERICATION !"
+    if [[ $VERICATION =~ $CHECK_BUILDAH ]]; then
+    echo "- buildah is installed: $VERICATION !"
     else 
-    echo "*** Docker is NOT installed !"
+    echo "*** buildah is NOT installed !"
+    echo "*** The scripts ends here!"
+    exit 1
+    fi
+}
+
+verifyKubectl() {  
+    VERICATION=$(kubectl version)
+
+    if [[ $VERICATION =~ $CHECK_KUBECTL ]]; then
+    echo "- kubectl is installed: $VERICATION !"
+    else 
+    echo "*** kubectl is NOT installed !"
     echo "*** The scripts ends here!"
     exit 1
     fi
@@ -169,8 +182,8 @@ echo "4. Verify jq"
 verifyJQ
 echo "5. Verify libpq (psql)"
 verifyLibpq
-echo "6. Verify Docker"
-verifyDocker
+echo "6. Verify Buildah"
+verifyBuildah
 echo "7. Verify ibmcloud cli"
 verifyIBMCloudCLI
 echo "8. Verify ibmcloud plugin cloud-databases"
@@ -179,5 +192,7 @@ echo "9. Verify ibmcloud plugin code-engine"
 verifyIBMCloudPluginCodeEngine
 echo "10. Verify ibmcloud plugin container-registry"
 verifyIBMCloudPluginContainerRegistry
+echo "11. Verify kubectl"
+verifyKubectl
 
 echo "Success! All prerequisites verified!"

@@ -80,7 +80,7 @@ export APPLICATION_OAUTHSERVERURL=""
 # Functions definition
 # **********************************************************************************
 
-function setupCLIenv() {
+setupCLIenv() {
   echo "**********************************"
   echo " Using following: "
   echo " - Resource group: $RESOURCE_GROUP " 
@@ -93,7 +93,7 @@ function setupCLIenv() {
 
 # **** AppID ****
 
-function createAppIDService() {
+createAppIDService() {
     ibmcloud target -g $RESOURCE_GROUP
     ibmcloud target -r $REGION
 
@@ -115,7 +115,7 @@ function createAppIDService() {
     echo "Management URL: $MANAGEMENTURL"
 }
 
-function configureAppIDInformation(){
+configureAppIDInformation(){
 
     #****** Set identity providers
     echo ""
