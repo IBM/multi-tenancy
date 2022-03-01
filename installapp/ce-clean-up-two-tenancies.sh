@@ -24,10 +24,10 @@
 
 # **************** Global variables
 pwd
-# Tenancies
-export TENANT_A="tenants-config/tenants/tenant-a.json"
-export TENANT_B="tenants-config/tenants/tenant-b.json"
-export GLOBAL="tenants-config/global/global.json"
+# Configurations
+export GLOBAL="../configuration/global.json"
+export TENANT_A="../configuration/tenants/tenant-a.json"
+export TENANT_B="../configuration/tenants/tenant-b.json"
 
 # **********************************************************************************
 # Functions definition

@@ -11,9 +11,9 @@
 # **************** Global variables
 
 # Configurations
-export GLOBAL="tenants-config/global/global.json"
-export TENANT_A="tenants-config/tenants/tenant-a.json"
-export TENANT_B="tenants-config/tenants/tenant-b.json"
+export GLOBAL="../configuration/global.json"
+export TENANT_A="../configuration/tenants/tenant-a.json"
+export TENANT_B="../configuration/tenants/tenant-b.json"
 
 # ecommerce application container image names
 export REGISTRY_URL=$(cat ./$GLOBAL | jq '.REGISTRY.URL' | sed 's/"//g')
