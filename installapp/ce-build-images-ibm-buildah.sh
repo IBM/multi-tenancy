@@ -23,7 +23,6 @@ export FRONTEND_SOURCEFOLDER=multi-tenancy-frontend
 export BACKEND_SOURCEFOLDER=multi-tenancy-backend
 
 
-
 # **********************************************************************************
 # Functions
 # **********************************************************************************
@@ -43,7 +42,7 @@ setROOT_PATH() {
    echo " Set ROOT_PATH"
    echo "************************************"
    cd ../../
-   export ROOT_PATH=$(PWD)
+   export ROOT_PATH=$(pwd)
    echo "Path: $ROOT_PATH"
 }
 

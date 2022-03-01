@@ -23,7 +23,6 @@
 # brew install jq
 
 # **************** Global variables
-pwd
 # Configurations
 export GLOBAL="../configuration/global.json"
 export TENANT_A="../configuration/tenants/tenant-a.json"
