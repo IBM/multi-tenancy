@@ -307,7 +307,7 @@ extractPostgresConfiguration () {
     POSTGRES_PORT=$(cat ./$POSTGRES_CONFIG_FOLDER/postgres-key-temp.json | jq '.[].credentials.connection.postgres.hosts[].port' | sed 's/"//g' )
 
     # ***** Build needed cert content format  
-    echo "$POSTGRES_CERTIFICATE_CONTENT_ENCODED" | base64 -d -o ./$POSTGRES_CONFIG_FOLDER/cert.temp
+    echo "$POSTGRES_CERTIFICATE_CONTENT_ENCODED" | base64 -d > ./$POSTGRES_CONFIG_FOLDER/cert.temp
     POSTGRES_CERTIFICATE_DATA=$(<./$POSTGRES_CONFIG_FOLDER/cert.temp)
     rm -f ./"$POSTGRES_CONFIG_FOLDER"/cert.temp
 
