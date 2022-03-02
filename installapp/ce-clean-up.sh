@@ -98,7 +98,7 @@ read input
 # Functions definition
 # **********************************************************************************
 
-function setupCLIenvCE() {
+setupCLIenvCE() {
   echo "**********************************"
   echo " Using following project: $PROJECT_NAME" 
   echo "**********************************"
@@ -117,16 +117,21 @@ function setupCLIenvCE() {
   kubectl get pods -n $NAMESPACE
 }
 
-function cleanIBMContainerImages() {
+cleanIBMContainerImages() {
 
     echo "delete images"
-    ibmcloud cr login
+    ibmcloud target -g $RESOURCE_GROUP
+    ibmcloud target -r $REGION
+    ibmcloud target
+    # login with buildah
+    ibmcloud iam oauth-tokens | sed -ne '/IAM token/s/.* //p' | buildah login -u iambearer --password-stdin $REGISTRY_URL
+
     ibmcloud cr image-rm $SERVICE_CATALOG_IMAGE
     ibmcloud cr image-rm $FRONTEND_IMAGE
 
 }
 
-function cleanCEsecrets () {
+cleanCEsecrets () {
     
     echo "delete secrects postgres"
     ibmcloud ce secret delete --name postgres.certificate-data --force
@@ -142,18 +147,18 @@ function cleanCEsecrets () {
 
 }
 
-function cleanCEapplications () {
+cleanCEapplications () {
 
     ibmcloud ce application delete --name $FRONTEND_NAME  --force
     ibmcloud ce application delete --name $SERVICE_CATALOG_NAME  --force
 }
 
-function cleanCEregistry(){
+cleanCEregistry(){
 
     ibmcloud ce registry delete --name $SECRET_NAME
 }
 
-function cleanKEYS () {
+cleanKEYS () {
 
    echo "IBM Cloud Key: $IBMCLOUDCLI_KEY_NAME"
    #List api-keys
@@ -172,17 +177,17 @@ function cleanKEYS () {
    ibmcloud resource service-key-delete $POSTGRES_SERVICE_KEY_NAME -f
 }
 
-function cleanAppIDservice (){ 
+cleanAppIDservice (){ 
     ibmcloud resource service-instance $APPID_SERVICE_INSTANCE_NAME
     ibmcloud resource service-instance-delete $APPID_SERVICE_INSTANCE_NAME -f
 }
 
-function cleanPostgresService (){ 
+cleanPostgresService (){ 
     ibmcloud resource service-instance $POSTGRES_SERVICE_INSTANCE
     ibmcloud resource service-instance-delete $POSTGRES_SERVICE_INSTANCE -f
 }
 
-function cleanCodeEngineProject (){ 
+cleanCodeEngineProject (){ 
    ibmcloud ce project delete --name $PROJECT_NAME
 }
 
