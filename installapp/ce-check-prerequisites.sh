@@ -5,7 +5,7 @@
 export CHECK_IBMCLOUDCLI="ibmcloud"
 export CHECK_JQ="jq-"
 export CHECK_SED="sed"
-export CHECK_AWK="awk"
+export CHECK_AWK="mawk"
 export CHECK_CURL="curl"
 export CHECK_BUILDAH="Buildah"
 export CHECK_KUBECTL="Client"
@@ -59,7 +59,7 @@ verifyCURL() {
 }
 
 verifyAWK() {  
-    VERICATION=$(mawk --version)
+    VERICATION=$(awk)
 
     if [[ $VERICATION =~ $CHECK_AWK  ]]; then
     echo "- AWK is installed: $VERICATION !"
