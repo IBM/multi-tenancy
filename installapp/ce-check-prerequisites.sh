@@ -174,25 +174,26 @@ echo "Check prereqisites"
 echo "1. Verify grep"
 verifyGrep
 echo "2. Verify awk"
-verifyAWK
+# verifyAWK
 echo "3. Verify cURL"
 verifyCURL
-# verifySed
-echo "4. Verify jq"
+echo "4. Verify Sed"
+verifySed
+echo "5. Verify jq"
 verifyJQ
-echo "5. Verify libpq (psql)"
+echo "6. Verify libpq (psql)"
 verifyLibpq
-echo "6. Verify Buildah"
+echo "7. Verify Buildah"
 verifyBuildah
-echo "7. Verify ibmcloud cli"
+echo "8. Verify ibmcloud cli"
 verifyIBMCloudCLI
-echo "8. Verify ibmcloud plugin cloud-databases"
+echo "9. Verify ibmcloud plugin cloud-databases"
 verifyIBMCloudPluginCloudDatabases
-echo "9. Verify ibmcloud plugin code-engine"
+echo "10. Verify ibmcloud plugin code-engine"
 verifyIBMCloudPluginCodeEngine
-echo "10. Verify ibmcloud plugin container-registry"
+echo "11. Verify ibmcloud plugin container-registry"
 verifyIBMCloudPluginContainerRegistry
-echo "11. Verify kubectl"
+echo "12. Verify kubectl"
 verifyKubectl
 
 echo "Success! All prerequisites verified!"
