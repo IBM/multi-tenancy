@@ -9,83 +9,70 @@ echo "Parameter zero 'name of the script': $0"
 echo "---------------------------------"
 echo "Service catalog image        : $1"
 echo "Frontend image               : $2"
+echo "Registry URL                 : $3"
 echo "---------------------------------"
 echo ""
 
 # **************** Global variables
 export SERVICE_CATALOG_IMAGE=$1
 export FRONTEND_IMAGE=$2
+export REGISTRY_URL=$3
 
 export ROOT_PROJECT=multi-tenancy
 export FRONTEND_SOURCEFOLDER=multi-tenancy-frontend
 export BACKEND_SOURCEFOLDER=multi-tenancy-backend
 
+
 # **********************************************************************************
 # Functions
 # **********************************************************************************
 
-function cleanUpLocalImages() {
+cleanUpLocalImages() {
    
     echo "************************************"
     echo " Clean up local images, if needed"
     echo "************************************"
 
-    docker image rm -f "$SERVICE_CATALOG_IMAGE"
-    docker image rm -f "$FRONTEND_IMAGE"
+    buildah rmi -f "$SERVICE_CATALOG_IMAGE"
+    buildah rmi -f "$FRONTEND_IMAGE"
 }
 
-function setROOT_PATH() {
+setROOT_PATH() {
    echo "************************************"
    echo " Set ROOT_PATH"
    echo "************************************"
    cd ../../
-   export ROOT_PATH=$(PWD)
+   export ROOT_PATH=$(pwd)
    echo "Path: $ROOT_PATH"
 }
 
-function buildAndPushBackend() {
+buildAndPushBackend() {
     echo "************************************"
     echo " Backend $SERVICE_CATALOG_IMAGE"
     echo "************************************"
     cd $ROOT_PATH/$BACKEND_SOURCEFOLDER
-    pwd
-    docker build -t "$SERVICE_CATALOG_IMAGE" -f Dockerfile .
-    docker push "$SERVICE_CATALOG_IMAGE"
+    
+    ibmcloud iam oauth-tokens | sed -ne '/IAM token/s/.* //p' | buildah login -u iambearer --password-stdin $REGISTRY_URL
+
+    buildah bud -t "$SERVICE_CATALOG_IMAGE" -f Dockerfile .
+    buildah push "$SERVICE_CATALOG_IMAGE"
     echo ""
 }
 
-function buildAndPushFrontend() {
+buildAndPushFrontend() {
     echo "************************************"
     echo " Frontend $FRONTEND_IMAGE"
     echo "************************************"
     cd $ROOT_PATH/$FRONTEND_SOURCEFOLDER
 
-    docker build -t "$FRONTEND_IMAGE" -f Dockerfile .
-    docker push "$FRONTEND_IMAGE"
+    ibmcloud iam oauth-tokens | sed -ne '/IAM token/s/.* //p' | buildah login -u iambearer --password-stdin $REGISTRY_URL
+
+    buildah bud -t "$FRONTEND_IMAGE" -f Dockerfile .
+    buildah push "$FRONTEND_IMAGE"
     echo ""
 }
 
-function checkDocker () {
-    
-    echo "************************************"
-    echo " Check Docker is running"
-    echo "************************************"
-    docker ps 2> tmp.txt
-    RESULT=$(cat tmp.txt)
-    rm tmp.txt
-
-    if [[ $RESULT =~ "Cannot connect to the Docker daemon" ]]; then
-        echo "*** Docker is NOT running !"
-        echo "*** The script 'ce-build-images-ibm-docker.sh' ends here!"
-        exit 1
-    else 
-        echo "- Docker is running!"
-    fi
-}
-
-
-
-function resetPath() {
+resetPath() {
    echo "************************************"
    echo " Reset path"
    echo "************************************"
@@ -99,7 +86,6 @@ function resetPath() {
 # **********************************************************************************
 
 setROOT_PATH
-checkDocker
 cleanUpLocalImages
 buildAndPushBackend
 buildAndPushFrontend

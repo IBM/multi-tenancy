@@ -76,7 +76,7 @@ export POSTGRES_URL=""
 # Functions definition
 # **********************************************************************************
 
-function setupCLIenv() {
+setupCLIenv() {
   echo "**********************************"
   echo " Using following: "
   echo " - Resource group: $RESOURCE_GROUP " 
@@ -89,7 +89,7 @@ function setupCLIenv() {
 
 # **** Postgres ****
 
-function createPostgres () {
+createPostgres () {
     echo ""
     echo "+++++++++++++++++++++++++"
     echo "Create postgres instance"
@@ -161,7 +161,7 @@ function createPostgres () {
     ibmcloud resource service-key-create $POSTGRES_SERVICE_KEY_NAME --instance-id $POSTGRES_INSTANCE_ID
 }
 
-function extractPostgresConfiguration () {
+extractPostgresConfiguration () {
     echo ""
     echo "+++++++++++++++++++++++++"
     echo "Extract postgres configuration"
@@ -202,7 +202,7 @@ function extractPostgresConfiguration () {
 
 }
 
-function createTablesPostgress () {
+createTablesPostgress () {
     echo ""
     echo "+++++++++++++++++++++++++"
     echo "Create table in postgres"
@@ -284,7 +284,7 @@ function createTablesPostgress () {
 
 # **** application and microservices ****
 
-function checkKubernetesPod (){
+checkKubernetesPod (){
     application_pod="${1}" 
 
     array=("$application_pod")
