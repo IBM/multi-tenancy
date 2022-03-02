@@ -59,7 +59,7 @@ verifyCURL() {
 }
 
 verifyAWK() {  
-    VERICATION=$(awk)
+    VERICATION=$(mawk -W)
 
     if [[ $VERICATION =~ $CHECK_AWK  ]]; then
     echo "- AWK is installed: $VERICATION !"
