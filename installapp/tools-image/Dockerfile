@@ -20,8 +20,10 @@ RUN apt-get update \
     && apt-get --assume-yes install unzip \
     && apt-get --assume-yes install zip \
     && apt-get --assume-yes install sed \
-    && apt-get --assume-yes install jq \
-    && apt-get --assume-yes install postgresql postgresql-contrib \
+    && apt-get --assume-yes install jq 
+ARG DEBIAN_FRONTEND="noninteractive"
+RUN apt-get --assume-yes install postgresql \
+    && apt-get --assume-yes install postgresql-contrib \
     && apt-get --assume-yes install original-awk
 
 # Kubernetes
