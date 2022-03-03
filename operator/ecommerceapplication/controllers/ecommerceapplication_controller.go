@@ -153,9 +153,9 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	//*****************************************
-	// Backend
+	// Secrets
 	//*****************************************
-	logger.Info("About to create backend resources")
+	logger.Info("About to create secret resources")
 
 	// Check if the Postgres Binding secret created by IBM Cloud Operator already exists
 	secret := &corev1.Secret{}
@@ -291,7 +291,37 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	}
 
-	// Check if the deployment already exists, if not create a new one
+	//*****************************************
+	// Database
+	//*****************************************
+
+	logger.Info("About to populate database")
+
+	if !postgresTableExists {
+
+		postgresUrl = fmt.Sprintf("%s%s%s%s%s%s%s%d%s%s", "postgresql://", data.Postgres.Authentication.Username, ":", data.Postgres.Authentication.Password, "@", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database)
+		logger.Info("About to create database: " + postgresUrl)
+
+		err, postgresTableExists = postgresHelper.CreateExampleDatabase(postgresUrl, ctx)
+		if err != nil {
+			logger.Error(err, "Can't create initial tables in database")
+			return ctrl.Result{}, err
+		} else {
+			if postgresTableExists {
+				logger.Info("Tables created")
+			} else {
+				logger.Info("Tables exists")
+			}
+		}
+	}
+
+	//*****************************************
+	// Backend Deployment
+	//*****************************************
+
+	logger.Info("About to create secret resources")
+
+	// Check if the backend deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
 	deploymentName := fmt.Sprintf("%s%s", ecommerceapplication.Name, "-backend")
 	err = r.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: ecommerceapplication.Namespace}, found)
@@ -333,17 +363,17 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetBackendServ.Name))
 
 		// TODO - this update generates an error
-		//err = r.Update(context.TODO(), targetBackendServ)
+		/*err = r.Update(context.TODO(), targetBackendServ)
 
 		if err != nil {
 			logger.Error(err, "could not update backend service")
 			return ctrl.Result{}, err
-		}
+		}*/
 	}
 
 	// Create Backend Ingress
 	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
-	targetBackendIngress, err := defineIngress(ingressName, ecommerceapplication.Namespace, "router-default.roks-gen2-suedbro-162e406f043e20da9b0ef0731954a894-0000.us-south.containers.appdomain.cloud", targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port))
+	targetBackendIngress, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error creating Ingress
 		return ctrl.Result{}, err
@@ -362,27 +392,6 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		err = r.Update(context.TODO(), targetBackendIngress)
 		if err != nil {
 			return ctrl.Result{}, err
-		}
-	}
-
-	//*****************************************
-	// Database
-	//*****************************************
-	if !postgresTableExists {
-
-		postgresUrl = fmt.Sprintf("%s%s%s%s%s%s%s%d%s%s", "postgresql://", data.Postgres.Authentication.Username, ":", data.Postgres.Authentication.Password, "@", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database)
-		logger.Info("About to create database: " + postgresUrl)
-
-		err, postgresTableExists = postgresHelper.CreateExampleDatabase(postgresUrl, ctx)
-		if err != nil {
-			logger.Error(err, "Can't create initial tables in database")
-			return ctrl.Result{}, err
-		} else {
-			if postgresTableExists {
-				logger.Info("Tables created")
-			} else {
-				logger.Info("Tables exists")
-			}
 		}
 	}
 
@@ -416,34 +425,39 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	//*****************************************
 	// Define service NodePort
-	servPort := &corev1.Service{}
-	helpers.CustomLogs("Define service NodePort", ctx, customLogger)
 
-	//*****************************************
-	// Create service NodePort
-	helpers.CustomLogs("Create service NodePort", ctx, customLogger)
+	/*
+		Don't need Node Ports if we are going to use Ingress
 
-	targetServPort, err := defineFrontendServiceNodePort(ecommerceapplication.Name, ecommerceapplication.Namespace)
+		servPort := &corev1.Service{}
+		helpers.CustomLogs("Define service NodePort", ctx, customLogger)
 
-	// Error creating replicating the secret - requeue the request.
-	if err != nil {
-		return ctrl.Result{}, err
-	}
+		//*****************************************
+		// Create service NodePort
+		helpers.CustomLogs("Create service NodePort", ctx, customLogger)
 
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetServPort.Name, Namespace: targetServPort.Namespace}, servPort)
-	if err != nil && errors.IsNotFound(err) {
-		logger.Info(fmt.Sprintf("Target service port %s doesn't exist, creating it", targetServPort.Name))
-		err = r.Create(context.TODO(), targetServPort)
+		targetServPort, err := defineFrontendServiceNodePort(ecommerceapplication.Name, ecommerceapplication.Namespace)
+
+		// Error creating replicating the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-	} else {
-		logger.Info(fmt.Sprintf("Target service port %s exists, updating it now", targetServPort))
-		err = r.Update(context.TODO(), targetServPort)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-	}
+
+		err = r.Get(context.TODO(), types.NamespacedName{Name: targetServPort.Name, Namespace: targetServPort.Namespace}, servPort)
+		if err != nil && errors.IsNotFound(err) {
+			logger.Info(fmt.Sprintf("Target service port %s doesn't exist, creating it", targetServPort.Name))
+			err = r.Create(context.TODO(), targetServPort)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			logger.Info(fmt.Sprintf("Target service port %s exists, updating it now", targetServPort.Name))
+			// TODO - this causes an error, need to fix it
+			//err = r.Update(context.TODO(), targetServPort)
+			//if err != nil {
+				//return ctrl.Result{}, err
+			//}
+		}*/
 
 	//*****************************************
 	// Define cluster
@@ -453,7 +467,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Create service cluster
 	helpers.CustomLogs("Create service Cluster IP", ctx, customLogger)
 
-	targetServClust, err := defineServiceClust(ecommerceapplication.Name, ecommerceapplication.Namespace)
+	targetServClust, err := defineFrontendServiceClusterIp(ecommerceapplication.Name, ecommerceapplication.Namespace)
 
 	// Error creating replicating the service cluster - requeue the request.
 	if err != nil {
@@ -469,7 +483,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 			return ctrl.Result{}, err
 		}
 	} else {
-		logger.Info(fmt.Sprintf("Target service cluster %s exists, updating it now", targetServClust))
+		logger.Info(fmt.Sprintf("Target service cluster %s exists, updating it now", targetServClust.Name))
 		err = r.Update(context.TODO(), targetServClust)
 		if err != nil {
 			return ctrl.Result{}, err
@@ -781,8 +795,7 @@ func defineSecret(name string, namespace string, key string, value string) (*cor
 }
 
 // Create Ingress definition
-// Create Ingress definition
-func defineIngress(ingressName string, namespace string, hostName string, serviceName string, port int) (*netv1.Ingress, error) {
+func defineIngress(ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, error) {
 
 	rulesHost := fmt.Sprintf("%s%s%s", ingressName, ".", hostName)
 
@@ -790,12 +803,38 @@ func defineIngress(ingressName string, namespace string, hostName string, servic
 	var httpIngressPath netv1.HTTPIngressPath
 	var pathType netv1.PathType
 	var ingressServiceBackend netv1.IngressServiceBackend
-	var ingressTLS netv1.IngressTLS
+	var objectMeta metav1.ObjectMeta
+	//var ingressTLS netv1.IngressTLS
+
+	// Define map for the annotations
+	annotations := make(map[string]string)
+	key := "route.openshift.io/termination"
+	value := "edge"
+	annotations[key] = value
+
+	objectMeta = metav1.ObjectMeta{
+		Name:                       ingressName,
+		GenerateName:               "",
+		Namespace:                  namespace,
+		SelfLink:                   "",
+		UID:                        "",
+		ResourceVersion:            "",
+		Generation:                 0,
+		CreationTimestamp:          metav1.Time{},
+		DeletionTimestamp:          &metav1.Time{},
+		DeletionGracePeriodSeconds: new(int64),
+		Labels:                     map[string]string{},
+		Annotations:                annotations,
+		OwnerReferences:            []metav1.OwnerReference{},
+		Finalizers:                 []string{},
+		ClusterName:                "",
+		ManagedFields:              []metav1.ManagedFieldsEntry{},
+	}
 
 	pathType = netv1.PathTypeImplementationSpecific
 
 	ingressServiceBackend = netv1.IngressServiceBackend{
-		Name: namespace,
+		Name: serviceName,
 		Port: netv1.ServiceBackendPort{
 			//Name:   serviceName,
 			Number: 80,
@@ -819,21 +858,19 @@ func defineIngress(ingressName string, namespace string, hostName string, servic
 		},
 	}
 
-	ingressTLS = netv1.IngressTLS{
-		Hosts:      []string{},
-		SecretName: "",
-	}
+	/*ingressTLS = netv1.IngressTLS{
+		Hosts:      []string{rulesHost},
+		SecretName: tlsSecretName,
+	}*/
 
 	return &netv1.Ingress{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Ingress"},
-		ObjectMeta: metav1.ObjectMeta{Name: ingressName, Namespace: namespace},
+		ObjectMeta: objectMeta,
 		Spec: netv1.IngressSpec{
 			//IngressClassName: new(string),
-			DefaultBackend: &netv1.IngressBackend{Service: &netv1.IngressServiceBackend{Name: serviceName, Port: netv1.ServiceBackendPort{Number: 80}}},
-			TLS:            []netv1.IngressTLS{ingressTLS},
-			Rules:          []netv1.IngressRule{ingressRule},
+			//TLS:   []netv1.IngressTLS{ingressTLS},
+			Rules: []netv1.IngressRule{ingressRule},
 		},
-		//Status: netv1.IngressStatus{},
 	}, nil
 
 }
@@ -890,7 +927,7 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 	value = serviceLabels
 	mlabel[key] = value
 
-	var port int32 = 8081
+	var port int32 = 80
 
 	return &corev1.Service{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
@@ -900,6 +937,9 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 			Ports: []corev1.ServicePort{{
 				Port: port,
 				Name: "http",
+				TargetPort: intstr.IntOrString{
+					IntVal: 8081,
+				},
 			}},
 			Selector: mselector,
 		},
@@ -907,7 +947,7 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 }
 
 // Create Service ClusterIP definition
-func defineServiceClust(name string, namespace string) (*corev1.Service, error) {
+func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
 
 	// Define map for the selector
 	mselector := make(map[string]string)

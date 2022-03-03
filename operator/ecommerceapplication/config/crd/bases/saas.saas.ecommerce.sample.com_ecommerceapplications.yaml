@@ -42,6 +42,10 @@ spec:
                 type: string
               ibmCloudOperatorSecretNamespace:
                 type: string
+              ingressHostname:
+                type: string
+              ingressTlsSecretName:
+                type: string
               postgresSecretName:
                 type: string
               size:

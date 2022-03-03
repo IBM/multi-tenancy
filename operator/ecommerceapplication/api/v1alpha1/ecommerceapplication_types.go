@@ -29,9 +29,11 @@ type ECommerceApplicationSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of ECommerceApplication. Edit ecommerceapplication_types.go to remove/update
-	Size               int32  `json:"size"`
-	PostgresSecretName string `json:"postgresSecretName,omitempty"`
-	AppIdSecretName    string `json:"appIdSecretName,omitempty"`
+	Size                 int32  `json:"size"`
+	PostgresSecretName   string `json:"postgresSecretName,omitempty"`
+	AppIdSecretName      string `json:"appIdSecretName,omitempty"`
+	IngressTlsSecretName string `json:"ingressTlsSecretName,omitempty"`
+	IngressHostname      string `json:"ingressHostname,omitempty"`
 
 	TenantName string `json:"tenantName,omitempty"`
 
