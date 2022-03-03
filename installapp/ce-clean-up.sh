@@ -43,15 +43,15 @@ export IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
 export REGISTRY_URL=$(cat ./$1 | jq '.REGISTRY.URL' | sed 's/"//g')
 export IBM_CR_SERVER=$REGISTRY_URL
 export IMAGE_TAG=$(cat ./$1 | jq '.REGISTRY.TAG' | sed 's/"//g')
-export NAMESPACE=$(cat ./$1 | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
+export CR_NAMESPACE=$(cat ./$1 | jq '.REGISTRY.NAMESPACE' | sed 's/"//g')
 # IBM Cloud target
 export RESOURCE_GROUP=$(cat ./$1 | jq '.IBM_CLOUD.RESOURCE_GROUP' | sed 's/"//g')
 export REGION=$(cat ./$1 | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
 # ecommerce application container registry
 export FRONTEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_FRONTEND' | sed 's/"//g')
 export BACKEND_IMAGE_NAME=$(cat ./$1 | jq '.IMAGES.NAME_BACKEND' | sed 's/"//g')
-export FRONTEND_IMAGE="$REGISTRY_URL/$NAMESPACE/$FRONTEND_IMAGE_NAME:$IMAGE_TAG"
-export SERVICE_CATALOG_IMAGE="$REGISTRY_URL/$NAMESPACE/$BACKEND_IMAGE_NAME:$IMAGE_TAG"
+export FRONTEND_IMAGE="$REGISTRY_URL/$CR_NAMESPACE/$FRONTEND_IMAGE_NAME:$IMAGE_TAG"
+export SERVICE_CATALOG_IMAGE="$REGISTRY_URL/$CR_NAMESPACE/$BACKEND_IMAGE_NAME:$IMAGE_TAG"
 
 # Tenant config
 # --------------
@@ -86,6 +86,7 @@ echo "Postgres service key name        : $POSTGRES_SERVICE_KEY_NAME"
 echo "Postgres sample data sql         : $POSTGRES_SQL_FILE"
 echo "---------------------------------"
 echo "IBM Cloud Container Registry URL : $IBM_CR_SERVER"
+echo "Registry Namespace               : $CR_NAMESPACE"
 echo "---------------------------------"
 echo "IBM Cloud RESOURCE_GROUP         : $RESOURCE_GROUP"
 echo "IBM Cloud REGION                 : $REGION"
@@ -129,6 +130,18 @@ cleanIBMContainerImages() {
     ibmcloud cr image-rm $SERVICE_CATALOG_IMAGE
     ibmcloud cr image-rm $FRONTEND_IMAGE
 
+}
+
+cleanIBMContainerNamespace () {
+
+    echo "delete namespace"
+    ibmcloud target -g $RESOURCE_GROUP
+    ibmcloud target -r $REGION
+    ibmcloud target
+    # login with buildah
+    ibmcloud iam oauth-tokens | sed -ne '/IAM token/s/.* //p' | buildah login -u iambearer --password-stdin $REGISTRY_URL
+
+    ibmcloud cr namespace-rm $CR_NAMESPACE  
 }
 
 cleanCEsecrets () {
@@ -224,6 +237,9 @@ echo " Clean IBM  ContainerImages registry"
 echo "************************************"
 
 cleanIBMContainerImages
+# To avoid deletion of the Container Registry Namespace 
+# please comment out the `cleanIBMContainerNamespace`
+cleanIBMContainerNamespace
 
 echo "************************************"
 echo " Clean keys "
@@ -249,4 +265,7 @@ cleanPostgresService
 echo "************************************"
 echo " Clean Code Engine Project $PROJECT_NAME"
 echo "************************************"
-#cleanCodeEngineProject
+
+# To avoid the deletion of the Code Engine project 
+# please comment out the `cleanCodeEngineProject`
+cleanCodeEngineProject
