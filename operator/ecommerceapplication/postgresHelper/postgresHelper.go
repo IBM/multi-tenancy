@@ -7,6 +7,9 @@ import (
 	"io"
 	"net/http"
 
+	"errors"
+
+	"github.com/jackc/pgconn"
 	pgx "github.com/jackc/pgx/v4"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -106,6 +109,16 @@ func CreateExampleDatabase(DATABASE_URL string, ctx context.Context) (error, boo
 
 	if err != nil {
 		log.Error(err, "File content for the statement")
+
+		var pge *pgconn.PgError
+		if errors.As(err, &pge) {
+			if pge.SQLState() == "42P07" {
+				// tables already exist
+				log.Info("SQLState=4207, indicates tables already exist\n")
+				postgresTableExists = true
+				return nil, postgresTableExists
+			}
+		}
 		return err, postgresTableExists
 	} else {
 		log.Info("File content for the statement: true\n")

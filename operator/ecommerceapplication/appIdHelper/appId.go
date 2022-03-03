@@ -9,12 +9,12 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
-
-	"os"
 
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -104,9 +104,9 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 	//var body []byte
 
 	//Temp
-	if true {
+	/*if true {
 		return clientId, nil
-	}
+	}*/
 
 	appIdApps, err := getAppIdApplications(managementUrl, ibmCloudApiKey, tenantId, ctx)
 	// Error retrieving client Id - requeue the request.
@@ -148,7 +148,7 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 			}
 
 			// Configure UI Text
-			err = configureUiText(managementUrl, ibmCloudApiKey, tenantId, ctx)
+			err = configureUiText(managementUrl, ibmCloudApiKey, tenantName, ctx)
 			if err != nil {
 				return "", err
 			}
@@ -159,16 +159,17 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 				return "", err
 			}
 
-			//configureUiImage()
-			err = configureUiImage(managementUrl, ibmCloudApiKey, ctx)
+			// Configure UI Image
+			// The function below does not yet work.  However, the UI Image is optional.
+			/*err = configureUiImage(managementUrl, ibmCloudApiKey, ctx)
 			if err != nil {
 				return "", err
-			}
-
-			//jsonData.Applications[0].ClientId
+			}*/
 
 		} else {
 			log.Info("App Id Application count is more than zero.  Return the clientId for the first application")
+			clientId = jsonData.Applications[0].ClientId
+			// Assume for now that this AppId instance is used for only one tenant / application, hence return first clientID
 		}
 
 	}
@@ -218,7 +219,7 @@ func addScope(managementUrl string, ibmCloudApiKey string, clientId string, ctx 
 
 	url := fmt.Sprintf("%s%s%s%s", managementUrl, "/applications/", clientId, "/scopes")
 	jsonPayload := []byte("{\"scopes\": [\"tenant_scope\"]}")
-	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+	_, err := doHttpPut(jsonPayload, url, ibmCloudApiKey, ctx)
 
 	if err != nil {
 		return err
@@ -235,7 +236,7 @@ func addRole(managementUrl string, ibmCloudApiKey string, clientId string, ctx c
 	*/
 
 	url := fmt.Sprintf("%s%s", managementUrl, "/roles")
-	jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"name\": \"tenant_user_access\",\"description\": \"This is an example role.\",\"access\": [{\"application_id\": \"", clientId, "\"'", "\"scopes\": [\"tenant_scope\"]}]}"))
+	jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"name\": \"tenant_user_access\",\"description\": \"This is an example role.\",\"access\": [{\"application_id\": \"", clientId, "\",", "\"scopes\": [\"tenant_scope\"]}]}"))
 
 	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
 	if err != nil {
@@ -260,7 +261,7 @@ func addUsers(managementUrl string, ibmCloudApiKey string, ctx context.Context) 
 	return nil
 }
 
-func configureUiText(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) error {
+func configureUiText(managementUrl string, ibmCloudApiKey string, tenantName string, ctx context.Context) error {
 	/*
 	   	sed "s+FRONTENDNAME+$FRONTEND_NAME+g" ./appid-configs/add-ui-text-template.json > ./$ADD_UI_TEXT
 	       OAUTHTOKEN=$(ibmcloud iam oauth-tokens | awk '{print $4;}')
@@ -268,10 +269,10 @@ func configureUiText(managementUrl string, ibmCloudApiKey string, tenantId strin
 	       result=$(curl -d @./$ADD_UI_TEXT -H "Content-Type: application/json" -X PUT -H "Authorization: Bearer $OAUTHTOKEN" $MANAGEMENTURL/config/ui/theme_text)
 	*/
 
-	url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/theme_txt")
-	jsonPayload := []byte(fmt.Sprintf("%s%s%s", "{\"tabTitle\": \"Login to\"", tenantId, "\", \"footnote\": \"Powered by the EMEA - Hybrid Cloud Build Team\"}"))
+	url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/theme_text")
+	jsonPayload := []byte(fmt.Sprintf("%s%s%s", "{\"tabTitle\": \"Login to ", tenantName, "\", \"footnote\": \"Powered by the EMEA - Hybrid Cloud Build Team\"}"))
 
-	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+	_, err := doHttpPut(jsonPayload, url, ibmCloudApiKey, ctx)
 	if err != nil {
 		return err
 	}
@@ -288,7 +289,7 @@ func configureUiColour(managementUrl string, ibmCloudApiKey string, ctx context.
 	url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/theme_color")
 	jsonPayload := []byte("{\"headerColor\": \"#008b8b\"}")
 
-	_, err := doHttpPost(jsonPayload, url, ibmCloudApiKey, ctx)
+	_, err := doHttpPut(jsonPayload, url, ibmCloudApiKey, ctx)
 	if err != nil {
 		return err
 	}
@@ -302,48 +303,31 @@ func configureUiImage(managementUrl string, ibmCloudApiKey string, ctx context.C
 	       echo "POST url: $MANAGEMENTURL/config/ui/media?mediaType=logo"
 	       result=$(curl -F "file=@./$ADD_IMAGE" -H "Content-Type: multipart/form-data" -X POST -v -H "Authorization: Bearer $OAUTHTOKEN" "$MANAGEMENTURL/config/ui/media?mediaType=logo")
 	*/
-	//appid-images/logo.png
 
-	//url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/media?mediaType=logo")
-
-	//https: //raw.githubusercontent.com/IBM/multi-tenancy/main/installapp/appid-images/logo.png
-
-	url := fmt.Sprintf("%s%s", managementUrl, "config/ui/media?mediaType=logo")
-
+	url := fmt.Sprintf("%s%s", managementUrl, "/config/ui/media?mediaType=logo")
 	log := ctrllog.FromContext(ctx)
 
 	//Download the image file from GitHub
 	fileUrl := "https://raw.githubusercontent.com/IBM/multi-tenancy/main/installapp/appid-images/logo.png"
-	err := downloadFile("logo.png", fileUrl)
+	err := downloadFile("/tmp/logo.png", fileUrl)
 	if err != nil {
 		return err
 	}
 
-	client := &http.Client{
-		Timeout: time.Second * 10,
-	}
-	body := &bytes.Buffer{}
+	/*extraParams := map[string]string{
+		"title":       "A",
+		"author":      "A",
+		"description": "A",
+	}*/
 
-	writer := multipart.NewWriter(body)
+	//request, err := newfileUploadRequest2(url, "file", "/tmp/logo.png")
 
-	fw, err := writer.CreateFormFile("file", "logo.png")
-	if err != nil {
-	}
-	file, err := os.Open("test.png")
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(fw, file)
+	request, err := newfileUploadRequest(url, "file", "/tmp/logo.png")
+
 	if err != nil {
 		return err
 	}
-
-	writer.Close()
-
-	req, err := http.NewRequest("POST", url, bytes.NewReader(body.Bytes()))
-	if err != nil {
-		return err
-	}
+	client := &http.Client{}
 
 	oauth, err := getIbmCloudOauthToken(ibmCloudApiKey, ctx)
 	if err != nil {
@@ -352,14 +336,24 @@ func configureUiImage(managementUrl string, ibmCloudApiKey string, ctx context.C
 	}
 	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
 
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Set("Content-Type", "multipart/form-data")
-	req.Header.Set("Authorization", bearer)
+	request.Header.Set("Authorization", bearer)
 
-	rsp, _ := client.Do(req)
-	if rsp.StatusCode != http.StatusOK {
-		log.Info("Request failed with response code: %d", rsp.StatusCode)
+	//dump, _ := httputil.DumpRequest(request, true)
+	//fmt.Println(string(dump))
+
+	dump, _ := httputil.DumpRequestOut(request, true)
+	fmt.Println(string(dump))
+
+	resp, err := client.Do(request)
+
+	if err != nil {
+		return err
 	}
+
+	log.Info(fmt.Sprintf("%s%s", "response Status:", resp.Status))
+	log.Info(fmt.Sprintf("%s%s", "response Headers:", resp.Header))
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	log.Info(fmt.Sprintf("%s%s", "returning body=", string(respBody)))
 
 	return nil
 }
@@ -388,6 +382,44 @@ func doHttpPost(jsonPayload []byte, url string, ibmCloudApiKey string, ctx conte
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(err, "Create POST request failed")
+		return body, err
+	}
+	defer resp.Body.Close()
+
+	log.Info(fmt.Sprintf("%s%s", "response Status:", resp.Status))
+	log.Info(fmt.Sprintf("%s%s", "response Headers:", resp.Header))
+
+	body, _ = ioutil.ReadAll(resp.Body)
+
+	log.Info(fmt.Sprintf("%s%s", "returning body=", string(body)))
+	return body, nil
+
+}
+
+func doHttpPut(jsonPayload []byte, url string, ibmCloudApiKey string, ctx context.Context) ([]byte, error) {
+
+	log := ctrllog.FromContext(ctx)
+	var body []byte
+	client := &http.Client{}
+
+	log.Info(fmt.Sprintf("%s%s", "url=", url))
+	log.Info(fmt.Sprintf("%s%s", "jsonPayload=", string(jsonPayload)))
+
+	oauth, err := getIbmCloudOauthToken(ibmCloudApiKey, ctx)
+	if err != nil {
+		log.Error(err, "Error retrieving IBM Cloud Oauth token")
+		return body, err
+	}
+
+	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonPayload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", bearer)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error(err, "Create PUT request failed")
 		return body, err
 	}
 	defer resp.Body.Close()
@@ -477,4 +509,75 @@ func downloadFile(filepath string, url string) error {
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
 	return err
+}
+
+/*func newfileUploadRequestOld(uri string, paramName, path string) (*http.Request, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	fileContents, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	fi, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	file.Close()
+
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(paramName, fi.Name())
+	if err != nil {
+		return nil, err
+	}
+	part.Write(fileContents)
+
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("POST", uri, body)
+
+	//request.Header.Set("Content-Type", writer.FormDataContentType())
+	request.Header.Set("Content-Type", "multipart/form-data")
+	request.Header.Set("Content-Type", "image/png")
+
+	//request.Header.Add("Content-Length", strconv.Itoa(len(writer)))
+
+	return request, nil
+}*/
+
+func newfileUploadRequest(uri string, paramName string, path string) (*http.Request, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(paramName, filepath.Base(path))
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(part, file)
+
+	/*for key, val := range params {
+		_ = writer.WriteField(key, val)
+	}*/
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", uri, body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	//req.Header.Set("Content-Type", "multipart/form-data")
+	req.Header.Set("Content-Type", "image/png")
+
+	return req, err
 }

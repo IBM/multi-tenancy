@@ -43,6 +43,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	ibmAppId "github.com/multi-tenancy/operator/appIdHelper"
+
+	netv1 "k8s.io/api/networking/v1"
 )
 
 // turn on and of custom debugging output
@@ -266,19 +268,15 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		//logger.Info(fmt.Sprintf("IBM Cloud API = %s", apiKey))
-		clientId, err := ibmAppId.ConfigureAppId(managementUrl, apiKey, string(tenantId), ecommerceapplication.Spec.TenantName, ctx)
-		//clientId, err := ibmAppId.ConfigureAppId("", "", "", "", ctx)
-		//func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string, tenantName string, ctx context.Context)
 
-		// Error retrieving client Id - requeue the request.
+		clientId, err := ibmAppId.ConfigureAppId(managementUrl, apiKey, string(tenantId), ecommerceapplication.Spec.TenantName, ctx)
+
 		if err != nil {
+			// Error retrieving client Id - requeue the request.
 			return ctrl.Result{RequeueAfter: time.Minute}, nil
 		} else {
 			logger.Info(fmt.Sprintf("App Id client Id = %s", clientId))
 			// Create new secret for backend using App Id clientId
-			//Temp
-			clientId = "1234567"
 			targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_CLIENT_ID", clientId)
 			// Error defining the secret - requeue the request.
 			if err != nil {
@@ -295,7 +293,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Name, Namespace: ecommerceapplication.Namespace}, found)
+	deploymentName := fmt.Sprintf("%s%s", ecommerceapplication.Name, "-backend")
+	err = r.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: ecommerceapplication.Namespace}, found)
 
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
@@ -311,6 +310,59 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	} else if err != nil {
 		logger.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
+	}
+
+	// Define backend service using Cluster IP
+	helpers.CustomLogs("Create backend Service using Cluster IP", ctx, customLogger)
+	targetBackendServ, err := defineBackendServiceClusterIp(ecommerceapplication.Name, ecommerceapplication.Namespace)
+
+	if err != nil {
+		// Error creating Service
+		return ctrl.Result{}, err
+	}
+
+	backendService := &corev1.Service{}
+	err = r.Get(context.TODO(), types.NamespacedName{Name: targetBackendServ.Name, Namespace: targetBackendServ.Namespace}, backendService)
+	if err != nil && errors.IsNotFound(err) {
+		logger.Info(fmt.Sprintf("Target service %s doesn't exist, creating it", targetBackendServ.Name))
+		err = r.Create(context.TODO(), targetBackendServ)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	} else {
+		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetBackendServ.Name))
+
+		// TODO - this update generates an error
+		//err = r.Update(context.TODO(), targetBackendServ)
+
+		if err != nil {
+			logger.Error(err, "could not update backend service")
+			return ctrl.Result{}, err
+		}
+	}
+
+	// Create Backend Ingress
+	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
+	targetBackendIngress, err := defineIngress(ingressName, ecommerceapplication.Namespace, "router-default.roks-gen2-suedbro-162e406f043e20da9b0ef0731954a894-0000.us-south.containers.appdomain.cloud", targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port))
+	if err != nil {
+		// Error creating Ingress
+		return ctrl.Result{}, err
+	}
+
+	backendIngress := &netv1.Ingress{}
+	err = r.Get(context.TODO(), types.NamespacedName{Name: targetBackendIngress.Name, Namespace: targetBackendIngress.Namespace}, backendIngress)
+	if err != nil && errors.IsNotFound(err) {
+		logger.Info(fmt.Sprintf("Target ingress %s doesn't exist, creating it", targetBackendIngress.Name))
+		err = r.Create(context.TODO(), targetBackendIngress)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	} else {
+		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetBackendIngress.Name))
+		err = r.Update(context.TODO(), targetBackendIngress)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	//*****************************************
@@ -371,7 +423,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Create service NodePort
 	helpers.CustomLogs("Create service NodePort", ctx, customLogger)
 
-	targetServPort, err := defineServiceNodePort(ecommerceapplication.Name, ecommerceapplication.Namespace)
+	targetServPort, err := defineFrontendServiceNodePort(ecommerceapplication.Name, ecommerceapplication.Namespace)
 
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
@@ -491,18 +543,21 @@ func labelsForFrontend(tenancyfrontendname string, ecommerceapplication_cr strin
 // labelsForTenancyFrontend returns the labels for selecting the resources
 // belonging to the given ecommerceapplication CR name.
 // Example: Is used in "deploymentForFrontend"
-func labelsForBackend(name string) map[string]string {
-	return map[string]string{"app": "labelsForTenancyBackeend", "ecommerceapplication_cr": name}
+func labelsForBackend(tenancybackendname string, ecommerceapplication_cr string) map[string]string {
+	return map[string]string{"app": tenancybackendname, "ecommerceapplication_cr": ecommerceapplication_cr}
 }
 
 // deploymentForBackend definition and returns a tenancybackendend Deployment object
 func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
-	ls := labelsForBackend(m.Name)
+
+	deploymentName := fmt.Sprintf("%s%s", m.Name, "-backend")
+
+	ls := labelsForBackend(deploymentName, deploymentName)
 	replicas := m.Spec.Size
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name,
+			Name:      deploymentName,
 			Namespace: m.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -725,27 +780,123 @@ func defineSecret(name string, namespace string, key string, value string) (*cor
 	}, nil
 }
 
+// Create Ingress definition
+// Create Ingress definition
+func defineIngress(ingressName string, namespace string, hostName string, serviceName string, port int) (*netv1.Ingress, error) {
+
+	rulesHost := fmt.Sprintf("%s%s%s", ingressName, ".", hostName)
+
+	var ingressRule netv1.IngressRule
+	var httpIngressPath netv1.HTTPIngressPath
+	var pathType netv1.PathType
+	var ingressServiceBackend netv1.IngressServiceBackend
+	var ingressTLS netv1.IngressTLS
+
+	pathType = netv1.PathTypeImplementationSpecific
+
+	ingressServiceBackend = netv1.IngressServiceBackend{
+		Name: namespace,
+		Port: netv1.ServiceBackendPort{
+			//Name:   serviceName,
+			Number: 80,
+		},
+	}
+
+	httpIngressPath = netv1.HTTPIngressPath{
+		Path:     "/",
+		PathType: &pathType,
+		Backend: netv1.IngressBackend{
+			Service: &ingressServiceBackend,
+		},
+	}
+
+	ingressRule = netv1.IngressRule{
+		Host: rulesHost,
+		IngressRuleValue: netv1.IngressRuleValue{
+			HTTP: &netv1.HTTPIngressRuleValue{
+				Paths: []netv1.HTTPIngressPath{httpIngressPath},
+			},
+		},
+	}
+
+	ingressTLS = netv1.IngressTLS{
+		Hosts:      []string{},
+		SecretName: "",
+	}
+
+	return &netv1.Ingress{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Ingress"},
+		ObjectMeta: metav1.ObjectMeta{Name: ingressName, Namespace: namespace},
+		Spec: netv1.IngressSpec{
+			//IngressClassName: new(string),
+			DefaultBackend: &netv1.IngressBackend{Service: &netv1.IngressServiceBackend{Name: serviceName, Port: netv1.ServiceBackendPort{Number: 80}}},
+			TLS:            []netv1.IngressTLS{ingressTLS},
+			Rules:          []netv1.IngressRule{ingressRule},
+		},
+		//Status: netv1.IngressStatus{},
+	}, nil
+
+}
+
 // Create Service NodePort definition
-func defineServiceNodePort(name string, namespace string) (*corev1.Service, error) {
+func defineFrontendServiceNodePort(name string, namespace string) (*corev1.Service, error) {
+
+	serviceLabels := fmt.Sprintf("%s%s", name, "-frontend")
+	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-frontend")
+
 	// Define map for the selector
 	mselector := make(map[string]string)
 	key := "app"
-	value := name
+	value := serviceLabels
 	mselector[key] = value
 
 	// Define map for the labels
 	mlabel := make(map[string]string)
 	key = "app"
 	value = "service-frontend"
-	mlabel[key] = value
+	mlabel[key] = serviceLabels
 
 	var port int32 = 8080
 
 	return &corev1.Service{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
-		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace, Labels: mlabel},
+		ObjectMeta: metav1.ObjectMeta{Name: serviceName, Namespace: namespace, Labels: mlabel},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeNodePort,
+			Ports: []corev1.ServicePort{{
+				Port: port,
+				Name: "http",
+			}},
+			Selector: mselector,
+		},
+	}, nil
+}
+
+// Create Backend Service definition
+func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
+
+	serviceLabels := fmt.Sprintf("%s%s", name, "-backend")
+	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-backend")
+
+	// Define map for the selector
+	mselector := make(map[string]string)
+	key := "app"
+	value := serviceLabels
+	mselector[key] = value
+
+	// Define map for the labels
+	mlabel := make(map[string]string)
+	key = "app"
+	value = serviceLabels
+	mlabel[key] = value
+
+	var port int32 = 8081
+
+	return &corev1.Service{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
+		ObjectMeta: metav1.ObjectMeta{Name: serviceName, Namespace: namespace, Labels: mlabel},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeClusterIP,
 			Ports: []corev1.ServicePort{{
 				Port: port,
 				Name: "http",

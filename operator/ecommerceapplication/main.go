@@ -52,8 +52,8 @@ func init() {
 // TODO edit this namespace/project list to support concorrent development when running operator locally with "make install run"
 // this changes the operator scope from cluster to namespace
 // the default namespace must also be included
-/// var developerNamespaces = []string{"deleeuw", "default"} // List of Namespaces
-var developerNamespaces = []string{"saas-operator-development-thomas", "default"} // List of Namespaces
+var developerNamespaces = []string{"deleeuw", "default"} // List of Namespaces
+//var developerNamespaces = []string{"saas-operator-development-thomas", "default"} // List of Namespaces
 
 func main() {
 	var metricsAddr string
