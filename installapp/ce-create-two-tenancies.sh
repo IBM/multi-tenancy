@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # CLI Documentation
 # ================
 # command documentation: https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-application-create
@@ -11,9 +10,9 @@
 # **************** Global variables
 
 # Configurations
-export GLOBAL="tenants-config/global/global.json"
-export TENANT_A="tenants-config/tenants/tenant-a.json"
-export TENANT_B="tenants-config/tenants/tenant-b.json"
+export GLOBAL="../configuration/global.json"
+export TENANT_A="../configuration/tenants/tenant-a.json"
+export TENANT_B="../configuration/tenants/tenant-b.json"
 
 # ecommerce application container image names
 export REGISTRY_URL=$(cat ./$GLOBAL | jq '.REGISTRY.URL' | sed 's/"//g')
@@ -37,8 +36,9 @@ export REGION=$(cat ./$GLOBAL | jq '.IBM_CLOUD.REGION' | sed 's/"//g')
 # **********************************************************************************
 # Functions definition
 # **********************************************************************************
+# FYI: https://stackoverflow.com/questions/12468889/bash-script-error-function-not-found-why-would-this-appear
 
-function createNamespace(){
+createNamespaceBuildah() {
      
     echo "IBMCLOUD_CR_NAMESPACE: $IBMCLOUD_CR_NAMESPACE"
     echo "RESOURCE_GROUP       : $RESOURCE_GROUP"
@@ -51,7 +51,8 @@ function createNamespace(){
     ibmcloud target -g $RESOURCE_GROUP
     ibmcloud target -r $REGION
     ibmcloud target
-    ibmcloud cr login
+    # login with buildah
+    ibmcloud iam oauth-tokens | sed -ne '/IAM token/s/.* //p' | buildah login -u iambearer --password-stdin $IBMCLOUD_CR_REGION_URL
     RESULT=$(ibmcloud cr namespace-add $IBMCLOUD_CR_NAMESPACE | grep "FAILED")
 
     if [[ $RESULT =~ "FAILED"  ]]; then
@@ -65,14 +66,15 @@ function createNamespace(){
 
 }
 
-function createAndPushIBMContainer () {
+createAndPushIBMContainer () {
  
     echo "FRONTEND_IMAGE: $FRONTEND_IMAGE"
     echo "SERVICE_CATALOG_IMAGE: $SERVICE_CATALOG_IMAGE"
+    echo "IBMCLOUD_CR_REGION_URL: $IBMCLOUD_CR_REGION_URL"
 
-    createNamespace
+    createNamespaceBuildah
     
-    bash ./ce-build-images-ibm-docker.sh $SERVICE_CATALOG_IMAGE $FRONTEND_IMAGE
+    bash ./ce-build-images-ibm-buildah.sh $SERVICE_CATALOG_IMAGE $FRONTEND_IMAGE 
     
     if [ $? == "1" ]; then
       echo "*** Creation of the container images failed !"

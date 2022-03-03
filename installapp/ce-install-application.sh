@@ -149,7 +149,7 @@ export POSTGRES_URL=""
 # Functions definition
 # **********************************************************************************
 
-function setupCLIenvCE() {
+setupCLIenvCE() {
   echo "**********************************"
   echo " Using following project: $PROJECT_NAME" 
   echo "**********************************"
@@ -187,7 +187,7 @@ function setupCLIenvCE() {
   fi
 }
 
-function setupCRenvCE() {
+setupCRenvCE() {
    
    IBMCLOUDCLI_KEY_NAME="cliapikey_for_multi_tenant_$PROJECT_NAME"
    IBMCLOUDCLI_KEY_DESCRIPTION="CLI APIkey $IBMCLOUDCLI_KEY_NAME"
@@ -217,7 +217,7 @@ function setupCRenvCE() {
 
 # **** Postgres ****
 
-function createPostgres () {
+createPostgres () {
     echo ""
     echo "+++++++++++++++++++++++++"
     echo "Create postgres instance"
@@ -289,7 +289,7 @@ function createPostgres () {
     ibmcloud resource service-key-create $POSTGRES_SERVICE_KEY_NAME --instance-id $POSTGRES_INSTANCE_ID
 }
 
-function extractPostgresConfiguration () {
+extractPostgresConfiguration () {
     echo ""
     echo "+++++++++++++++++++++++++"
     echo "Extract postgres configuration"
@@ -330,7 +330,7 @@ function extractPostgresConfiguration () {
 
 }
 
-function createTablesPostgress () {
+createTablesPostgress () {
     echo ""
     echo "+++++++++++++++++++++++++"
     echo "Create table in postgres"
@@ -412,7 +412,7 @@ function createTablesPostgress () {
 
 # **** AppID ****
 
-function createAppIDService() {
+createAppIDService() {
     ibmcloud target -g $RESOURCE_GROUP
     ibmcloud target -r $REGION
     # Create AppID service
@@ -433,7 +433,7 @@ function createAppIDService() {
     echo "Management URL: $MANAGEMENTURL"
 }
 
-function configureAppIDInformation(){
+configureAppIDInformation(){
 
     #****** Set identity providers
     echo ""
@@ -576,7 +576,7 @@ function configureAppIDInformation(){
     echo ""
 }
 
-function addRedirectURIAppIDInformation(){
+addRedirectURIAppIDInformation(){
 
     #****** Add redirect uris ******
     echo ""
@@ -598,7 +598,7 @@ function addRedirectURIAppIDInformation(){
 
 # **** application and microservices ****
 
-function createSecrets() {
+createSecrets() {
 
     echo "Create secrets" 
     ibmcloud ce secret create --name postgres.certificate-data --from-literal "POSTGRES_CERTIFICATE_DATA=$POSTGRES_CERTIFICATE_DATA"
@@ -612,7 +612,7 @@ function createSecrets() {
 
 }
 
-function deployServiceCatalog(){
+deployServiceCatalog(){
     
     ibmcloud ce application create --name $SERVICE_CATALOG_NAME \
                                    --image $SERVICE_CATALOG_IMAGE \
@@ -633,7 +633,7 @@ function deployServiceCatalog(){
     echo "Set SERVICE CATALOG URL: $SERVICE_CATALOG_URL"
 }
 
-function deployFrontend(){
+deployFrontend(){
     
     ibmcloud ce application create --name $FRONTEND_NAME \
                                    --image $FRONTEND_IMAGE \
@@ -659,7 +659,7 @@ function deployFrontend(){
 
 # **** Kubernetes CLI ****
 
-function kubeDeploymentVerification(){
+kubeDeploymentVerification(){
 
     echo "************************************"
     echo " pods, deployments and configmaps details "
@@ -671,7 +671,7 @@ function kubeDeploymentVerification(){
 
 }
 
-function getKubeContainerLogs(){
+getKubeContainerLogs(){
 
     echo "************************************"
     echo " $FRONTEND_NAME log"
@@ -693,7 +693,7 @@ function getKubeContainerLogs(){
 
 }
 
-function checkKubernetesPod (){
+checkKubernetesPod (){
     application_pod="${1}" 
 
     array=("$application_pod")
