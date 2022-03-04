@@ -138,6 +138,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	logger.Info("Verify if a CRD of ECommerceApplication exists")
 	ecommerceapplication := &saasv1alpha1.ECommerceApplication{}
 	err := r.Get(ctx, req.NamespacedName, ecommerceapplication)
+	var apiKey string
+	var managementUrl string
 
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -240,7 +242,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	} else if err == nil {
 
 		//managementUrl := fmt.Sprintf("%s%s", string(secret.Data["managementUrl"]), "/applications")
-		managementUrl := string(secret.Data["managementUrl"])
+		managementUrl = string(secret.Data["managementUrl"])
 		tenantId := secret.Data["tenantId"]
 		logger.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
 		logger.Info(fmt.Sprintf("App Id tenantId = %s", tenantId))
@@ -264,7 +266,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		targetSecretName = "appid.client-id-catalog-service"
 
 		// Use appIdHelper packager to retrieve the correct client Id, via REST API
-		apiKey, err := getIbmCloudApiKey(r, ecommerceapplication.Spec.IbmCloudOperatorSecretName, ecommerceapplication.Spec.IbmCloudOperatorSecretNamespace)
+		apiKey, err = getIbmCloudApiKey(r, ecommerceapplication.Spec.IbmCloudOperatorSecretName, ecommerceapplication.Spec.IbmCloudOperatorSecretNamespace)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
@@ -373,7 +375,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Create Backend Ingress
 	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
-	targetBackendIngress, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetBackendIngress, _, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error creating Ingress
 		return ctrl.Result{}, err
@@ -389,10 +391,11 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		}
 	} else {
 		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetBackendIngress.Name))
-		err = r.Update(context.TODO(), targetBackendIngress)
+		// TODO For some reason this fails.  Need to fix this.
+		/*err = r.Update(context.TODO(), targetBackendIngress)
 		if err != nil {
 			return ctrl.Result{}, err
-		}
+		}*/
 	}
 
 	//*****************************************
@@ -467,27 +470,61 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Create service cluster
 	helpers.CustomLogs("Create service Cluster IP", ctx, customLogger)
 
-	targetServClust, err := defineFrontendServiceClusterIp(ecommerceapplication.Name, ecommerceapplication.Namespace)
+	targetFrontendServClust, err := defineFrontendServiceClusterIp(ecommerceapplication.Name, ecommerceapplication.Namespace)
 
 	// Error creating replicating the service cluster - requeue the request.
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetServClust.Name, Namespace: targetServClust.Namespace}, servClust)
+	err = r.Get(context.TODO(), types.NamespacedName{Name: targetFrontendServClust.Name, Namespace: targetFrontendServClust.Namespace}, servClust)
 
 	if err != nil && errors.IsNotFound(err) {
-		logger.Info(fmt.Sprintf("Target service cluster %s doesn't exist, creating it", targetServClust.Name))
-		err = r.Create(context.TODO(), targetServClust)
+		logger.Info(fmt.Sprintf("Target service cluster %s doesn't exist, creating it", targetFrontendServClust.Name))
+		err = r.Create(context.TODO(), targetFrontendServClust)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
-		logger.Info(fmt.Sprintf("Target service cluster %s exists, updating it now", targetServClust.Name))
-		err = r.Update(context.TODO(), targetServClust)
+		logger.Info(fmt.Sprintf("Target service cluster %s exists, updating it now", targetFrontendServClust.Name))
+		// TODO For some reason this fails.  Need to fix this.
+		/*err = r.Update(context.TODO(), targetFrontendServClust)
+		if err != nil {
+			return ctrl.Result{}, err
+		}*/
+	}
+
+	// Create Frontend Ingress
+	ingressName = fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-frontend")
+	targetFrontendIngress, frontendUri, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetFrontendServClust.Name, int(targetFrontendServClust.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	if err != nil {
+		// Error creating Ingress
+		return ctrl.Result{}, err
+	}
+
+	frontendIngress := &netv1.Ingress{}
+	err = r.Get(context.TODO(), types.NamespacedName{Name: targetFrontendIngress.Name, Namespace: targetFrontendIngress.Namespace}, frontendIngress)
+	if err != nil && errors.IsNotFound(err) {
+		logger.Info(fmt.Sprintf("Target ingress %s doesn't exist, creating it", targetFrontendIngress.Name))
+		err = r.Create(context.TODO(), targetFrontendIngress)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
+	} else {
+		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetFrontendIngress.Name))
+		// TODO For some reason this fails.  Need to fix this.
+		/*err = r.Update(context.TODO(), targetFrontendIngress)
+		if err != nil {
+			return ctrl.Result{}, err
+		}*/
+	}
+
+	// Add Ingess URI to AppId Redirect URIs
+	err = ibmAppId.AppendRedirectUrl(managementUrl, apiKey, frontendUri, ctx)
+
+	if err != nil {
+		// Error adding App Id Redirect URI - requeue the request.
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
 	//*****************************************
@@ -795,7 +832,7 @@ func defineSecret(name string, namespace string, key string, value string) (*cor
 }
 
 // Create Ingress definition
-func defineIngress(ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, error) {
+func defineIngress(ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, string, error) {
 
 	rulesHost := fmt.Sprintf("%s%s%s", ingressName, ".", hostName)
 
@@ -871,7 +908,7 @@ func defineIngress(ingressName string, namespace string, hostName string, servic
 			//TLS:   []netv1.IngressTLS{ingressTLS},
 			Rules: []netv1.IngressRule{ingressRule},
 		},
-	}, nil
+	}, "http://" + rulesHost, nil
 
 }
 

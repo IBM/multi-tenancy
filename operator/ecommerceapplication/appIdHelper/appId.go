@@ -358,6 +358,43 @@ func configureUiImage(managementUrl string, ibmCloudApiKey string, ctx context.C
 	return nil
 }
 
+func doHttpGet(url string, ibmCloudApiKey string, ctx context.Context) ([]byte, error) {
+
+	log := ctrllog.FromContext(ctx)
+	var body []byte
+	client := &http.Client{}
+
+	log.Info(fmt.Sprintf("%s%s", "url=", url))
+
+	oauth, err := getIbmCloudOauthToken(ibmCloudApiKey, ctx)
+	if err != nil {
+		log.Error(err, "Error retrieving IBM Cloud Oauth token")
+		return body, err
+	}
+
+	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
+
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", bearer)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error(err, "Create GET request failed")
+		return body, err
+	}
+	defer resp.Body.Close()
+
+	log.Info(fmt.Sprintf("%s%s", "response Status:", resp.Status))
+	log.Info(fmt.Sprintf("%s%s", "response Headers:", resp.Header))
+
+	body, _ = ioutil.ReadAll(resp.Body)
+
+	log.Info(fmt.Sprintf("%s%s", "returning body=", string(body)))
+	return body, nil
+
+}
+
 func doHttpPost(jsonPayload []byte, url string, ibmCloudApiKey string, ctx context.Context) ([]byte, error) {
 
 	log := ctrllog.FromContext(ctx)
@@ -580,4 +617,51 @@ func newfileUploadRequest(uri string, paramName string, path string) (*http.Requ
 	req.Header.Set("Content-Type", "image/png")
 
 	return req, err
+}
+
+func AppendRedirectUrl(managementUrl string, ibmCloudApiKey string, newRedirctUri string, ctx context.Context) error {
+
+	type appIdRedirectUris struct {
+		RedirectUris []string `json:"redirectUris"`
+	}
+
+	var jsonData appIdRedirectUris
+
+	log := ctrllog.FromContext(ctx)
+
+	url := fmt.Sprintf("%s%s", managementUrl, "/config/redirect_uris")
+
+	resp, err := doHttpGet(url, ibmCloudApiKey, ctx)
+
+	if err != nil {
+		return err
+	} else {
+		// Retrieve existing Redirect URIs
+		err = json.Unmarshal(resp, &jsonData)
+		if err != nil {
+			log.Error(err, "unmarshall error")
+			return err
+		}
+
+		jsonData.RedirectUris = append(jsonData.RedirectUris, newRedirctUri)
+		jsonData.RedirectUris = append(jsonData.RedirectUris, "http://ibm.com")
+
+		//input := "golang, elixir, python, java"
+		//tags := strings.Split(input, ",")
+
+		joined := strings.Join(jsonData.RedirectUris[:], ",")
+
+		//jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"redirectUris\":[", joined, "]", ", \"additionalProp1\":}"))
+		jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"redirectUris\":[", joined, "]", "}"))
+
+		_, err := doHttpPut(jsonPayload, url, ibmCloudApiKey, ctx)
+
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+
 }
