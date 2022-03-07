@@ -32,81 +32,54 @@ type appIdApplications struct {
 	Applications []appIdApplication `json:"applications"`
 }
 
-func getAppIdApplications(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) ([]byte, error) {
+func AppendRedirectUrl(managementUrl string, ibmCloudApiKey string, newRedirctUri string, ctx context.Context) error {
 
-	//$ curl -X POST     "https://iam.cloud.ibm.com/identity/token"     -H "content-type: application/x-www-form-urlencoded"     -H "accept: application/json"     -d 'grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=<API_KEY>' > token.json
+	type appIdRedirectUris struct {
+		RedirectUris []string `json:"redirectUris"`
+	}
 
-	/*APPID_MANAGEMENT_URL_ALL_APPLICATIONS=${APPID_MANAGEMENT_URL}/applications
-	echo $APPID_MANAGEMENT_URL_ALL_APPLICATIONS
-	result=$(curl -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $APPID_MANAGEMENT_URL_ALL_APPLICATIONS)
-	echo $result
-	APPID_CLIENT_ID=$(echo $result | sed -n 's|.*"clientId":"\([^"]*\)".*|\1|p')
-	echo $APPID_CLIENT_ID*/
+	var jsonData appIdRedirectUris
 
 	log := ctrllog.FromContext(ctx)
 
-	var body []byte
+	url := fmt.Sprintf("%s%s", managementUrl, "/config/redirect_uris")
 
-	//clientId := ""
-	oauth, err := getIbmCloudOauthToken(ibmCloudApiKey, ctx)
+	resp, err := doHttpGet(url, ibmCloudApiKey, ctx)
+
 	if err != nil {
-		log.Error(err, "Error retrieving IBM Cloud Oauth token")
-		return body, err
+		return err
+	} else {
+		// Retrieve existing Redirect URIs
+		err = json.Unmarshal(resp, &jsonData)
+		if err != nil {
+			log.Error(err, "unmarshall error")
+			return err
+		}
+
+		jsonData.RedirectUris = append(jsonData.RedirectUris, newRedirctUri)
+
+		json, err := json.Marshal(jsonData)
+		if err != nil {
+			return err
+		}
+
+		_, err = doHttpPut(json, url, ibmCloudApiKey, ctx)
+
+		if err != nil {
+			return err
+		}
+
 	}
 
-	url := fmt.Sprintf("%s%s", managementUrl, "/applications")
-
-	client := &http.Client{}
-
-	//appIdUrl := fmt.Sprintf("%s%s", managementUrl, "applications")
-	//log.Info(fmt.Sprintf("%s%s", "appIdUrl=", appIdUrl))
-
-	jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"tenantId\":", "\"", tenantId, "\"}"))
-	//jsonPayload := []byte(`{"tenantId":"e38a8715-b8a4-4f1f-82b2-5e434e198768"}`)
-
-	log.Info(fmt.Sprintf("%s%s", "managementUrl=", managementUrl))
-	//log.Info(fmt.Sprintf("%s%s", "jsonPayload=", jsonPayload))
-
-	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
-	log.Info(fmt.Sprintf("%s%s", "bearer=", bearer))
-
-	//jsonStr = []byte(jsonPayload)
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonPayload))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", bearer)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Error(err, "Create GET request failed")
-		return body, err
-	}
-	defer resp.Body.Close()
-
-	log.Info(fmt.Sprintf("%s%s", "response Status:", resp.Status))
-	log.Info(fmt.Sprintf("%s%s", "response Headers:", resp.Header))
-	//fmt.Println("response Status:", resp.Status)
-	//fmt.Println("response Headers:", resp.Header)
-	body, _ = ioutil.ReadAll(resp.Body)
-	//fmt.Println("response Body:", string(body))
-
-	log.Info(fmt.Sprintf("%s%s", "returning body=", string(body)))
-	return body, nil
+	return nil
 
 }
 
 func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string, tenantName string, ctx context.Context) (string, error) {
 
-	//{"applications":[]}
-
 	var jsonData appIdApplications
 	log := ctrllog.FromContext(ctx)
 	var clientId string
-	//var body []byte
-
-	//Temp
-	/*if true {
-		return clientId, nil
-	}*/
 
 	appIdApps, err := getAppIdApplications(managementUrl, ibmCloudApiKey, tenantId, ctx)
 	// Error retrieving client Id - requeue the request.
@@ -175,6 +148,33 @@ func ConfigureAppId(managementUrl string, ibmCloudApiKey string, tenantId string
 	}
 
 	return clientId, nil
+
+}
+
+func getAppIdApplications(managementUrl string, ibmCloudApiKey string, tenantId string, ctx context.Context) ([]byte, error) {
+
+	//$ curl -X POST     "https://iam.cloud.ibm.com/identity/token"     -H "content-type: application/x-www-form-urlencoded"     -H "accept: application/json"     -d 'grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=<API_KEY>' > token.json
+
+	/*APPID_MANAGEMENT_URL_ALL_APPLICATIONS=${APPID_MANAGEMENT_URL}/applications
+	echo $APPID_MANAGEMENT_URL_ALL_APPLICATIONS
+	result=$(curl -H "Content-Type: application/json" -H "Authorization: Bearer $OAUTHTOKEN" $APPID_MANAGEMENT_URL_ALL_APPLICATIONS)
+	echo $result
+	APPID_CLIENT_ID=$(echo $result | sed -n 's|.*"clientId":"\([^"]*\)".*|\1|p')
+	echo $APPID_CLIENT_ID*/
+
+	log := ctrllog.FromContext(ctx)
+	var body []byte
+
+	url := fmt.Sprintf("%s%s", managementUrl, "/applications")
+
+	body, err := doHttpGet(url, ibmCloudApiKey, ctx)
+	if err != nil {
+		log.Error(err, "getAppIdApplications HTTP GET request failed")
+		return body, err
+	}
+
+	// Return list of applications configured on App Id
+	return body, nil
 
 }
 
@@ -314,14 +314,6 @@ func configureUiImage(managementUrl string, ibmCloudApiKey string, ctx context.C
 		return err
 	}
 
-	/*extraParams := map[string]string{
-		"title":       "A",
-		"author":      "A",
-		"description": "A",
-	}*/
-
-	//request, err := newfileUploadRequest2(url, "file", "/tmp/logo.png")
-
 	request, err := newfileUploadRequest(url, "file", "/tmp/logo.png")
 
 	if err != nil {
@@ -335,14 +327,7 @@ func configureUiImage(managementUrl string, ibmCloudApiKey string, ctx context.C
 		return err
 	}
 	bearer := fmt.Sprintf("%s%s", "Bearer ", oauth)
-
 	request.Header.Set("Authorization", bearer)
-
-	//dump, _ := httputil.DumpRequest(request, true)
-	//fmt.Println(string(dump))
-
-	dump, _ := httputil.DumpRequestOut(request, true)
-	fmt.Println(string(dump))
 
 	resp, err := client.Do(request)
 
@@ -548,6 +533,43 @@ func downloadFile(filepath string, url string) error {
 	return err
 }
 
+func newfileUploadRequest(uri string, paramName string, path string) (*http.Request, error) {
+
+	//TODO - Function not working
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(paramName, filepath.Base(path))
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(part, file)
+
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", uri, body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	//req.Header.Set("Content-Type", "multipart/form-data")
+	req.Header.Set("Content-Type", "image/png")
+
+	return req, err
+}
+
+func dumpHttpRequest(request *http.Request) {
+	dump, _ := httputil.DumpRequestOut(request, true)
+	fmt.Println(string(dump))
+}
+
 /*func newfileUploadRequestOld(uri string, paramName, path string) (*http.Request, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -586,82 +608,3 @@ func downloadFile(filepath string, url string) error {
 
 	return request, nil
 }*/
-
-func newfileUploadRequest(uri string, paramName string, path string) (*http.Request, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile(paramName, filepath.Base(path))
-	if err != nil {
-		return nil, err
-	}
-	_, err = io.Copy(part, file)
-
-	/*for key, val := range params {
-		_ = writer.WriteField(key, val)
-	}*/
-	err = writer.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", uri, body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	//req.Header.Set("Content-Type", "multipart/form-data")
-	req.Header.Set("Content-Type", "image/png")
-
-	return req, err
-}
-
-func AppendRedirectUrl(managementUrl string, ibmCloudApiKey string, newRedirctUri string, ctx context.Context) error {
-
-	type appIdRedirectUris struct {
-		RedirectUris []string `json:"redirectUris"`
-	}
-
-	var jsonData appIdRedirectUris
-
-	log := ctrllog.FromContext(ctx)
-
-	url := fmt.Sprintf("%s%s", managementUrl, "/config/redirect_uris")
-
-	resp, err := doHttpGet(url, ibmCloudApiKey, ctx)
-
-	if err != nil {
-		return err
-	} else {
-		// Retrieve existing Redirect URIs
-		err = json.Unmarshal(resp, &jsonData)
-		if err != nil {
-			log.Error(err, "unmarshall error")
-			return err
-		}
-
-		jsonData.RedirectUris = append(jsonData.RedirectUris, newRedirctUri)
-		jsonData.RedirectUris = append(jsonData.RedirectUris, "http://ibm.com")
-
-		//input := "golang, elixir, python, java"
-		//tags := strings.Split(input, ",")
-
-		joined := strings.Join(jsonData.RedirectUris[:], ",")
-
-		//jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"redirectUris\":[", joined, "]", ", \"additionalProp1\":}"))
-		jsonPayload := []byte(fmt.Sprintf("%s%s%s%s", "{\"redirectUris\":[", joined, "]", "}"))
-
-		_, err := doHttpPut(jsonPayload, url, ibmCloudApiKey, ctx)
-
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-
-}
