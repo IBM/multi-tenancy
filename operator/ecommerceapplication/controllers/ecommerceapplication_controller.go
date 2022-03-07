@@ -311,8 +311,8 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	logger.Info("About to create backend deployment")
 	// Check if the backend deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
-	deploymentName := fmt.Sprintf("%s%s", ecommerceapplication.Name, "-backend")
-	err = r.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: ecommerceapplication.Namespace}, found)
+	backendDeploymentName := fmt.Sprintf("%s%s", ecommerceapplication.Name, "-backend")
+	err = r.Get(ctx, types.NamespacedName{Name: backendDeploymentName, Namespace: ecommerceapplication.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
 		dep := r.deploymentForbackend(ecommerceapplication, ctx)
@@ -356,7 +356,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Create Ingress for backend pod
 	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
-	targetBackendIngress, _, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetBackendIngress, backendIngressUri, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error defining Ingress
 		return ctrl.Result{}, err
@@ -385,11 +385,12 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Check if the deployment already exists, if not create a new one
 	logger.Info("Verify if the deployment already exists, if not create a new one")
 	found = &appsv1.Deployment{}
-	frontend_deployment := "frontend" + ecommerceapplication.Name
-	err = r.Get(ctx, types.NamespacedName{Name: frontend_deployment, Namespace: ecommerceapplication.Namespace}, found)
+	//frontend_deployment := "frontend" + ecommerceapplication.Name
+	frontendDeploymentName := fmt.Sprintf("%s%s", ecommerceapplication.Name, "-frontend")
+	err = r.Get(ctx, types.NamespacedName{Name: frontendDeploymentName, Namespace: ecommerceapplication.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := r.deploymentForFrontend(ecommerceapplication, ctx, frontend_deployment)
+		dep := r.deploymentForFrontend(ecommerceapplication, backendIngressUri, ctx)
 		logger.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 		err = r.Create(ctx, dep)
 		if err != nil {
@@ -664,10 +665,12 @@ func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.EC
 }
 
 // deploymentForFrontend definition and returns a tenancyfrontend Deployment object
-func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, ctx context.Context, frontend_deployment string) *appsv1.Deployment {
+func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, backendIngressUri string, ctx context.Context) *appsv1.Deployment {
 	logger := log.FromContext(ctx)
 	ls := labelsForFrontend(frontend.Name, frontend.Name)
 	replicas := frontend.Spec.Size
+
+	deploymentName := fmt.Sprintf("%s%s", frontend.Name, "-frontend")
 
 	// Just reflect the command in the deployment.yaml
 	// for the ReadinessProbe and LivenessProbe
@@ -691,7 +694,7 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1a
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      frontend_deployment,
+			Name:      deploymentName,
 			Namespace: frontend.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -731,19 +734,19 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1a
 									},
 								}},
 							{Name: "VUE_APP_API_URL_CATEGORIES",
-								Value: "VUE_APP_API_URL_CATEGORIES_VALUE",
+								Value: backendIngressUri + "/base/category",
 							},
 							{Name: "VUE_APP_API_URL_PRODUCTS",
-								Value: "VUE_APP_API_URL_PRODUCTS_VALUE",
+								Value: backendIngressUri + "/base/category",
 							},
 							{Name: "VUE_APP_API_URL_ORDERS",
-								Value: "VUE_APP_API_URL_ORDERS_VALUE",
+								Value: backendIngressUri + "/base/customer/Orders",
 							},
 							{Name: "VUE_APP_CATEGORY_NAME",
-								Value: "VUE_APP_CATEGORY_NAME_VALUE",
+								Value: frontend.Namespace,
 							},
 							{Name: "VUE_APP_HEADLINE",
-								Value: "VUE_APP_HEADLINE_VALUE",
+								Value: frontend.Namespace,
 							},
 							{Name: "VUE_APP_ROOT",
 								Value: "/",
@@ -905,7 +908,7 @@ func defineIngress(ingressName string, namespace string, hostName string, servic
 func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
 
 	serviceLabels := fmt.Sprintf("%s%s", name, "-backend")
-	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-backend")
+	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-backend-cip")
 
 	// Define map for the selector
 	mselector := make(map[string]string)
@@ -941,6 +944,9 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 // Create Service ClusterIP definition
 func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
 
+	serviceLabels := fmt.Sprintf("%s%s", name, "-backend")
+	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-backend-cip")
+
 	// Define map for the selector
 	mselector := make(map[string]string)
 	key := "app"
@@ -950,12 +956,12 @@ func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Serv
 	// Define map for the labels
 	mlabel := make(map[string]string)
 	key = "app"
-	value = "service-frontend"
+	value = serviceLabels
 	mlabel[key] = value
 
 	var port int32 = 80
 	var targetPort int32 = 8080
-	var clustserv = name + "clusterip"
+	var clustserv = serviceName
 
 	return &corev1.Service{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
