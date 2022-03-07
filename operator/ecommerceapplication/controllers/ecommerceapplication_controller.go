@@ -667,10 +667,11 @@ func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.EC
 // deploymentForFrontend definition and returns a tenancyfrontend Deployment object
 func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, backendIngressUri string, ctx context.Context) *appsv1.Deployment {
 	logger := log.FromContext(ctx)
-	ls := labelsForFrontend(frontend.Name, frontend.Name)
-	replicas := frontend.Spec.Size
 
 	deploymentName := fmt.Sprintf("%s%s", frontend.Name, "-frontend")
+
+	ls := labelsForFrontend(deploymentName, deploymentName)
+	replicas := frontend.Spec.Size
 
 	// Just reflect the command in the deployment.yaml
 	// for the ReadinessProbe and LivenessProbe
@@ -944,13 +945,13 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 // Create Service ClusterIP definition
 func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
 
-	serviceLabels := fmt.Sprintf("%s%s", name, "-backend")
+	serviceLabels := fmt.Sprintf("%s%s", name, "-frontend")
 	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-frontend-cip")
 
 	// Define map for the selector
 	mselector := make(map[string]string)
 	key := "app"
-	value := name
+	value := serviceLabels
 	mselector[key] = value
 
 	// Define map for the labels
