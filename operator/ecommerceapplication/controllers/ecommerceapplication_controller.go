@@ -134,8 +134,8 @@ var postgresTableExists bool = false
 func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	postgresUrl := ""
-	// "Verify if a CRD of ECommerceApplication exists"
-	logger.Info("Verify if a CRD of ECommerceApplication exists")
+	// "Verify if a CR of ECommerceApplication exists"
+	logger.Info("Verify if a CR of ECommerceApplication exists")
 	ecommerceapplication := &saasv1alpha1.ECommerceApplication{}
 	err := r.Get(ctx, req.NamespacedName, ecommerceapplication)
 	var apiKey string
@@ -249,7 +249,6 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		targetSecret, err := defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
 		logger.Info(fmt.Sprintf("App Id AuthServerUrl = %s", authServerUrl))
 		logger.Info("Creating appid.oauthserverurl")
-		// Error creating replicating the secret - requeue the request.
 		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
 		secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
 		if secretErr != nil && errors.IsNotFound(secretErr) {
@@ -355,8 +354,11 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	// Create Ingress for backend pod
+
+	// TODO - need to change the yaml to provide the cert for the TLS, rather than assuming a secret is already available in this namespace.
+
 	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
-	targetBackendIngress, backendIngressUri, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetBackendIngress, backendIngressUri, err := defineIngressWithTls(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error defining Ingress
 		return ctrl.Result{}, err
@@ -463,7 +465,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Create Ingress to access frontend service
 	ingressName = fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-frontend")
-	targetFrontendIngress, frontendUri, err := defineIngress(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetFrontendServClust.Name, int(targetFrontendServClust.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetFrontendIngress, frontendUri, err := defineIngressWithTls(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetFrontendServClust.Name, int(targetFrontendServClust.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error creating Ingress
 		return ctrl.Result{}, err
@@ -555,17 +557,17 @@ func labelsForBackend(tenancybackendname string, ecommerceapplication_cr string)
 }
 
 // deploymentForBackend definition and returns a tenancybackendend Deployment object
-func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
+func (r *ECommerceApplicationReconciler) deploymentForbackend(backend *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
 
-	deploymentName := fmt.Sprintf("%s%s", m.Name, "-backend")
+	deploymentName := fmt.Sprintf("%s%s", backend.Name, "-backend")
 
 	ls := labelsForBackend(deploymentName, deploymentName)
-	replicas := m.Spec.Size
+	replicas := backend.Spec.Size
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName,
-			Namespace: m.Namespace,
+			Namespace: backend.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
@@ -659,8 +661,8 @@ func (r *ECommerceApplicationReconciler) deploymentForbackend(m *saasv1alpha1.EC
 		},
 	}
 
-	// Set Memcached instance as the owner and controller
-	ctrl.SetControllerReference(m, dep, r.Scheme)
+	// Set backend instance as the owner and controller
+	ctrl.SetControllerReference(backend, dep, r.Scheme)
 	return dep
 }
 
@@ -865,6 +867,86 @@ func defineIngress(ingressName string, namespace string, hostName string, servic
 		Spec: netv1.IngressSpec{
 			//IngressClassName: new(string),
 			//TLS:   []netv1.IngressTLS{ingressTLS},
+			Rules: []netv1.IngressRule{ingressRule},
+		},
+	}, "http://" + rulesHost, nil
+
+}
+
+func defineIngressWithTls(ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, string, error) {
+
+	rulesHost := fmt.Sprintf("%s%s%s", ingressName, ".", hostName)
+
+	var ingressRule netv1.IngressRule
+	var httpIngressPath netv1.HTTPIngressPath
+	var pathType netv1.PathType
+	var ingressServiceBackend netv1.IngressServiceBackend
+	var objectMeta metav1.ObjectMeta
+	var ingressTLS netv1.IngressTLS
+
+	// Define map for the annotations
+	annotations := make(map[string]string)
+	key := "route.openshift.io/termination"
+	value := "edge"
+	annotations[key] = value
+
+	objectMeta = metav1.ObjectMeta{
+		Name:                       ingressName,
+		GenerateName:               "",
+		Namespace:                  namespace,
+		SelfLink:                   "",
+		UID:                        "",
+		ResourceVersion:            "",
+		Generation:                 0,
+		CreationTimestamp:          metav1.Time{},
+		DeletionTimestamp:          &metav1.Time{},
+		DeletionGracePeriodSeconds: new(int64),
+		Labels:                     map[string]string{},
+		Annotations:                annotations,
+		OwnerReferences:            []metav1.OwnerReference{},
+		Finalizers:                 []string{},
+		ClusterName:                "",
+		ManagedFields:              []metav1.ManagedFieldsEntry{},
+	}
+
+	pathType = netv1.PathTypeImplementationSpecific
+
+	ingressServiceBackend = netv1.IngressServiceBackend{
+		Name: serviceName,
+		Port: netv1.ServiceBackendPort{
+			//Name:   serviceName,
+			Number: 80,
+		},
+	}
+
+	httpIngressPath = netv1.HTTPIngressPath{
+		Path:     "/",
+		PathType: &pathType,
+		Backend: netv1.IngressBackend{
+			Service: &ingressServiceBackend,
+		},
+	}
+
+	ingressRule = netv1.IngressRule{
+		Host: rulesHost,
+		IngressRuleValue: netv1.IngressRuleValue{
+			HTTP: &netv1.HTTPIngressRuleValue{
+				Paths: []netv1.HTTPIngressPath{httpIngressPath},
+			},
+		},
+	}
+
+	ingressTLS = netv1.IngressTLS{
+		Hosts:      []string{hostName},
+		SecretName: tlsSecretName,
+	}
+
+	return &netv1.Ingress{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Ingress"},
+		ObjectMeta: objectMeta,
+		Spec: netv1.IngressSpec{
+			//IngressClassName: new(string),
+			TLS:   []netv1.IngressTLS{ingressTLS},
 			Rules: []netv1.IngressRule{ingressRule},
 		},
 	}, "http://" + rulesHost, nil
