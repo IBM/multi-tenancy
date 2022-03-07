@@ -945,7 +945,7 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
 
 	serviceLabels := fmt.Sprintf("%s%s", name, "-backend")
-	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-backend-cip")
+	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-frontend-cip")
 
 	// Define map for the selector
 	mselector := make(map[string]string)
