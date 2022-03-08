@@ -177,7 +177,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		// Create secrets for backend connection to Postgres
 		// Create secret postgres.username
 		targetSecretName := "postgres.username"
-		targetSecret, err := defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_USERNAME", data.Postgres.Authentication.Username)
+		targetSecret, err := r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_USERNAME", data.Postgres.Authentication.Username)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
@@ -190,7 +190,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 		// Create secret postgres.password
 		targetSecretName = "postgres.password"
-		targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_PASSWORD", data.Postgres.Authentication.Password)
+		targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_PASSWORD", data.Postgres.Authentication.Password)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
@@ -205,7 +205,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		targetSecretName = "postgres.certificate-data"
 		decodeArr, _ := b64.StdEncoding.DecodeString(data.Postgres.Certificate.CertificateBase64)
 		certDecoded := string(decodeArr[:])
-		targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_CERTIFICATE_DATA", certDecoded)
+		targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_CERTIFICATE_DATA", certDecoded)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
@@ -219,7 +219,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		// Create secret postgres.url
 		targetSecretName = "postgres.url"
 		postgresUrl = fmt.Sprintf("%s%s%s%d%s%s%s", "jdbc:postgresql://", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database, "?sslmode=verify-full&sslrootcert=/cloud-postgres-cert")
-		targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "POSTGRES_URL", postgresUrl)
+		targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_URL", postgresUrl)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
@@ -246,7 +246,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		// Create secret appid.oauthserverurl
 		targetSecretName := "appid.oauthserverurl"
 		authServerUrl := string(secret.Data["oauthServerUrl"])
-		targetSecret, err := defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
+		targetSecret, err := r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
 		logger.Info(fmt.Sprintf("App Id AuthServerUrl = %s", authServerUrl))
 		logger.Info("Creating appid.oauthserverurl")
 		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
@@ -269,7 +269,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		} else {
 			logger.Info(fmt.Sprintf("App Id client Id = %s", clientId))
 			// Create new secret for backend using App Id clientId
-			targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "APPID_CLIENT_ID", clientId)
+			targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "APPID_CLIENT_ID", clientId)
 			// Error defining the secret - requeue the request.
 			if err != nil {
 				return ctrl.Result{}, err
@@ -330,7 +330,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Create a service using Cluster IP to access backend pod
 	helpers.CustomLogs("Create backend Service using Cluster IP", ctx, customLogger)
-	targetBackendServ, err := defineBackendServiceClusterIp(ecommerceapplication.Name, ecommerceapplication.Namespace)
+	targetBackendServ, err := r.defineBackendServiceClusterIp(ecommerceapplication, ecommerceapplication.Name, ecommerceapplication.Namespace)
 	if err != nil {
 		// Error creating Service
 		return ctrl.Result{}, err
@@ -358,7 +358,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// TODO - need to change the yaml to provide the cert for the TLS, rather than assuming a secret is already available in this namespace.
 
 	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
-	targetBackendIngress, backendIngressUri, err := defineIngressWithTls(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetBackendIngress, backendIngressUri, err := r.defineIngressWithTls(ecommerceapplication, ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error defining Ingress
 		return ctrl.Result{}, err
@@ -443,7 +443,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Define cluster IP service to access frontend pods
 	servClust := &corev1.Service{}
 	helpers.CustomLogs("Create service Cluster IP", ctx, customLogger)
-	targetFrontendServClust, err := defineFrontendServiceClusterIp(ecommerceapplication.Name, ecommerceapplication.Namespace)
+	targetFrontendServClust, err := r.defineFrontendServiceClusterIp(ecommerceapplication, ecommerceapplication.Name, ecommerceapplication.Namespace)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -465,7 +465,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Create Ingress to access frontend service
 	ingressName = fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-frontend")
-	targetFrontendIngress, frontendUri, err := defineIngressWithTls(ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetFrontendServClust.Name, int(targetFrontendServClust.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetFrontendIngress, frontendUri, err := r.defineIngressWithTls(ecommerceapplication, ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetFrontendServClust.Name, int(targetFrontendServClust.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error creating Ingress
 		return ctrl.Result{}, err
@@ -499,7 +499,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	helpers.CustomLogs("Create secret appid.client-id-frontend", ctx, customLogger)
 	targetSecretName := "appid.client-id-frontend"
 	//clientId := "b12a05c3-8164-45d9-a1b8-af1dedf8ccc3"
-	targetSecret, err := defineSecret(targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_CLIENT_ID", clientId)
+	targetSecret, err := r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_CLIENT_ID", clientId)
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
 		return ctrl.Result{}, err
@@ -510,12 +510,11 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		return ctrl.Result{}, secretErr
 	}
 
-	//*****************************************
 	// Create secret appid.discovery-endpoint
 	targetSecretName = "appid.discovery-endpoint"
 	discoveryEndpoint := fmt.Sprintf("%s%s", managementUrl, "/.well-known/openid-configuration")
 	//discoveryEndpoint :="https://eu-de.appid.cloud.ibm.com/oauth/v4/3793e3f8-ed31-42c9-9294-bc415fc58ab7/.well-known/openid-configuration"
-	targetSecret, err = defineSecret(targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_DISCOVERYENDPOINT", discoveryEndpoint)
+	targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_DISCOVERYENDPOINT", discoveryEndpoint)
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
 		return ctrl.Result{}, err
@@ -778,102 +777,26 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1a
 }
 
 // Create Secret definition
-func defineSecret(name string, namespace string, key string, value string) (*corev1.Secret, error) {
+func (r *ECommerceApplicationReconciler) defineSecret(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string, key string, value string) (*corev1.Secret, error) {
 	m := make(map[string]string)
 	m[key] = value
 
-	return &corev1.Secret{
+	secret := &corev1.Secret{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Secret"},
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
 		Immutable:  new(bool),
 		Data:       map[string][]byte{},
 		StringData: m,
 		Type:       "Opaque",
-	}, nil
-}
-
-// Create Ingress definition
-func defineIngress(ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, string, error) {
-
-	rulesHost := fmt.Sprintf("%s%s%s", ingressName, ".", hostName)
-
-	var ingressRule netv1.IngressRule
-	var httpIngressPath netv1.HTTPIngressPath
-	var pathType netv1.PathType
-	var ingressServiceBackend netv1.IngressServiceBackend
-	var objectMeta metav1.ObjectMeta
-	//var ingressTLS netv1.IngressTLS
-
-	// Define map for the annotations
-	annotations := make(map[string]string)
-	key := "route.openshift.io/termination"
-	value := "edge"
-	annotations[key] = value
-
-	objectMeta = metav1.ObjectMeta{
-		Name:                       ingressName,
-		GenerateName:               "",
-		Namespace:                  namespace,
-		SelfLink:                   "",
-		UID:                        "",
-		ResourceVersion:            "",
-		Generation:                 0,
-		CreationTimestamp:          metav1.Time{},
-		DeletionTimestamp:          &metav1.Time{},
-		DeletionGracePeriodSeconds: new(int64),
-		Labels:                     map[string]string{},
-		Annotations:                annotations,
-		OwnerReferences:            []metav1.OwnerReference{},
-		Finalizers:                 []string{},
-		ClusterName:                "",
-		ManagedFields:              []metav1.ManagedFieldsEntry{},
 	}
 
-	pathType = netv1.PathTypeImplementationSpecific
-
-	ingressServiceBackend = netv1.IngressServiceBackend{
-		Name: serviceName,
-		Port: netv1.ServiceBackendPort{
-			//Name:   serviceName,
-			Number: 80,
-		},
-	}
-
-	httpIngressPath = netv1.HTTPIngressPath{
-		Path:     "/",
-		PathType: &pathType,
-		Backend: netv1.IngressBackend{
-			Service: &ingressServiceBackend,
-		},
-	}
-
-	ingressRule = netv1.IngressRule{
-		Host: rulesHost,
-		IngressRuleValue: netv1.IngressRuleValue{
-			HTTP: &netv1.HTTPIngressRuleValue{
-				Paths: []netv1.HTTPIngressPath{httpIngressPath},
-			},
-		},
-	}
-
-	/*ingressTLS = netv1.IngressTLS{
-		Hosts:      []string{rulesHost},
-		SecretName: tlsSecretName,
-	}*/
-
-	return &netv1.Ingress{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Ingress"},
-		ObjectMeta: objectMeta,
-		Spec: netv1.IngressSpec{
-			//IngressClassName: new(string),
-			//TLS:   []netv1.IngressTLS{ingressTLS},
-			Rules: []netv1.IngressRule{ingressRule},
-		},
-	}, "http://" + rulesHost, nil
+	// Set the ecommerceapplication instance as the owner and controller
+	ctrl.SetControllerReference(ecommerceapplication, secret, r.Scheme)
+	return secret, nil
 
 }
 
-func defineIngressWithTls(ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, string, error) {
+func (r *ECommerceApplicationReconciler) defineIngressWithTls(ecommerceapplication *saasv1alpha1.ECommerceApplication, ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, string, error) {
 
 	rulesHost := fmt.Sprintf("%s%s%s", ingressName, ".", hostName)
 
@@ -937,11 +860,11 @@ func defineIngressWithTls(ingressName string, namespace string, hostName string,
 	}
 
 	ingressTLS = netv1.IngressTLS{
-		Hosts:      []string{hostName},
+		Hosts:      []string{rulesHost},
 		SecretName: tlsSecretName,
 	}
 
-	return &netv1.Ingress{
+	ingress := &netv1.Ingress{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Ingress"},
 		ObjectMeta: objectMeta,
 		Spec: netv1.IngressSpec{
@@ -949,7 +872,11 @@ func defineIngressWithTls(ingressName string, namespace string, hostName string,
 			TLS:   []netv1.IngressTLS{ingressTLS},
 			Rules: []netv1.IngressRule{ingressRule},
 		},
-	}, "http://" + rulesHost, nil
+	}
+
+	// Set the ecommerceapplication instance as the owner and controller
+	ctrl.SetControllerReference(ecommerceapplication, ingress, r.Scheme)
+	return ingress, "https://" + rulesHost, nil
 
 }
 
@@ -988,7 +915,7 @@ func defineIngressWithTls(ingressName string, namespace string, hostName string,
 }*/
 
 // Define Service using Cluster IP for backend
-func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
+func (r *ECommerceApplicationReconciler) defineBackendServiceClusterIp(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string) (*corev1.Service, error) {
 
 	serviceLabels := fmt.Sprintf("%s%s", name, "-backend")
 	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-backend-cip")
@@ -1007,7 +934,7 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 
 	var port int32 = 80
 
-	return &corev1.Service{
+	service := &corev1.Service{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
 		ObjectMeta: metav1.ObjectMeta{Name: serviceName, Namespace: namespace, Labels: mlabel},
 		Spec: corev1.ServiceSpec{
@@ -1021,11 +948,15 @@ func defineBackendServiceClusterIp(name string, namespace string) (*corev1.Servi
 			}},
 			Selector: mselector,
 		},
-	}, nil
+	}
+
+	// Set the ecommerceapplication instance as the owner and controller
+	ctrl.SetControllerReference(ecommerceapplication, service, r.Scheme)
+	return service, nil
 }
 
 // Create Service ClusterIP definition
-func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Service, error) {
+func (r *ECommerceApplicationReconciler) defineFrontendServiceClusterIp(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string) (*corev1.Service, error) {
 
 	serviceLabels := fmt.Sprintf("%s%s", name, "-frontend")
 	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-frontend-cip")
@@ -1046,7 +977,7 @@ func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Serv
 	var targetPort int32 = 8080
 	var clustserv = serviceName
 
-	return &corev1.Service{
+	service := &corev1.Service{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
 		ObjectMeta: metav1.ObjectMeta{Name: clustserv, Namespace: namespace, Labels: mlabel},
 		Spec: corev1.ServiceSpec{
@@ -1057,7 +988,11 @@ func defineFrontendServiceClusterIp(name string, namespace string) (*corev1.Serv
 			}},
 			Selector: mselector,
 		},
-	}, nil
+	}
+
+	// Set the ecommerceapplication instance as the owner and controller
+	ctrl.SetControllerReference(ecommerceapplication, service, r.Scheme)
+	return service, nil
 }
 
 // ********************************************************
