@@ -131,16 +131,19 @@ var postgresTableExists bool = false
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
-func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
+func (reconciler *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+
 	postgresUrl := ""
-	// "Verify if a CR of ECommerceApplication exists"
-	logger.Info("Verify if a CR of ECommerceApplication exists")
 	ecommerceapplication := &saasv1alpha1.ECommerceApplication{}
-	err := r.Get(ctx, req.NamespacedName, ecommerceapplication)
 	var apiKey string
 	var managementUrl string
 	var clientId string
+
+	logger := log.FromContext(ctx)
+
+	// "Verify if a CR of ECommerceApplication exists"
+	logger.Info("Verify if a CR of ECommerceApplication exists")
+	err := reconciler.Get(ctx, req.NamespacedName, ecommerceapplication)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -162,7 +165,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Check if the Postgres Binding secret created by IBM Cloud Operator (ICO) already exists
 	secret := &corev1.Secret{}
-	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.PostgresSecretName, Namespace: ecommerceapplication.Namespace}, secret)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.PostgresSecretName, Namespace: ecommerceapplication.Namespace}, secret)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info("IBM Cloud Binding secret for Postgres does not exist, wait for a while")
 		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
@@ -177,26 +180,26 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		// Create secrets for backend connection to Postgres
 		// Create secret postgres.username
 		targetSecretName := "postgres.username"
-		targetSecret, err := r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_USERNAME", data.Postgres.Authentication.Username)
+		targetSecret, err := reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_USERNAME", data.Postgres.Authentication.Username)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-		secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr := verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 		if secretErr != nil && errors.IsNotFound(secretErr) {
 			return ctrl.Result{}, secretErr
 		}
 
 		// Create secret postgres.password
 		targetSecretName = "postgres.password"
-		targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_PASSWORD", data.Postgres.Authentication.Password)
+		targetSecret, err = reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_PASSWORD", data.Postgres.Authentication.Password)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-		secretErr = verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr = verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 		if secretErr != nil && errors.IsNotFound(secretErr) {
 			return ctrl.Result{}, secretErr
 		}
@@ -205,13 +208,13 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		targetSecretName = "postgres.certificate-data"
 		decodeArr, _ := b64.StdEncoding.DecodeString(data.Postgres.Certificate.CertificateBase64)
 		certDecoded := string(decodeArr[:])
-		targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_CERTIFICATE_DATA", certDecoded)
+		targetSecret, err = reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_CERTIFICATE_DATA", certDecoded)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-		secretErr = verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr = verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 		if secretErr != nil && errors.IsNotFound(secretErr) {
 			return ctrl.Result{}, secretErr
 		}
@@ -219,20 +222,20 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		// Create secret postgres.url
 		targetSecretName = "postgres.url"
 		postgresUrl = fmt.Sprintf("%s%s%s%d%s%s%s", "jdbc:postgresql://", data.Postgres.Hosts[0].Hostname, ":", data.Postgres.Hosts[0].Port, "/", data.Postgres.Database, "?sslmode=verify-full&sslrootcert=/cloud-postgres-cert")
-		targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_URL", postgresUrl)
+		targetSecret, err = reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "POSTGRES_URL", postgresUrl)
 		// Error defining the secret - requeue the request.
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-		secretErr = verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr = verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 		if secretErr != nil && errors.IsNotFound(secretErr) {
 			return ctrl.Result{}, secretErr
 		}
 	}
 
 	// Check if the App Id Binding secret created by IBM Cloud Operator already exists
-	err = r.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.AppIdSecretName, Namespace: ecommerceapplication.Namespace}, secret)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: ecommerceapplication.Spec.AppIdSecretName, Namespace: ecommerceapplication.Namespace}, secret)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info("App Id Binding Secret does not exist, wait for a while")
 		return ctrl.Result{RequeueAfter: time.Second * 300}, nil
@@ -246,11 +249,11 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		// Create secret appid.oauthserverurl
 		targetSecretName := "appid.oauthserverurl"
 		authServerUrl := string(secret.Data["oauthServerUrl"])
-		targetSecret, err := r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
+		targetSecret, err := reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "APPID_AUTH_SERVER_URL", authServerUrl)
 		logger.Info(fmt.Sprintf("App Id AuthServerUrl = %s", authServerUrl))
 		logger.Info("Creating appid.oauthserverurl")
-		err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-		secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+		err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+		secretErr := verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 		if secretErr != nil && errors.IsNotFound(secretErr) {
 			return ctrl.Result{}, secretErr
 		}
@@ -258,7 +261,7 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		// Create secret appid.client-id-catalog-service
 		targetSecretName = "appid.client-id-catalog-service"
 		// Use AppIdHelper package to retrieve the client Id of the App Id 'Application', via REST API to IBM Cloud.  If no App Id Applications exist, it must be created and configured by the AppIdHelper.
-		apiKey, err = getIbmCloudApiKey(r, ecommerceapplication.Spec.IbmCloudOperatorSecretName, ecommerceapplication.Spec.IbmCloudOperatorSecretNamespace)
+		apiKey, err = getIbmCloudApiKey(reconciler, ecommerceapplication.Spec.IbmCloudOperatorSecretName, ecommerceapplication.Spec.IbmCloudOperatorSecretNamespace, ctx)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
@@ -269,13 +272,13 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 		} else {
 			logger.Info(fmt.Sprintf("App Id client Id = %s", clientId))
 			// Create new secret for backend using App Id clientId
-			targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "APPID_CLIENT_ID", clientId)
+			targetSecret, err = reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "APPID_CLIENT_ID", clientId)
 			// Error defining the secret - requeue the request.
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-			secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+			err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+			secretErr := verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 			if secretErr != nil && errors.IsNotFound(secretErr) {
 				return ctrl.Result{}, secretErr
 			}
@@ -311,12 +314,12 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Check if the backend deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
 	backendDeploymentName := fmt.Sprintf("%s%s", ecommerceapplication.Name, "-backend")
-	err = r.Get(ctx, types.NamespacedName{Name: backendDeploymentName, Namespace: ecommerceapplication.Namespace}, found)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: backendDeploymentName, Namespace: ecommerceapplication.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := r.deploymentForbackend(ecommerceapplication, ctx)
+		dep := reconciler.deploymentForbackend(ecommerceapplication, ctx)
 		logger.Info("Creating a new backend Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-		err = r.Create(ctx, dep)
+		err = reconciler.Create(ctx, dep)
 		if err != nil {
 			logger.Error(err, "Failed to create new backend Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 			return ctrl.Result{}, err
@@ -330,23 +333,23 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Create a service using Cluster IP to access backend pod
 	helpers.CustomLogs("Create backend Service using Cluster IP", ctx, customLogger)
-	targetBackendServ, err := r.defineBackendServiceClusterIp(ecommerceapplication, ecommerceapplication.Name, ecommerceapplication.Namespace)
+	targetBackendServ, err := reconciler.defineBackendServiceClusterIp(ecommerceapplication, ecommerceapplication.Name, ecommerceapplication.Namespace)
 	if err != nil {
 		// Error creating Service
 		return ctrl.Result{}, err
 	}
 	backendService := &corev1.Service{}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetBackendServ.Name, Namespace: targetBackendServ.Namespace}, backendService)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: targetBackendServ.Name, Namespace: targetBackendServ.Namespace}, backendService)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info(fmt.Sprintf("Target service %s doesn't exist, creating it", targetBackendServ.Name))
-		err = r.Create(context.TODO(), targetBackendServ)
+		err = reconciler.Create(ctx, targetBackendServ)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
 		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetBackendServ.Name))
 		// TODO - this update generates an error
-		/*err = r.Update(context.TODO(), targetBackendServ)
+		/*err = reconciler.Update(ctx, targetBackendServ)
 		if err != nil {
 			logger.Error(err, "could not update backend service")
 			return ctrl.Result{}, err
@@ -358,23 +361,23 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// TODO - need to change the yaml to provide the cert for the TLS, rather than assuming a secret is already available in this namespace.
 
 	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
-	targetBackendIngress, backendIngressUri, err := r.defineIngressWithTls(ecommerceapplication, ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetBackendIngress, backendIngressUri, err := reconciler.defineIngressWithTls(ecommerceapplication, ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error defining Ingress
 		return ctrl.Result{}, err
 	}
 	backendIngress := &netv1.Ingress{}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetBackendIngress.Name, Namespace: targetBackendIngress.Namespace}, backendIngress)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: targetBackendIngress.Name, Namespace: targetBackendIngress.Namespace}, backendIngress)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info(fmt.Sprintf("Target ingress %s doesn't exist, creating it", targetBackendIngress.Name))
-		err = r.Create(context.TODO(), targetBackendIngress)
+		err = reconciler.Create(ctx, targetBackendIngress)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
-		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetBackendIngress.Name))
+		logger.Info(fmt.Sprintf("Target ingress %s exists, updating it now", targetBackendIngress.Name))
 		// TODO For some reason this fails.  Need to fix this.
-		/*err = r.Update(context.TODO(), targetBackendIngress)
+		/*err = reconciler.Update(ctx, targetBackendIngress)
 		if err != nil {
 			return ctrl.Result{}, err
 		}*/
@@ -389,12 +392,12 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	found = &appsv1.Deployment{}
 	//frontend_deployment := "frontend" + ecommerceapplication.Name
 	frontendDeploymentName := fmt.Sprintf("%s%s", ecommerceapplication.Name, "-frontend")
-	err = r.Get(ctx, types.NamespacedName{Name: frontendDeploymentName, Namespace: ecommerceapplication.Namespace}, found)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: frontendDeploymentName, Namespace: ecommerceapplication.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := r.deploymentForFrontend(ecommerceapplication, backendIngressUri, ctx)
+		dep := reconciler.deploymentForFrontend(ecommerceapplication, backendIngressUri, ctx)
 		logger.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-		err = r.Create(ctx, dep)
+		err = reconciler.Create(ctx, dep)
 		if err != nil {
 			logger.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 			return ctrl.Result{}, err
@@ -424,17 +427,17 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 				return ctrl.Result{}, err
 			}
 
-			err = r.Get(context.TODO(), types.NamespacedName{Name: targetServPort.Name, Namespace: targetServPort.Namespace}, servPort)
+			err = reconciler.Get(ctx, types.NamespacedName{Name: targetServPort.Name, Namespace: targetServPort.Namespace}, servPort)
 			if err != nil && errors.IsNotFound(err) {
 				logger.Info(fmt.Sprintf("Target service port %s doesn't exist, creating it", targetServPort.Name))
-				err = r.Create(context.TODO(), targetServPort)
+				err = reconciler.Create(ctx, targetServPort)
 				if err != nil {
 					return ctrl.Result{}, err
 				}
 			} else {
 				logger.Info(fmt.Sprintf("Target service port %s exists, updating it now", targetServPort.Name))
 				// TODO - this causes an error, need to fix it
-				//err = r.Update(context.TODO(), targetServPort)
+				//err = reconciler.Update(ctx, targetServPort)
 				//if err != nil {
 					//return ctrl.Result{}, err
 				//}
@@ -443,21 +446,21 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	// Define cluster IP service to access frontend pods
 	servClust := &corev1.Service{}
 	helpers.CustomLogs("Create service Cluster IP", ctx, customLogger)
-	targetFrontendServClust, err := r.defineFrontendServiceClusterIp(ecommerceapplication, ecommerceapplication.Name, ecommerceapplication.Namespace)
+	targetFrontendServClust, err := reconciler.defineFrontendServiceClusterIp(ecommerceapplication, ecommerceapplication.Name, ecommerceapplication.Namespace)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetFrontendServClust.Name, Namespace: targetFrontendServClust.Namespace}, servClust)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: targetFrontendServClust.Name, Namespace: targetFrontendServClust.Namespace}, servClust)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info(fmt.Sprintf("Target service cluster %s doesn't exist, creating it", targetFrontendServClust.Name))
-		err = r.Create(context.TODO(), targetFrontendServClust)
+		err = reconciler.Create(ctx, targetFrontendServClust)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
 		logger.Info(fmt.Sprintf("Target service cluster %s exists, updating it now", targetFrontendServClust.Name))
 		// TODO For some reason this fails.  Need to fix this.
-		/*err = r.Update(context.TODO(), targetFrontendServClust)
+		/*err = reconciler.Update(ctx, targetFrontendServClust)
 		if err != nil {
 			return ctrl.Result{}, err
 		}*/
@@ -465,23 +468,23 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Create Ingress to access frontend service
 	ingressName = fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-frontend")
-	targetFrontendIngress, frontendUri, err := r.defineIngressWithTls(ecommerceapplication, ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetFrontendServClust.Name, int(targetFrontendServClust.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
+	targetFrontendIngress, frontendUri, err := reconciler.defineIngressWithTls(ecommerceapplication, ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetFrontendServClust.Name, int(targetFrontendServClust.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
 		// Error creating Ingress
 		return ctrl.Result{}, err
 	}
 	frontendIngress := &netv1.Ingress{}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetFrontendIngress.Name, Namespace: targetFrontendIngress.Namespace}, frontendIngress)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: targetFrontendIngress.Name, Namespace: targetFrontendIngress.Namespace}, frontendIngress)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info(fmt.Sprintf("Target ingress %s doesn't exist, creating it", targetFrontendIngress.Name))
-		err = r.Create(context.TODO(), targetFrontendIngress)
+		err = reconciler.Create(ctx, targetFrontendIngress)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
 		logger.Info(fmt.Sprintf("Target service %s exists, updating it now", targetFrontendIngress.Name))
 		// TODO For some reason this fails.  Need to fix this.
-		/*err = r.Update(context.TODO(), targetFrontendIngress)
+		/*err = reconciler.Update(ctx, targetFrontendIngress)
 		if err != nil {
 			return ctrl.Result{}, err
 		}*/
@@ -499,13 +502,13 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	helpers.CustomLogs("Create secret appid.client-id-frontend", ctx, customLogger)
 	targetSecretName := "appid.client-id-frontend"
 	//clientId := "b12a05c3-8164-45d9-a1b8-af1dedf8ccc3"
-	targetSecret, err := r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_CLIENT_ID", clientId)
+	targetSecret, err := reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_CLIENT_ID", clientId)
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-	secretErr := verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+	secretErr := verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 	if secretErr != nil && errors.IsNotFound(secretErr) {
 		return ctrl.Result{}, secretErr
 	}
@@ -514,13 +517,13 @@ func (r *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl
 	targetSecretName = "appid.discovery-endpoint"
 	discoveryEndpoint := fmt.Sprintf("%s%s", managementUrl, "/.well-known/openid-configuration")
 	//discoveryEndpoint :="https://eu-de.appid.cloud.ibm.com/oauth/v4/3793e3f8-ed31-42c9-9294-bc415fc58ab7/.well-known/openid-configuration"
-	targetSecret, err = r.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_DISCOVERYENDPOINT", discoveryEndpoint)
+	targetSecret, err = reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_DISCOVERYENDPOINT", discoveryEndpoint)
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
-	secretErr = verifySecrectStatus(ctx, r, targetSecretName, targetSecret, err)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: targetSecret.Name, Namespace: targetSecret.Namespace}, secret)
+	secretErr = verifySecrectStatus(ctx, reconciler, targetSecretName, targetSecret, err)
 	if secretErr != nil && errors.IsNotFound(secretErr) {
 		return ctrl.Result{}, secretErr
 	}
@@ -556,7 +559,7 @@ func labelsForBackend(tenancybackendname string, ecommerceapplication_cr string)
 }
 
 // deploymentForBackend definition and returns a tenancybackendend Deployment object
-func (r *ECommerceApplicationReconciler) deploymentForbackend(backend *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
+func (reconciler *ECommerceApplicationReconciler) deploymentForbackend(backend *saasv1alpha1.ECommerceApplication, ctx context.Context) *appsv1.Deployment {
 
 	deploymentName := fmt.Sprintf("%s%s", backend.Name, "-backend")
 
@@ -661,12 +664,12 @@ func (r *ECommerceApplicationReconciler) deploymentForbackend(backend *saasv1alp
 	}
 
 	// Set backend instance as the owner and controller
-	ctrl.SetControllerReference(backend, dep, r.Scheme)
+	ctrl.SetControllerReference(backend, dep, reconciler.Scheme)
 	return dep
 }
 
 // deploymentForFrontend definition and returns a tenancyfrontend Deployment object
-func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, backendIngressUri string, ctx context.Context) *appsv1.Deployment {
+func (reconciler *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1alpha1.ECommerceApplication, backendIngressUri string, ctx context.Context) *appsv1.Deployment {
 	logger := log.FromContext(ctx)
 
 	deploymentName := fmt.Sprintf("%s%s", frontend.Name, "-frontend")
@@ -772,12 +775,12 @@ func (r *ECommerceApplicationReconciler) deploymentForFrontend(frontend *saasv1a
 	} // Deployment
 
 	// Set TenancyFrontend instance as the owner and controller
-	ctrl.SetControllerReference(frontend, dep, r.Scheme)
+	ctrl.SetControllerReference(frontend, dep, reconciler.Scheme)
 	return dep
 }
 
 // Create Secret definition
-func (r *ECommerceApplicationReconciler) defineSecret(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string, key string, value string) (*corev1.Secret, error) {
+func (reconciler *ECommerceApplicationReconciler) defineSecret(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string, key string, value string) (*corev1.Secret, error) {
 	m := make(map[string]string)
 	m[key] = value
 
@@ -791,12 +794,12 @@ func (r *ECommerceApplicationReconciler) defineSecret(ecommerceapplication *saas
 	}
 
 	// Set the ecommerceapplication instance as the owner and controller
-	ctrl.SetControllerReference(ecommerceapplication, secret, r.Scheme)
+	ctrl.SetControllerReference(ecommerceapplication, secret, reconciler.Scheme)
 	return secret, nil
 
 }
 
-func (r *ECommerceApplicationReconciler) defineIngressWithTls(ecommerceapplication *saasv1alpha1.ECommerceApplication, ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, string, error) {
+func (reconciler *ECommerceApplicationReconciler) defineIngressWithTls(ecommerceapplication *saasv1alpha1.ECommerceApplication, ingressName string, namespace string, hostName string, serviceName string, port int, tlsSecretName string) (*netv1.Ingress, string, error) {
 
 	rulesHost := fmt.Sprintf("%s%s%s", ingressName, ".", hostName)
 
@@ -875,7 +878,7 @@ func (r *ECommerceApplicationReconciler) defineIngressWithTls(ecommerceapplicati
 	}
 
 	// Set the ecommerceapplication instance as the owner and controller
-	ctrl.SetControllerReference(ecommerceapplication, ingress, r.Scheme)
+	ctrl.SetControllerReference(ecommerceapplication, ingress, reconciler.Scheme)
 	return ingress, "https://" + rulesHost, nil
 
 }
@@ -915,7 +918,7 @@ func (r *ECommerceApplicationReconciler) defineIngressWithTls(ecommerceapplicati
 }*/
 
 // Define Service using Cluster IP for backend
-func (r *ECommerceApplicationReconciler) defineBackendServiceClusterIp(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string) (*corev1.Service, error) {
+func (reconciler *ECommerceApplicationReconciler) defineBackendServiceClusterIp(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string) (*corev1.Service, error) {
 
 	serviceLabels := fmt.Sprintf("%s%s", name, "-backend")
 	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-backend-cip")
@@ -951,12 +954,12 @@ func (r *ECommerceApplicationReconciler) defineBackendServiceClusterIp(ecommerce
 	}
 
 	// Set the ecommerceapplication instance as the owner and controller
-	ctrl.SetControllerReference(ecommerceapplication, service, r.Scheme)
+	ctrl.SetControllerReference(ecommerceapplication, service, reconciler.Scheme)
 	return service, nil
 }
 
 // Create Service ClusterIP definition
-func (r *ECommerceApplicationReconciler) defineFrontendServiceClusterIp(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string) (*corev1.Service, error) {
+func (reconciler *ECommerceApplicationReconciler) defineFrontendServiceClusterIp(ecommerceapplication *saasv1alpha1.ECommerceApplication, name string, namespace string) (*corev1.Service, error) {
 
 	serviceLabels := fmt.Sprintf("%s%s", name, "-frontend")
 	serviceName := fmt.Sprintf("%s%s%s", "service-", name, "-frontend-cip")
@@ -991,7 +994,7 @@ func (r *ECommerceApplicationReconciler) defineFrontendServiceClusterIp(ecommerc
 	}
 
 	// Set the ecommerceapplication instance as the owner and controller
-	ctrl.SetControllerReference(ecommerceapplication, service, r.Scheme)
+	ctrl.SetControllerReference(ecommerceapplication, service, reconciler.Scheme)
 	return service, nil
 }
 
@@ -999,18 +1002,18 @@ func (r *ECommerceApplicationReconciler) defineFrontendServiceClusterIp(ecommerc
 // Helpers to minimize code in reconcile
 
 // Do all the error verification for the vSecrectStatus
-func verifySecrectStatus(ctx context.Context, r *ECommerceApplicationReconciler, targetSecretName string, targetSecret *v1.Secret, err error) error {
+func verifySecrectStatus(ctx context.Context, reconciler *ECommerceApplicationReconciler, targetSecretName string, targetSecret *v1.Secret, err error) error {
 	logger := log.FromContext(ctx)
 
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info(fmt.Sprintf("Target secret %s doesn't exist, creating it", targetSecretName))
-		err = r.Create(context.TODO(), targetSecret)
+		err = reconciler.Create(ctx, targetSecret)
 		if err != nil {
 			return err
 		}
 	} else {
 		logger.Info(fmt.Sprintf("Target secret %s exists, updating it now", targetSecretName))
-		err = r.Update(context.TODO(), targetSecret)
+		err = reconciler.Update(ctx, targetSecret)
 		if err != nil {
 			return err
 		}
@@ -1020,10 +1023,10 @@ func verifySecrectStatus(ctx context.Context, r *ECommerceApplicationReconciler,
 }
 
 // Retrieve IBM Cloud API key from secret used by IBM Cloud Operator
-func getIbmCloudApiKey(r *ECommerceApplicationReconciler, name string, namespace string) (apiKey string, err error) {
+func getIbmCloudApiKey(reconciler *ECommerceApplicationReconciler, name string, namespace string, ctx context.Context) (apiKey string, err error) {
 
 	secret := &corev1.Secret{}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: namespace}, secret)
+	err = reconciler.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, secret)
 	if err != nil && errors.IsNotFound(err) {
 		log.Log.Error(err, "IBM Cloud Operator secret was not found.  Cannot access IBM Cloud API key")
 		return "", err
