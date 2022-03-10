@@ -53,6 +53,10 @@ spec:
                   ecommerceapplication_types.go to remove/update
                 format: int32
                 type: integer
+              tenantCatergoryName:
+                type: string
+              tenantHeadline:
+                type: string
               tenantName:
                 type: string
             required:

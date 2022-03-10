@@ -35,7 +35,9 @@ type ECommerceApplicationSpec struct {
 	IngressTlsSecretName string `json:"ingressTlsSecretName,omitempty"`
 	IngressHostname      string `json:"ingressHostname,omitempty"`
 
-	TenantName string `json:"tenantName,omitempty"`
+	TenantName          string `json:"tenantName,omitempty"`
+	TenantCatergoryName string `json:"tenantCatergoryName,omitempty"`
+	TenantHeadline      string `json:"tenantHeadline,omitempty"`
 
 	IbmCloudOperatorSecretName      string `json:"ibmCloudOperatorSecretName,omitempty"`
 	IbmCloudOperatorSecretNamespace string `json:"ibmCloudOperatorSecretNamespace,omitempty"`

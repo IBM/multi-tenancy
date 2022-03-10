@@ -9,6 +9,8 @@ spec:
   ingressTlsSecretName: tls-cert
   ingressHostname: roks-gen2-suedbro-162e406f043e20da9b0ef0731954a894-0000.us-south.containers.appdomain.cloud  
   tenantName: ten-f
+  tenantCatergoryName: Movies
+  tenantHeadline: Movies by ten-f
   ibmCloudOperatorSecretName: ibmcloud-operator-secret
   ibmCloudOperatorSecretNamespace: default
 ---

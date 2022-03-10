@@ -56,17 +56,19 @@ func AppendRedirectUrl(managementUrl string, ibmCloudApiKey string, newRedirctUr
 			return err
 		}
 
-		jsonData.RedirectUris = append(jsonData.RedirectUris, newRedirctUri)
+		if !contains(jsonData.RedirectUris, newRedirctUri+"/*") {
+			jsonData.RedirectUris = append(jsonData.RedirectUris, newRedirctUri)
 
-		json, err := json.Marshal(jsonData)
-		if err != nil {
-			return err
-		}
+			json, err := json.Marshal(jsonData)
+			if err != nil {
+				return err
+			}
 
-		_, err = doHttpPut(json, url, ibmCloudApiKey, ctx)
+			_, err = doHttpPut(json, url, ibmCloudApiKey, ctx)
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
 		}
 
 	}
@@ -568,6 +570,15 @@ func newfileUploadRequest(uri string, paramName string, path string) (*http.Requ
 func dumpHttpRequest(request *http.Request) {
 	dump, _ := httputil.DumpRequestOut(request, true)
 	fmt.Println(string(dump))
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 /*func newfileUploadRequestOld(uri string, paramName, path string) (*http.Request, error) {

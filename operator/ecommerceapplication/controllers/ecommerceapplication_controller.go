@@ -20,6 +20,7 @@ import (
 	"context"
 	b64 "encoding/base64"
 	"encoding/json"
+
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -134,11 +135,12 @@ var postgresTableExists bool = false
 func (reconciler *ECommerceApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
 	postgresUrl := ""
-	ecommerceapplication := &saasv1alpha1.ECommerceApplication{}
 	var apiKey string
 	var managementUrl string
+	var discoveryEndpoint string
 	var clientId string
 
+	ecommerceapplication := &saasv1alpha1.ECommerceApplication{}
 	logger := log.FromContext(ctx)
 
 	// "Verify if a CR of ECommerceApplication exists"
@@ -157,6 +159,13 @@ func (reconciler *ECommerceApplicationReconciler) Reconcile(ctx context.Context,
 		logger.Error(err, "Failed to get ECommerceApplication")
 		return ctrl.Result{}, err
 	}
+
+	//temp
+	//reconciler.reconcileService(ecommerceapplication, req)
+	//if err != nil {
+	//	return ctrl.Result{}, err
+	//}
+	//return ctrl.Result{RequeueAfter: time.Second * 5}, nil
 
 	//*****************************************
 	// Create Secrets for Frontend and Backend
@@ -242,6 +251,7 @@ func (reconciler *ECommerceApplicationReconciler) Reconcile(ctx context.Context,
 	} else if err == nil {
 		//ICO App Id secret exists
 		managementUrl = string(secret.Data["managementUrl"])
+		discoveryEndpoint = string(secret.Data["discoveryEndpoint"])
 		tenantId := secret.Data["tenantId"]
 		logger.Info(fmt.Sprintf("App Id managementUrl = %s", managementUrl))
 		logger.Info(fmt.Sprintf("App Id tenantId = %s", tenantId))
@@ -357,9 +367,6 @@ func (reconciler *ECommerceApplicationReconciler) Reconcile(ctx context.Context,
 	}
 
 	// Create Ingress for backend pod
-
-	// TODO - need to change the yaml to provide the cert for the TLS, rather than assuming a secret is already available in this namespace.
-
 	ingressName := fmt.Sprintf("%s%s%s", "ingress-", ecommerceapplication.Name, "-backend")
 	targetBackendIngress, backendIngressUri, err := reconciler.defineIngressWithTls(ecommerceapplication, ingressName, ecommerceapplication.Namespace, ecommerceapplication.Spec.IngressHostname, targetBackendServ.Name, int(targetBackendServ.Spec.Ports[0].Port), ecommerceapplication.Spec.IngressTlsSecretName)
 	if err != nil {
@@ -515,8 +522,6 @@ func (reconciler *ECommerceApplicationReconciler) Reconcile(ctx context.Context,
 
 	// Create secret appid.discovery-endpoint
 	targetSecretName = "appid.discovery-endpoint"
-	discoveryEndpoint := fmt.Sprintf("%s%s", managementUrl, "/.well-known/openid-configuration")
-	//discoveryEndpoint :="https://eu-de.appid.cloud.ibm.com/oauth/v4/3793e3f8-ed31-42c9-9294-bc415fc58ab7/.well-known/openid-configuration"
 	targetSecret, err = reconciler.defineSecret(ecommerceapplication, targetSecretName, ecommerceapplication.Namespace, "VUE_APPID_DISCOVERYENDPOINT", discoveryEndpoint)
 	// Error creating replicating the secret - requeue the request.
 	if err != nil {
@@ -748,10 +753,10 @@ func (reconciler *ECommerceApplicationReconciler) deploymentForFrontend(frontend
 								Value: backendIngressUri + "/base/customer/Orders",
 							},
 							{Name: "VUE_APP_CATEGORY_NAME",
-								Value: frontend.Namespace,
+								Value: frontend.Spec.TenantCatergoryName,
 							},
 							{Name: "VUE_APP_HEADLINE",
-								Value: frontend.Namespace,
+								Value: frontend.Spec.TenantHeadline,
 							},
 							{Name: "VUE_APP_ROOT",
 								Value: "/",
