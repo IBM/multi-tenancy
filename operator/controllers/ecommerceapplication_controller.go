@@ -608,16 +608,16 @@ func (r *ECommerceApplicationReconciler) SetupWithManager(mgr ctrl.Manager) erro
 
 // Create Secret definition
 func createSecret(name string, namespace string, key string, value string) (*corev1.Secret, error) {
-	m := make(map[string]string)
+	secretdata := make(map[string]string)
 	//m["POSTGRES_USERNAME"] = data.Postgres.Authentication.Username
-	m[key] = value
+	secretdata[key] = value
 
 	return &corev1.Secret{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Secret"},
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
 		Immutable:  new(bool),
 		Data:       map[string][]byte{},
-		StringData: m,
+		StringData: secretdata,
 		Type:       "Opaque",
 	}, nil
 }
