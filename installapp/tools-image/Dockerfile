@@ -8,7 +8,7 @@ RUN apt-get update -qq \
 # *********** default-jdk -> openjdk-11-jdk ***************
 RUN apt update \
     && apt-get --assume-yes install default-jdk
-
+ARG DEBIAN_FRONTEND=noninteractive
 # *********** Basic tools *************** 
 RUN apt-get update \
     && apt-get --assume-yes install curl \
@@ -21,8 +21,10 @@ RUN apt-get update \
     && apt-get --assume-yes install zip \
     && apt-get --assume-yes install sed \
     && apt-get --assume-yes install jq \
-    && apt-get --assume-yes install postgresql postgresql-contrib \
-    && apt-get --assume-yes install original-awk
+    && apt-get --assume-yes install postgresql \
+    && apt-get --assume-yes install postgresql-contrib \
+    && apt-get --assume-yes install original-awk \
+    && apt-get --assume-yes install make
 
 # Kubernetes
 # *********** Kubernetes ***************
